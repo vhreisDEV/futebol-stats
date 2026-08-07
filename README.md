@@ -43,7 +43,7 @@ O projeto também será utilizado como forma de estudo e evolução profissional
 ### Versão inicial
 - [x] Criar projeto
 - [x] Configurar repositório
-- [] Definir objetivo
+- [x] Definir objetivo
 - [ ] Criar estrutura do projeto
 - [ ] Implementar análise de times
 - [ ] Adicionar histórico de jogos
