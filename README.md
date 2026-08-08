@@ -6,7 +6,7 @@ Plataforma de análise estatística de futebol utilizando dados, Python e Inteli
 
 O objetivo deste projeto é desenvolver uma plataforma capaz de analisar o desempenho de times de futebol com base em dados históricos, jogos recentes e diferentes indicadores estatísticos.
 
-O projeto também será utilizado como forma de estudo e evolução profissional, permitindo aplicar na prática conceitos de desenvolvimento de software, análise de dados, Cloud e Inteligência Artificial.
+O projeto também será utilizado como forma de estudo e evolução profissional, permitindo aplicar na prática conceitos de desenvolvimento de software, análise de dados, Claude e Inteligência Artificial.
 
 ## 🚀 Funcionalidades iniciais
 
