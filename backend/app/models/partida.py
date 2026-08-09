@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 class Partida(Base):
-    tablename = "partidas"
+    __tablename__ = "partidas"
     id = Column(Integer, primary_key=True, index=True)
     time_mandante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
     time_visitante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
