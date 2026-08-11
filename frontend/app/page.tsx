@@ -31,20 +31,44 @@ export default function Home() {
       });
   }, []);
 
-  if (carregando) return <p>Carregando times...</p>;
-  if (erro) return <p>Erro: {erro}</p>;
+  if (carregando) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+        <p>Carregando times...</p>
+      </main>
+    );
+  }
+
+  if (erro) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-red-400">
+        <p>Erro: {erro}</p>
+      </main>
+    );
+  }
 
   return (
-    <main>
-      <h1>Football Analytics Platform</h1>
-      <h2>Times</h2>
-      <ul>
-        {times.map((time) => (
-          <li key={time.id}>
-            <Link href={`/times/${time.id}`}>{time.nome}</Link>
-          </li>
-        ))}
-      </ul>
+    <main className="min-h-screen bg-slate-950 text-slate-100 px-6 py-10">
+      <div className="mx-auto max-w-2xl">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Football Analytics Platform
+        </h1>
+        <p className="mt-2 text-slate-400">
+          Selecione um time para ver os últimos jogos e estatísticas.
+        </p>
+
+        <div className="mt-8 grid gap-3">
+          {times.map((time) => (
+            <Link
+              key={time.id}
+              href={`/times/${time.id}`}
+              className="rounded-lg border border-slate-800 bg-slate-900 px-5 py-4 font-medium text-slate-100 transition hover:border-slate-600 hover:bg-slate-800"
+            >
+              {time.nome}
+            </Link>
+          ))}
+        </div>
+      </div>
     </main>
   );
 }

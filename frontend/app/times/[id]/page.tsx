@@ -67,57 +67,97 @@ export default function DetalheTime() {
   }, [id]);
 
   if (carregando) {
-    return <p>Carregando...</p>;
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+        <p>Carregando...</p>
+      </main>
+    );
   }
 
   if (erro) {
     return (
-      <div>
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950 text-red-400">
         <p>Erro: {erro}</p>
-        <Link href="/">Voltar para a lista de times</Link>
-      </div>
+        <Link href="/" className="text-slate-300 underline hover:text-white">
+          Voltar para a lista de times
+        </Link>
+      </main>
     );
   }
 
+  const resultadoEstilo: Record<string, string> = {
+    vitoria: "border-l-4 border-green-500 bg-green-950/40",
+    empate: "border-l-4 border-slate-500 bg-slate-800/60",
+    derrota: "border-l-4 border-red-500 bg-red-950/40",
+  };
+
+  const resultadoLabel: Record<string, string> = {
+    vitoria: "Vitória",
+    empate: "Empate",
+    derrota: "Derrota",
+  };
+
   return (
-    <div>
-      <Link href="/">Voltar para a lista de times</Link>
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-100">
+      <div className="mx-auto max-w-2xl">
+        <Link
+          href="/"
+          className="text-sm text-slate-400 underline hover:text-white"
+        >
+          ← Voltar para a lista de times
+        </Link>
 
-      {estatisticas && (
-        <div>
-          <h2>Estatísticas</h2>
+        {estatisticas && (
+          <div className="mt-6 rounded-lg border border-slate-800 bg-slate-900 p-5">
+            <h2 className="text-lg font-semibold">Estatísticas</h2>
+            <div className="mt-4 grid grid-cols-2 gap-y-2 text-sm sm:grid-cols-3">
+              <p className="text-slate-300">
+                Jogos: <span className="font-medium text-white">{estatisticas.total_jogos}</span>
+              </p>
+              <p className="text-green-400">
+                Vitórias: <span className="font-medium">{estatisticas.vitorias}</span>
+              </p>
+              <p className="text-slate-300">
+                Empates: <span className="font-medium">{estatisticas.empates}</span>
+              </p>
+              <p className="text-red-400">
+                Derrotas: <span className="font-medium">{estatisticas.derrotas}</span>
+              </p>
+              <p className="text-slate-300">
+                Gols marcados: <span className="font-medium text-white">{estatisticas.gols_marcados}</span>
+              </p>
+              <p className="text-slate-300">
+                Gols sofridos: <span className="font-medium text-white">{estatisticas.gols_sofridos}</span>
+              </p>
+              <p className="text-slate-300 col-span-2 sm:col-span-3">
+                Média de gols por jogo: <span className="font-medium text-white">{estatisticas.media_gols}</span>
+              </p>
+            </div>
+          </div>
+        )}
 
-          <p>Total de jogos: {estatisticas.total_jogos}</p>
-          <p>Vitórias: {estatisticas.vitorias}</p>
-          <p>Empates: {estatisticas.empates}</p>
-          <p>Derrotas: {estatisticas.derrotas}</p>
-          <p>Gols marcados: {estatisticas.gols_marcados}</p>
-          <p>Gols sofridos: {estatisticas.gols_sofridos}</p>
-          <p>Média de gols: {estatisticas.media_gols}</p>
-        </div>
-      )}
+        <h2 className="mt-8 text-lg font-semibold">Últimos Jogos</h2>
 
-      <h2>Jogos</h2>
-
-      <ul>
-        {jogos.map((jogo, index) => {
-          const cor =
-            jogo.resultado === "vitoria"
-              ? "green"
-              : jogo.resultado === "empate"
-                ? "orange"
-                : "red";
-
-          return (
-            <li key={index} style={{ color: cor }}>
-              {jogo.data} -{" "}
-              {jogo.casa_ou_fora === "casa" ? "vs" : "@"}{" "}
-              {jogo.adversario} - {jogo.gols_time}x
-              {jogo.gols_adversario} ({jogo.resultado})
+        <ul className="mt-4 grid gap-2">
+          {jogos.map((jogo, index) => (
+            <li
+              key={index}
+              className={`rounded-md px-4 py-3 text-sm ${resultadoEstilo[jogo.resultado] ?? "border-l-4 border-slate-700 bg-slate-900"}`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium">
+                  {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
+                </span>
+                <span className="text-slate-400">{jogo.data}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-slate-300">
+                <span>{jogo.gols_time}x{jogo.gols_adversario}</span>
+                <span>{resultadoLabel[jogo.resultado] ?? jogo.resultado}</span>
+              </div>
             </li>
-          );
-        })}
-      </ul>
-    </div>
+          ))}
+        </ul>
+      </div>
+    </main>
   );
 }
