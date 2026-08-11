@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 interface Jogo {
   data: string;
@@ -42,14 +43,14 @@ export default function DetalheTime() {
     Promise.all([
       fetch(`http://127.0.0.1:8000/times/${id}/jogos`).then((r) => {
         if (!r.ok) {
-          throw new Error("Erro ao buscar os jogos");
+          throw new Error("Time não encontrado ou erro ao buscar os jogos");
         }
         return r.json();
       }),
 
       fetch(`http://127.0.0.1:8000/times/${id}/estatisticas`).then((r) => {
         if (!r.ok) {
-          throw new Error("Erro ao buscar as estatísticas");
+          throw new Error("Time não encontrado ou erro ao buscar as estatísticas");
         }
         return r.json();
       }),
@@ -70,11 +71,18 @@ export default function DetalheTime() {
   }
 
   if (erro) {
-    return <p>Erro: {erro}</p>;
+    return (
+      <div>
+        <p>Erro: {erro}</p>
+        <Link href="/">Voltar para a lista de times</Link>
+      </div>
+    );
   }
 
   return (
     <div>
+      <Link href="/">Voltar para a lista de times</Link>
+
       {estatisticas && (
         <div>
           <h2>Estatísticas</h2>
