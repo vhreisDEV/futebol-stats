@@ -7,6 +7,15 @@ interface Time {
   nome: string;
 }
 
+interface Jogo {
+  data: string;
+  adversario: string;
+  casa_ou_fora: string;
+  resultado: string;
+  gols_time: number;
+  gols_adversario: number;
+}
+
 interface Estatisticas {
   total_jogos: number;
   vitorias: number;
@@ -16,6 +25,42 @@ interface Estatisticas {
   gols_sofridos: number;
   media_gols: number;
   sequencia_recente: string[];
+}
+
+const resultadoEstilo: Record<string, string> = {
+  vitoria: "border-l-4 border-green-500 bg-green-950/40",
+  empate: "border-l-4 border-slate-500 bg-slate-800/60",
+  derrota: "border-l-4 border-red-500 bg-red-950/40",
+};
+
+const resultadoLabel: Record<string, string> = {
+  vitoria: "Vitória",
+  empate: "Empate",
+  derrota: "Derrota",
+};
+
+function ListaJogos({ jogos }: { jogos: Jogo[] }) {
+  return (
+    <ul className="grid gap-2">
+      {jogos.map((jogo, index) => (
+        <li
+          key={index}
+          className={`rounded-md px-3 py-2 text-sm ${resultadoEstilo[jogo.resultado] ?? "border-l-4 border-slate-700 bg-slate-900"}`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="font-medium">
+              {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
+            </span>
+            <span className="text-slate-400">{jogo.data}</span>
+          </div>
+          <div className="mt-1 flex items-center justify-between text-slate-300">
+            <span>{jogo.gols_time}x{jogo.gols_adversario}</span>
+            <span>{resultadoLabel[jogo.resultado] ?? jogo.resultado}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export default function CompararTimes() {
@@ -28,6 +73,8 @@ export default function CompararTimes() {
 
   const [estatisticasA, setEstatisticasA] = useState<Estatisticas | null>(null);
   const [estatisticasB, setEstatisticasB] = useState<Estatisticas | null>(null);
+  const [jogosA, setJogosA] = useState<Jogo[]>([]);
+  const [jogosB, setJogosB] = useState<Jogo[]>([]);
   const [carregandoComparacao, setCarregandoComparacao] = useState(false);
   const [erroComparacao, setErroComparacao] = useState<string | null>(null);
 
@@ -53,6 +100,16 @@ export default function CompararTimes() {
     if (!timeAId || !timeBId) {
       setEstatisticasA(null);
       setEstatisticasB(null);
+      setJogosA([]);
+      setJogosB([]);
+      return;
+    }
+
+    if (timeAId === timeBId) {
+      setEstatisticasA(null);
+      setEstatisticasB(null);
+      setJogosA([]);
+      setJogosB([]);
       return;
     }
 
@@ -68,10 +125,20 @@ export default function CompararTimes() {
         if (!r.ok) throw new Error("Erro ao buscar estatísticas do Time B");
         return r.json();
       }),
+      fetch(`http://127.0.0.1:8000/times/${timeAId}/jogos`).then((r) => {
+        if (!r.ok) throw new Error("Erro ao buscar jogos do Time A");
+        return r.json();
+      }),
+      fetch(`http://127.0.0.1:8000/times/${timeBId}/jogos`).then((r) => {
+        if (!r.ok) throw new Error("Erro ao buscar jogos do Time B");
+        return r.json();
+      }),
     ])
-      .then(([dadosA, dadosB]) => {
-        setEstatisticasA(dadosA);
-        setEstatisticasB(dadosB);
+      .then(([dadosEstA, dadosEstB, dadosJogosA, dadosJogosB]) => {
+        setEstatisticasA(dadosEstA);
+        setEstatisticasB(dadosEstB);
+        setJogosA(dadosJogosA);
+        setJogosB(dadosJogosB);
         setCarregandoComparacao(false);
       })
       .catch((err) => {
@@ -157,6 +224,12 @@ export default function CompararTimes() {
           </div>
         </div>
 
+        {timeAId && timeBId && timeAId === timeBId && (
+          <p className="mt-8 text-amber-400">
+            Selecione dois times diferentes para comparar.
+          </p>
+        )}
+
         {carregandoComparacao && (
           <p className="mt-8 text-slate-400">Carregando comparação...</p>
         )}
@@ -194,6 +267,22 @@ export default function CompararTimes() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {jogosA.length > 0 && jogosB.length > 0 && timeA && timeB && (
+          <div className="mt-10">
+            <h2 className="text-lg font-semibold">Últimos Jogos</h2>
+            <div className="mt-4 grid gap-6 sm:grid-cols-2">
+              <div>
+                <p className="mb-2 text-sm font-medium text-slate-400">{timeA.nome}</p>
+                <ListaJogos jogos={jogosA} />
+              </div>
+              <div>
+                <p className="mb-2 text-sm font-medium text-slate-400">{timeB.nome}</p>
+                <ListaJogos jogos={jogosB} />
+              </div>
+            </div>
           </div>
         )}
       </div>
