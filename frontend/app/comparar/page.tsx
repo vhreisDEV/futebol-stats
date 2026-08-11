@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface Time {
   id: number;
@@ -179,7 +180,14 @@ export default function CompararTimes() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-100">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-3xl font-bold tracking-tight">
+        <Link
+          href="/"
+          className="text-sm text-slate-400 underline hover:text-white"
+        >
+          ← Voltar para a lista de times
+        </Link>
+
+        <h1 className="mt-4 text-3xl font-bold tracking-tight">
           Comparar Times
         </h1>
         <p className="mt-2 text-slate-400">

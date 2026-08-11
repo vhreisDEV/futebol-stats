@@ -50,12 +50,22 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 px-6 py-10">
       <div className="mx-auto max-w-2xl">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Football Analytics Platform
-        </h1>
-        <p className="mt-2 text-slate-400">
-          Selecione um time para ver os últimos jogos e estatísticas.
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Football Analytics Platform
+            </h1>
+            <p className="mt-2 text-slate-400">
+              Selecione um time para ver os últimos jogos e estatísticas.
+            </p>
+          </div>
+          <Link
+            href="/comparar"
+            className="rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-100 transition hover:border-slate-600 hover:bg-slate-800"
+          >
+            Comparar Times
+          </Link>
+        </div>
 
         <div className="mt-8 grid gap-3">
           {times.map((time) => (

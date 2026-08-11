@@ -100,12 +100,20 @@ export default function DetalheTime() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-100">
       <div className="mx-auto max-w-2xl">
-        <Link
-          href="/"
-          className="text-sm text-slate-400 underline hover:text-white"
-        >
-          ← Voltar para a lista de times
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="text-sm text-slate-400 underline hover:text-white"
+          >
+            ← Voltar para a lista de times
+          </Link>
+          <Link
+            href="/comparar"
+            className="text-sm text-slate-400 underline hover:text-white"
+          >
+            Comparar Times
+          </Link>
+        </div>
 
         {estatisticas && (
           <div className="mt-6 rounded-lg border border-slate-800 bg-slate-900 p-5">
