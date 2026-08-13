@@ -1,18 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import times
+from app.routers import times, projecoes
 
 app = FastAPI(title="Football Analytics Platform")
 
 app.add_middleware(
-CORSMiddleware,
-allow_origins=["http://localhost:3000"],
-allow_credentials=True,
-allow_methods=[""],
-allow_headers=[""],
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(times.router)
+app.include_router(projecoes.router)
 
 @app.get("/")
 def root():
