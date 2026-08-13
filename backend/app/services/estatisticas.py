@@ -28,6 +28,8 @@ def obter_ultimos_jogos(db, time_id, quantidade=10):
             escanteios_2t_adversario = partida.escanteios_2t_visitante
             chutes_time = partida.chutes_mandante
             chutes_adversario = partida.chutes_visitante
+            chutes_1t_time = partida.chutes_1t_mandante
+            chutes_1t_adversario = partida.chutes_1t_visitante
             chutes_gol_time = partida.chutes_gol_mandante
             chutes_gol_adversario = partida.chutes_gol_visitante
             cartoes_amarelos_time = partida.cartoes_amarelos_mandante
@@ -46,6 +48,8 @@ def obter_ultimos_jogos(db, time_id, quantidade=10):
             escanteios_2t_adversario = partida.escanteios_2t_mandante
             chutes_time = partida.chutes_visitante
             chutes_adversario = partida.chutes_mandante
+            chutes_1t_time = partida.chutes_1t_visitante
+            chutes_1t_adversario = partida.chutes_1t_mandante
             chutes_gol_time = partida.chutes_gol_visitante
             chutes_gol_adversario = partida.chutes_gol_mandante
             cartoes_amarelos_time = partida.cartoes_amarelos_visitante
@@ -75,6 +79,8 @@ def obter_ultimos_jogos(db, time_id, quantidade=10):
             "escanteios_2t_adversario": escanteios_2t_adversario,
             "chutes_time": chutes_time,
             "chutes_adversario": chutes_adversario,
+            "chutes_1t_time": chutes_1t_time,
+            "chutes_1t_adversario": chutes_1t_adversario,
             "chutes_gol_time": chutes_gol_time,
             "chutes_gol_adversario": chutes_gol_adversario,
             "cartoes_amarelos_time": cartoes_amarelos_time,

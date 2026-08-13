@@ -26,6 +26,8 @@ class JogoResponse(BaseModel):
     escanteios_2t_adversario: int
     chutes_time: int
     chutes_adversario: int
+    chutes_1t_time: int
+    chutes_1t_adversario: int
     chutes_gol_time: int
     chutes_gol_adversario: int
     cartoes_amarelos_time: int

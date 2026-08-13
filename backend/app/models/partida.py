@@ -22,6 +22,8 @@ class Partida(Base):
 
     chutes_mandante = Column(Integer, nullable=False, default=0)
     chutes_visitante = Column(Integer, nullable=False, default=0)
+    chutes_1t_mandante = Column(Integer, nullable=False, default=0)
+    chutes_1t_visitante = Column(Integer, nullable=False, default=0)
     chutes_gol_mandante = Column(Integer, nullable=False, default=0)
     chutes_gol_visitante = Column(Integer, nullable=False, default=0)
 
