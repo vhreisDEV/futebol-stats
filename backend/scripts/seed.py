@@ -6,8 +6,8 @@ from app.models.partida import Partida
 
 
 def gerar_estatisticas_time():
-    escanteios_1t = random.randint(1, 6)
-    escanteios_2t = random.randint(1, 6)
+    escanteios_1t = random.randint(0, 6)
+    escanteios_2t = random.randint(0, 6)
     escanteios_total = escanteios_1t + escanteios_2t
 
     chutes_total = random.randint(5, 20)
@@ -46,15 +46,11 @@ def seed():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
-    if db.query(Time).count() > 0:
-        print("Banco ja possui dados. Seed nao executado.")
-        db.close()
-        return
-
-    flamengo = Time(nome="Flamengo")
-    palmeiras = Time(nome="Palmeiras")
-    botafogo = Time(nome="Botafogo")
-    fluminense = Time(nome="Fluminense")
+    # IDs reais na Highlightly (Brasileirão Série A 2026, league id=61205)
+    flamengo = Time(nome="Flamengo", id_externo=108861)
+    palmeiras = Time(nome="Palmeiras", id_externo=103755)
+    botafogo = Time(nome="Botafogo", id_externo=102904)
+    fluminense = Time(nome="Fluminense", id_externo=106308)
 
     db.add_all([flamengo, palmeiras, botafogo, fluminense])
     db.commit()

@@ -5,3 +5,4 @@ class Time(Base):
     __tablename__ = "times"
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, unique=True, index=True, nullable=False)
+    id_externo = Column(Integer, unique=True, nullable=True, index=True)

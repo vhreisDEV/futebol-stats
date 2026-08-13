@@ -7,6 +7,7 @@ class Partida(Base):
     __tablename__ = "partidas"
 
     id = Column(Integer, primary_key=True, index=True)
+    id_externo = Column(Integer, unique=True, nullable=True, index=True)
     time_mandante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
     time_visitante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
     gols_mandante = Column(Integer, nullable=False)
@@ -15,15 +16,15 @@ class Partida(Base):
 
     escanteios_mandante = Column(Integer, nullable=False, default=0)
     escanteios_visitante = Column(Integer, nullable=False, default=0)
-    escanteios_1t_mandante = Column(Integer, nullable=False, default=0)
-    escanteios_1t_visitante = Column(Integer, nullable=False, default=0)
-    escanteios_2t_mandante = Column(Integer, nullable=False, default=0)
-    escanteios_2t_visitante = Column(Integer, nullable=False, default=0)
+    escanteios_1t_mandante = Column(Integer, nullable=True, default=0)
+    escanteios_1t_visitante = Column(Integer, nullable=True, default=0)
+    escanteios_2t_mandante = Column(Integer, nullable=True, default=0)
+    escanteios_2t_visitante = Column(Integer, nullable=True, default=0)
 
     chutes_mandante = Column(Integer, nullable=False, default=0)
     chutes_visitante = Column(Integer, nullable=False, default=0)
-    chutes_1t_mandante = Column(Integer, nullable=False, default=0)
-    chutes_1t_visitante = Column(Integer, nullable=False, default=0)
+    chutes_1t_mandante = Column(Integer, nullable=True, default=0)
+    chutes_1t_visitante = Column(Integer, nullable=True, default=0)
     chutes_gol_mandante = Column(Integer, nullable=False, default=0)
     chutes_gol_visitante = Column(Integer, nullable=False, default=0)
 
