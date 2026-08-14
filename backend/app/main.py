@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import times, projecoes, rodadas
+from app.routers import times, projecoes, rodadas, classificacao
 
-app = FastAPI(title="Football Analytics Platform")
+app = FastAPI(title="VEAGA")
 
 app.add_middleware(
     CORSMiddleware,
@@ -15,6 +15,7 @@ app.add_middleware(
 app.include_router(times.router)
 app.include_router(projecoes.router)
 app.include_router(rodadas.router)
+app.include_router(classificacao.router)
 
 @app.get("/")
 def root():
