@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -183,7 +183,7 @@ function ModalEstatisticas({
             ))}
 
             {linhasTabela.map((linha) => (
-              <>
+              <Fragment key={linha.chave}>
                 <div
                   key={`${linha.chave}-label`}
                   className="bg-muted/20 px-2 py-2 text-muted-foreground"
@@ -204,7 +204,7 @@ function ModalEstatisticas({
                     {jogo[linha.chave]}
                   </div>
                 ))}
-              </>
+              </Fragment>
             ))}
           </div>
         </div>
