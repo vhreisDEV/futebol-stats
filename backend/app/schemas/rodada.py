@@ -6,7 +6,9 @@ from typing import List
 class PartidaRodadaResponse(BaseModel):
     id: int
     data: date
+    time_mandante_id: int
     time_mandante: str
+    time_visitante_id: int
     time_visitante: str
     gols_mandante: int
     gols_visitante: int

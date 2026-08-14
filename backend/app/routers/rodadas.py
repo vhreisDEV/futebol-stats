@@ -47,7 +47,9 @@ def obter_rodada(numero: int, db: Session = Depends(get_db)):
             PartidaRodadaResponse(
                 id=p.id,
                 data=p.data,
+                time_mandante_id=p.time_mandante_id,
                 time_mandante=p.time_mandante.nome,
+                time_visitante_id=p.time_visitante_id,
                 time_visitante=p.time_visitante.nome,
                 gols_mandante=p.gols_mandante,
                 gols_visitante=p.gols_visitante,
