@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface Jogo {
   data: string;
@@ -189,6 +190,7 @@ export default function DetalheTime() {
   const [erro, setErro] = useState<string | null>(null);
   const [modalAberto, setModalAberto] = useState(false);
   const [nomeTime, setNomeTime] = useState("");
+  const [quantidade, setQuantidade] = useState(10);
 
   useEffect(() => {
     if (!id) return;
@@ -197,14 +199,14 @@ export default function DetalheTime() {
     setErro(null);
 
     Promise.all([
-      fetch(`http://127.0.0.1:8000/times/${id}/jogos`).then((r) => {
+      fetch(`http://127.0.0.1:8000/times/${id}/jogos?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) {
           throw new Error("Time não encontrado ou erro ao buscar os jogos");
         }
         return r.json();
       }),
 
-      fetch(`http://127.0.0.1:8000/times/${id}/estatisticas`).then((r) => {
+      fetch(`http://127.0.0.1:8000/times/${id}/estatisticas?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) {
           throw new Error("Time não encontrado ou erro ao buscar as estatísticas");
         }
@@ -224,7 +226,7 @@ export default function DetalheTime() {
         setErro(err.message);
         setCarregando(false);
       });
-  }, [id]);
+  }, [id, quantidade]);
 
   if (carregando) {
     return (
@@ -285,8 +287,23 @@ export default function DetalheTime() {
           {nomeTime}
         </h1>
 
+        <div className="mt-6 flex items-center justify-between">
+          <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Período de análise
+          </h2>
+          <ToggleGroup
+            variant="outline"
+            size="sm"
+            value={[String(quantidade)]}
+            onValueChange={(v: string[]) => v[0] && setQuantidade(Number(v[0]))}
+          >
+            <ToggleGroupItem value="5">Últimos 5</ToggleGroupItem>
+            <ToggleGroupItem value="10">Últimos 10</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
         {estatisticas && (
-          <div className="mt-6 rounded-lg border border-border bg-card p-5">
+          <div className="mt-3 rounded-lg border border-border bg-card p-5">
             <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Estatísticas
             </h2>
