@@ -19,8 +19,8 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Football Analytics Platform",
-  description: "Estatísticas e projeções do Brasileirão Série A 2026.",
+  title: "VEAGA",
+  description: "Estatísticas e projeções de futebol.",
 };
 
 export const viewport: Viewport = {

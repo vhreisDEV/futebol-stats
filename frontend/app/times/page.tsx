@@ -59,7 +59,7 @@ export default function Times() {
               Selecione um time para ver os últimos jogos e estatísticas.
             </p>
           </div>
-          <Link href="/" className={buttonVariants({ variant: "outline" })}>
+          <Link href="/brasileirao" className={buttonVariants({ variant: "outline" })}>
             ← Rodadas
           </Link>
         </div>
