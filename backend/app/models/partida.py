@@ -13,6 +13,7 @@ class Partida(Base):
     gols_mandante = Column(Integer, nullable=False)
     gols_visitante = Column(Integer, nullable=False)
     data = Column(Date, nullable=False)
+    rodada = Column(Integer, nullable=True)
 
     escanteios_mandante = Column(Integer, nullable=False, default=0)
     escanteios_visitante = Column(Integer, nullable=False, default=0)
