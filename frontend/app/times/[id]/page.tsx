@@ -42,6 +42,40 @@ interface Estatisticas {
   sequencia_recente: string[];
 }
 
+interface Time {
+  id: number;
+  nome: string;
+}
+
+interface ProjecaoResumo {
+  time_mandante: string;
+  time_visitante: string;
+  gols: { mandante: number | null; visitante: number | null };
+  resultado: {
+    vitoria_mandante: number | null;
+    empate: number | null;
+    vitoria_visitante: number | null;
+  };
+}
+
+const linhasComparacao: { label: string; chave: keyof Estatisticas }[] = [
+  { label: "Jogos", chave: "total_jogos" },
+  { label: "Vitórias", chave: "vitorias" },
+  { label: "Empates", chave: "empates" },
+  { label: "Derrotas", chave: "derrotas" },
+  { label: "Gols marcados", chave: "gols_marcados" },
+  { label: "Gols sofridos", chave: "gols_sofridos" },
+  { label: "Média de gols", chave: "media_gols" },
+];
+
+function placarArredondado(valor: number | null) {
+  return valor === null || valor === undefined ? "—" : Math.round(valor);
+}
+
+function valorOuTraco(valor: number | null) {
+  return valor === null || valor === undefined ? "—" : valor;
+}
+
 const resultadoEstilo: Record<string, string> = {
   vitoria: "border-l-4 border-green-500 bg-green-500/10",
   empate: "border-l-4 border-border bg-card",
@@ -191,6 +225,15 @@ export default function DetalheTime() {
   const [modalAberto, setModalAberto] = useState(false);
   const [nomeTime, setNomeTime] = useState("");
   const [quantidade, setQuantidade] = useState(10);
+  const [times, setTimes] = useState<Time[]>([]);
+
+  const [comparacaoTimeId, setComparacaoTimeId] = useState("");
+  const [estatisticasComparacao, setEstatisticasComparacao] = useState<Estatisticas | null>(null);
+  const [carregandoComparacao, setCarregandoComparacao] = useState(false);
+
+  const [projecaoVisitanteId, setProjecaoVisitanteId] = useState("");
+  const [projecaoRapida, setProjecaoRapida] = useState<ProjecaoResumo | null>(null);
+  const [carregandoProjecaoRapida, setCarregandoProjecaoRapida] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -218,6 +261,7 @@ export default function DetalheTime() {
       .then(([dadosJogos, dadosEstatisticas, dadosTimes]) => {
         setJogos(dadosJogos);
         setEstatisticas(dadosEstatisticas);
+        setTimes(dadosTimes);
         const timeAtual = dadosTimes.find((t: { id: number; nome: string }) => t.id === Number(id));
         setNomeTime(timeAtual ? timeAtual.nome : "Time");
         setCarregando(false);
@@ -227,6 +271,46 @@ export default function DetalheTime() {
         setCarregando(false);
       });
   }, [id, quantidade]);
+
+  useEffect(() => {
+    if (!comparacaoTimeId) {
+      setEstatisticasComparacao(null);
+      return;
+    }
+
+    setCarregandoComparacao(true);
+
+    fetch(`http://127.0.0.1:8000/times/${comparacaoTimeId}/estatisticas`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Erro ao buscar estatísticas");
+        return r.json();
+      })
+      .then((dados) => {
+        setEstatisticasComparacao(dados);
+        setCarregandoComparacao(false);
+      })
+      .catch(() => setCarregandoComparacao(false));
+  }, [comparacaoTimeId]);
+
+  useEffect(() => {
+    if (!projecaoVisitanteId || !id) {
+      setProjecaoRapida(null);
+      return;
+    }
+
+    setCarregandoProjecaoRapida(true);
+
+    fetch(`http://127.0.0.1:8000/projecoes/${id}/${projecaoVisitanteId}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Erro ao buscar projeção");
+        return r.json();
+      })
+      .then((dados) => {
+        setProjecaoRapida(dados);
+        setCarregandoProjecaoRapida(false);
+      })
+      .catch(() => setCarregandoProjecaoRapida(false));
+  }, [projecaoVisitanteId, id]);
 
   if (carregando) {
     return (
@@ -335,6 +419,137 @@ export default function DetalheTime() {
             </div>
           </div>
         )}
+
+        <div className="mt-8">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Comparar com
+            </h2>
+            <select
+              value={comparacaoTimeId}
+              onChange={(e) => setComparacaoTimeId(e.target.value)}
+              className="rounded-lg border border-input bg-card px-3 py-1.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <option value="">Selecione um time</option>
+              {times
+                .filter((t) => t.id !== Number(id))
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.nome}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          {carregandoComparacao && (
+            <div className="mt-3 grid gap-1.5">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          )}
+
+          {estatisticasComparacao && estatisticas && !carregandoComparacao && (
+            <div className="mt-3 overflow-hidden rounded-lg border border-border">
+              <div className="grid grid-cols-3 bg-card px-4 py-2 text-xs font-semibold">
+                <span className="text-foreground">{nomeTime}</span>
+                <span className="text-center text-muted-foreground">Estatística</span>
+                <span className="text-right text-foreground">
+                  {times.find((t) => t.id === Number(comparacaoTimeId))?.nome}
+                </span>
+              </div>
+              {linhasComparacao.map((linha) => {
+                const valorA = estatisticas[linha.chave];
+                const valorB = estatisticasComparacao[linha.chave];
+                const aMaior = typeof valorA === "number" && typeof valorB === "number" && valorA > valorB;
+                const bMaior = typeof valorA === "number" && typeof valorB === "number" && valorB > valorA;
+                return (
+                  <div
+                    key={linha.chave}
+                    className="grid grid-cols-3 border-t border-border px-4 py-2 text-sm"
+                  >
+                    <span
+                      className={`font-mono tabular-nums ${aMaior ? "font-semibold text-primary" : "text-muted-foreground"}`}
+                    >
+                      {Array.isArray(valorA) ? "" : valorA}
+                    </span>
+                    <span className="text-center text-muted-foreground">{linha.label}</span>
+                    <span
+                      className={`text-right font-mono tabular-nums ${bMaior ? "font-semibold text-primary" : "text-muted-foreground"}`}
+                    >
+                      {Array.isArray(valorB) ? "" : valorB}
+                    </span>
+                  </div>
+                );
+              })}
+              <div className="border-t border-border bg-card px-4 py-2 text-center">
+                <Link
+                  href={`/comparar?time=${id}&timeB=${comparacaoTimeId}`}
+                  className="text-xs text-muted-foreground underline hover:text-primary"
+                >
+                  Ver comparação completa →
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Projeção contra
+            </h2>
+            <select
+              value={projecaoVisitanteId}
+              onChange={(e) => setProjecaoVisitanteId(e.target.value)}
+              className="rounded-lg border border-input bg-card px-3 py-1.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <option value="">Selecione um time</option>
+              {times
+                .filter((t) => t.id !== Number(id))
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.nome}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          {carregandoProjecaoRapida && <Skeleton className="mt-3 h-28 w-full rounded-lg" />}
+
+          {projecaoRapida && !carregandoProjecaoRapida && (
+            <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-center">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                <span className="truncate text-right font-heading text-xs uppercase tracking-wide">
+                  {projecaoRapida.time_mandante}
+                </span>
+                <span className="font-mono text-xl font-bold tabular-nums text-primary">
+                  {placarArredondado(projecaoRapida.gols.mandante)}–{placarArredondado(projecaoRapida.gols.visitante)}
+                </span>
+                <span className="truncate text-left font-heading text-xs uppercase tracking-wide">
+                  {projecaoRapida.time_visitante}
+                </span>
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                <p className="font-mono font-semibold tabular-nums text-muted-foreground">
+                  {valorOuTraco(projecaoRapida.resultado.vitoria_mandante)}%
+                </p>
+                <p className="font-mono font-semibold tabular-nums text-muted-foreground">
+                  {valorOuTraco(projecaoRapida.resultado.empate)}%{" "}
+                  <span className="block text-[10px] font-normal">Empate</span>
+                </p>
+                <p className="font-mono font-semibold tabular-nums text-muted-foreground">
+                  {valorOuTraco(projecaoRapida.resultado.vitoria_visitante)}%
+                </p>
+              </div>
+              <Link
+                href={`/projecao?mandante=${id}&visitante=${projecaoVisitanteId}`}
+                className="mt-3 inline-block text-xs text-muted-foreground underline hover:text-primary"
+              >
+                Ver projeção completa →
+              </Link>
+            </div>
+          )}
+        </div>
 
         <div className="mt-8 flex items-center justify-between">
           <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">

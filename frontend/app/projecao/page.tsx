@@ -138,13 +138,14 @@ function TendenciaTexto({
 function ProjecaoPreJogoConteudo() {
   const searchParams = useSearchParams();
   const mandantePreSelecionado = searchParams.get("mandante") ?? "";
+  const visitantePreSelecionado = searchParams.get("visitante") ?? "";
 
   const [times, setTimes] = useState<Time[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
   const [mandanteId, setMandanteId] = useState<string>(mandantePreSelecionado);
-  const [visitanteId, setVisitanteId] = useState<string>("");
+  const [visitanteId, setVisitanteId] = useState<string>(visitantePreSelecionado);
 
   const [projecao, setProjecao] = useState<Projecao | null>(null);
   const [carregandoProjecao, setCarregandoProjecao] = useState(false);

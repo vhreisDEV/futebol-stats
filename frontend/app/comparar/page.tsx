@@ -71,13 +71,14 @@ function ListaJogos({ jogos }: { jogos: Jogo[] }) {
 function CompararTimesConteudo() {
   const searchParams = useSearchParams();
   const timePreSelecionado = searchParams.get("time") ?? "";
+  const timeBPreSelecionado = searchParams.get("timeB") ?? "";
 
   const [times, setTimes] = useState<Time[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
   const [timeAId, setTimeAId] = useState<string>(timePreSelecionado);
-  const [timeBId, setTimeBId] = useState<string>("");
+  const [timeBId, setTimeBId] = useState<string>(timeBPreSelecionado);
 
   const [estatisticasA, setEstatisticasA] = useState<Estatisticas | null>(null);
   const [estatisticasB, setEstatisticasB] = useState<Estatisticas | null>(null);
