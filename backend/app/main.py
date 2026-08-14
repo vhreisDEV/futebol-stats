@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import times, projecoes, rodadas, classificacao
+from app.routers import times, projecoes, rodadas, classificacao, partidas
 
 app = FastAPI(title="VEAGA")
 
@@ -16,6 +16,7 @@ app.include_router(times.router)
 app.include_router(projecoes.router)
 app.include_router(rodadas.router)
 app.include_router(classificacao.router)
+app.include_router(partidas.router)
 
 @app.get("/")
 def root():
