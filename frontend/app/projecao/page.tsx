@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Time {
   id: number;
@@ -195,8 +196,15 @@ function ProjecaoPreJogoConteudo() {
 
   if (carregando) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        <p>Carregando times...</p>
+      <main className="min-h-screen bg-background px-6 py-10 text-foreground">
+        <div className="mx-auto max-w-3xl">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="mt-4 h-8 w-64" />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
+        </div>
       </main>
     );
   }
@@ -261,7 +269,13 @@ function ProjecaoPreJogoConteudo() {
           <p className="mt-8 text-primary">Selecione dois times diferentes.</p>
         )}
 
-        {carregandoProjecao && <p className="mt-8 text-muted-foreground">Calculando projeção...</p>}
+        {carregandoProjecao && (
+          <div className="mt-10 grid gap-6">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+          </div>
+        )}
 
         {erroProjecao && <p className="mt-8 text-destructive">Erro: {erroProjecao}</p>}
 

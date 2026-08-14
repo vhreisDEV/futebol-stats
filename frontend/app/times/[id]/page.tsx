@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Jogo {
   data: string;
@@ -227,8 +228,18 @@ export default function DetalheTime() {
 
   if (carregando) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        <p>Carregando...</p>
+      <main className="min-h-screen bg-background px-6 py-10 text-foreground">
+        <div className="mx-auto max-w-2xl">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="mt-4 h-8 w-56" />
+          <Skeleton className="mt-6 h-32 w-full rounded-lg" />
+          <Skeleton className="mt-8 h-4 w-32" />
+          <div className="mt-4 grid gap-2">
+            <Skeleton className="h-14 w-full rounded-md" />
+            <Skeleton className="h-14 w-full rounded-md" />
+            <Skeleton className="h-14 w-full rounded-md" />
+          </div>
+        </div>
       </main>
     );
   }

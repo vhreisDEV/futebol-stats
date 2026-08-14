@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PartidaRodada {
   id: number;
@@ -25,6 +26,21 @@ interface RodadaResponse {
 interface RodadaAtualResponse {
   rodada_atual: number;
   rodada_maxima: number;
+}
+
+function TicketSkeleton() {
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="py-4">
+        <Skeleton className="mx-auto h-3 w-20" />
+        <div className="mt-3 flex items-center justify-center gap-3 sm:gap-4">
+          <Skeleton className="h-4 flex-1" />
+          <Skeleton className="h-6 w-16 shrink-0" />
+          <Skeleton className="h-4 flex-1" />
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 function formatarData(dataStr: string) {
@@ -82,18 +98,48 @@ export default function Home() {
       });
   }, [rodadaSelecionada]);
 
-  if (carregandoInicial) {
+  if (erro) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        <p>Carregando rodada...</p>
+      <main className="flex min-h-screen items-center justify-center bg-background text-destructive">
+        <p>Erro: {erro}</p>
       </main>
     );
   }
 
-  if (erro || rodadaSelecionada === null || rodadaMaxima === null) {
+  if (carregandoInicial || rodadaSelecionada === null || rodadaMaxima === null) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background text-destructive">
-        <p>Erro: {erro ?? "Não foi possível carregar a rodada"}</p>
+      <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
+        <div className="mx-auto max-w-2xl">
+          <div>
+            <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+              Football Analytics Platform
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+              Brasileirão Série A 2026, navegue pelas rodadas.
+            </p>
+          </div>
+
+          <div className="mt-10 flex items-center justify-center gap-6 sm:gap-10">
+            <Button variant="outline" size="icon" disabled aria-label="Rodada anterior">
+              <ChevronLeft />
+            </Button>
+            <div className="text-center">
+              <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                Rodada
+              </p>
+              <Skeleton className="mx-auto mt-1 h-10 w-24" />
+            </div>
+            <Button variant="outline" size="icon" disabled aria-label="Próxima rodada">
+              <ChevronRight />
+            </Button>
+          </div>
+
+          <div className="mt-8 grid gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <TicketSkeleton key={i} />
+            ))}
+          </div>
+        </div>
       </main>
     );
   }
@@ -155,9 +201,11 @@ export default function Home() {
           </Button>
         </div>
 
-        <div className="mt-8 grid gap-3">
+        <div
+          className={`mt-8 grid gap-3 transition-opacity duration-200 motion-reduce:transition-none ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
+        >
           {carregandoRodada ? (
-            <p className="py-8 text-center text-muted-foreground">Carregando jogos...</p>
+            Array.from({ length: 4 }).map((_, i) => <TicketSkeleton key={i} />)
           ) : partidas.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">
               Nenhuma partida cadastrada para essa rodada ainda.

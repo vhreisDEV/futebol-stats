@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Time {
   id: number;
@@ -156,8 +157,15 @@ function CompararTimesConteudo() {
 
   if (carregando) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        <p>Carregando times...</p>
+      <main className="min-h-screen bg-background px-6 py-10 text-foreground">
+        <div className="mx-auto max-w-3xl">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="mt-4 h-8 w-64" />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
+        </div>
       </main>
     );
   }
@@ -245,7 +253,11 @@ function CompararTimesConteudo() {
         )}
 
         {carregandoComparacao && (
-          <p className="mt-8 text-muted-foreground">Carregando comparação...</p>
+          <div className="mt-8 grid gap-2">
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
         )}
 
         {erroComparacao && (
