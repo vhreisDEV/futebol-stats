@@ -249,7 +249,7 @@ export default function DetalheTime() {
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center justify-between">
           <Link
-            href="/"
+            href="/times"
             className="text-sm text-slate-400 underline hover:text-white"
           >
             ← Voltar para a lista de times

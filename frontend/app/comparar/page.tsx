@@ -181,7 +181,7 @@ export default function CompararTimes() {
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-100">
       <div className="mx-auto max-w-3xl">
         <Link
-          href="/"
+          href="/times"
           className="text-sm text-slate-400 underline hover:text-white"
         >
           ← Voltar para a lista de times
