@@ -2,12 +2,45 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Check } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
+
+function CabecalhoCampeonato() {
+  return (
+    <div>
+      <Link
+        href="/"
+        className="font-heading text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+      >
+        VEAGA
+      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="mt-2 flex items-center gap-1.5 font-heading text-2xl font-semibold uppercase tracking-wide transition-colors hover:text-primary sm:text-3xl">
+          Brasileirão Série A 2026
+          <ChevronDown className="size-5 text-muted-foreground" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuLabel>Campeonatos</DropdownMenuLabel>
+          <DropdownMenuItem className="justify-between gap-4">
+            Brasileirão Série A 2026
+            <Check className="size-4 text-primary" />
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
 
 interface PartidaRodada {
   id: number;
@@ -113,12 +146,7 @@ export default function Brasileirao() {
     return (
       <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
         <div className="mx-auto max-w-5xl">
-          <Link href="/" className="text-sm text-muted-foreground underline hover:text-primary">
-            ← VEAGA
-          </Link>
-          <h1 className="mt-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-            Brasileirão Série A 2026
-          </h1>
+          <CabecalhoCampeonato />
 
           <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
             <div className="grid gap-1.5">
@@ -157,14 +185,7 @@ export default function Brasileirao() {
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <Link href="/" className="text-sm text-muted-foreground underline hover:text-primary">
-              ← VEAGA
-            </Link>
-            <h1 className="mt-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-              Brasileirão Série A 2026
-            </h1>
-          </div>
+          <CabecalhoCampeonato />
           <div className="flex w-full shrink-0 flex-wrap gap-2 sm:w-auto">
             <Link href="/times" className={buttonVariants({ variant: "outline" })}>
               Times
