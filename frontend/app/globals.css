@@ -84,25 +84,25 @@
 }
 
 .dark {
-  /* "Súmula" — noite de campo (pitch-night) + âmbar de placar eletrônico */
-  --background: #0b1210;
-  --foreground: #f2f5f1;
-  --card: #10241c;
-  --card-foreground: #f2f5f1;
-  --popover: #10241c;
-  --popover-foreground: #f2f5f1;
-  --primary: #ffb020;
-  --primary-foreground: #0b1210;
-  --secondary: #16281f;
-  --secondary-foreground: #f2f5f1;
-  --muted: #16281f;
-  --muted-foreground: #7c9187;
-  --accent: #1c3327;
-  --accent-foreground: #f2f5f1;
+  /* "Súmula" — preto de campeonato + dourado de troféu */
+  --background: #0a0a0a;
+  --foreground: #f2f0ea;
+  --card: #161513;
+  --card-foreground: #f2f0ea;
+  --popover: #161513;
+  --popover-foreground: #f2f0ea;
+  --primary: #d4af37;
+  --primary-foreground: #171310;
+  --secondary: #201e1a;
+  --secondary-foreground: #f2f0ea;
+  --muted: #201e1a;
+  --muted-foreground: #9c9488;
+  --accent: #2a2620;
+  --accent-foreground: #f2f0ea;
   --destructive: #ef4444;
-  --border: rgba(242, 245, 241, 0.12);
-  --input: rgba(242, 245, 241, 0.16);
-  --ring: rgba(255, 176, 32, 0.5);
+  --border: rgba(242, 240, 234, 0.12);
+  --input: rgba(242, 240, 234, 0.16);
+  --ring: rgba(212, 175, 55, 0.5);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
