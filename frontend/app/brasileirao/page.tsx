@@ -7,6 +7,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Classificacao } from "@/components/classificacao";
+import { PartidaModal } from "@/components/partida-modal";
 
 interface PartidaRodada {
   id: number;
@@ -60,6 +61,7 @@ export default function Brasileirao() {
   const [carregandoInicial, setCarregandoInicial] = useState(true);
   const [carregandoRodada, setCarregandoRodada] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/rodadas/atual")
@@ -231,7 +233,11 @@ export default function Brasileirao() {
                 </p>
               ) : (
                 partidas.map((partida) => (
-                  <Card key={partida.id} className="overflow-hidden">
+                  <Card
+                    key={partida.id}
+                    onClick={() => setPartidaAbertaId(partida.id)}
+                    className="cursor-pointer overflow-hidden transition-colors hover:border-primary/40"
+                  >
                     <CardContent className="py-4">
                       <p className="text-center text-[11px] uppercase tracking-wide text-muted-foreground">
                         {formatarData(partida.data)}
@@ -239,6 +245,7 @@ export default function Brasileirao() {
                       <div className="mt-2 flex items-center justify-center gap-3 sm:gap-4">
                         <Link
                           href={`/times/${partida.time_mandante_id}`}
+                          onClick={(e) => e.stopPropagation()}
                           className="min-w-0 flex-1 truncate text-right font-medium transition-colors hover:text-primary"
                         >
                           {partida.time_mandante}
@@ -250,6 +257,7 @@ export default function Brasileirao() {
                         </div>
                         <Link
                           href={`/times/${partida.time_visitante_id}`}
+                          onClick={(e) => e.stopPropagation()}
                           className="min-w-0 flex-1 truncate font-medium transition-colors hover:text-primary"
                         >
                           {partida.time_visitante}
@@ -263,6 +271,8 @@ export default function Brasileirao() {
           </section>
         </div>
       </div>
+
+      <PartidaModal partidaId={partidaAbertaId} onClose={() => setPartidaAbertaId(null)} />
     </main>
   );
 }

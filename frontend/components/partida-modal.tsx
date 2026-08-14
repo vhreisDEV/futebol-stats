@@ -1,0 +1,179 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface PartidaDetalhe {
+  id: number;
+  data: string;
+  rodada: number | null;
+  time_mandante_id: number;
+  time_mandante: string;
+  time_visitante_id: number;
+  time_visitante: string;
+  gols_mandante: number;
+  gols_visitante: number;
+  escanteios_mandante: number;
+  escanteios_visitante: number;
+  chutes_mandante: number;
+  chutes_visitante: number;
+  chutes_gol_mandante: number;
+  chutes_gol_visitante: number;
+  cartoes_amarelos_mandante: number;
+  cartoes_amarelos_visitante: number;
+  cartoes_vermelhos_mandante: number;
+  cartoes_vermelhos_visitante: number;
+}
+
+function formatarData(dataStr: string) {
+  const partes = dataStr.split("-");
+  if (partes.length === 3) {
+    const [ano, mes, dia] = partes;
+    return `${dia}/${mes}/${ano}`;
+  }
+  return dataStr;
+}
+
+function LinhaEstatistica({
+  label,
+  mandante,
+  visitante,
+}: {
+  label: string;
+  mandante: number;
+  visitante: number;
+}) {
+  const mandanteVence = mandante > visitante;
+  const visitanteVence = visitante > mandante;
+
+  return (
+    <div className="grid grid-cols-3 items-center gap-2 py-1.5 text-sm">
+      <span
+        className={`font-mono tabular-nums ${mandanteVence ? "font-semibold text-primary" : "text-muted-foreground"}`}
+      >
+        {mandante}
+      </span>
+      <span className="text-center text-xs text-muted-foreground">{label}</span>
+      <span
+        className={`text-right font-mono tabular-nums ${visitanteVence ? "font-semibold text-primary" : "text-muted-foreground"}`}
+      >
+        {visitante}
+      </span>
+    </div>
+  );
+}
+
+export function PartidaModal({
+  partidaId,
+  onClose,
+}: {
+  partidaId: number | null;
+  onClose: () => void;
+}) {
+  const [partida, setPartida] = useState<PartidaDetalhe | null>(null);
+  const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (partidaId === null) {
+      setPartida(null);
+      return;
+    }
+
+    setCarregando(true);
+    setErro(null);
+
+    fetch(`http://127.0.0.1:8000/partidas/${partidaId}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Erro ao buscar dados da partida");
+        return r.json();
+      })
+      .then((dados: PartidaDetalhe) => {
+        setPartida(dados);
+        setCarregando(false);
+      })
+      .catch((err) => {
+        setErro(err.message);
+        setCarregando(false);
+      });
+  }, [partidaId]);
+
+  return (
+    <Dialog open={partidaId !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="sr-only">Detalhes da partida</DialogTitle>
+          {carregando && (
+            <div className="grid gap-3 py-2">
+              <Skeleton className="mx-auto h-3 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          )}
+          {erro && <p className="text-sm text-destructive">Erro: {erro}</p>}
+          {partida && (
+            <>
+              <p className="text-center text-xs text-muted-foreground">
+                {formatarData(partida.data)}
+                {partida.rodada !== null && ` · Rodada ${partida.rodada}`}
+              </p>
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                <Link
+                  href={`/times/${partida.time_mandante_id}`}
+                  className="truncate text-right font-heading text-sm uppercase tracking-wide transition-colors hover:text-primary"
+                >
+                  {partida.time_mandante}
+                </Link>
+                <span className="shrink-0 font-mono text-2xl font-bold tabular-nums text-primary">
+                  {partida.gols_mandante}–{partida.gols_visitante}
+                </span>
+                <Link
+                  href={`/times/${partida.time_visitante_id}`}
+                  className="truncate text-left font-heading text-sm uppercase tracking-wide transition-colors hover:text-primary"
+                >
+                  {partida.time_visitante}
+                </Link>
+              </div>
+            </>
+          )}
+        </DialogHeader>
+
+        {partida && (
+          <div className="divide-y divide-border">
+            <LinhaEstatistica
+              label="Escanteios"
+              mandante={partida.escanteios_mandante}
+              visitante={partida.escanteios_visitante}
+            />
+            <LinhaEstatistica
+              label="Chutes"
+              mandante={partida.chutes_mandante}
+              visitante={partida.chutes_visitante}
+            />
+            <LinhaEstatistica
+              label="Chutes ao gol"
+              mandante={partida.chutes_gol_mandante}
+              visitante={partida.chutes_gol_visitante}
+            />
+            <LinhaEstatistica
+              label="Cartões amarelos"
+              mandante={partida.cartoes_amarelos_mandante}
+              visitante={partida.cartoes_amarelos_visitante}
+            />
+            <LinhaEstatistica
+              label="Cartões vermelhos"
+              mandante={partida.cartoes_vermelhos_mandante}
+              visitante={partida.cartoes_vermelhos_visitante}
+            />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
