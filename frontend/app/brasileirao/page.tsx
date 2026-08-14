@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Classificacao } from "@/components/classificacao";
 
 interface PartidaRodada {
   id: number;
@@ -109,7 +110,7 @@ export default function Brasileirao() {
   if (carregandoInicial || rodadaSelecionada === null || rodadaMaxima === null) {
     return (
       <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-5xl">
           <Link href="/" className="text-sm text-muted-foreground underline hover:text-primary">
             ← VEAGA
           </Link>
@@ -117,25 +118,33 @@ export default function Brasileirao() {
             Brasileirão Série A 2026
           </h1>
 
-          <div className="mt-10 flex items-center justify-center gap-6 sm:gap-10">
-            <Button variant="outline" size="icon" disabled aria-label="Rodada anterior">
-              <ChevronLeft />
-            </Button>
-            <div className="text-center">
-              <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                Rodada
-              </p>
-              <Skeleton className="mx-auto mt-1 h-10 w-24" />
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <div className="grid gap-1.5">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-8 w-full" />
+              ))}
             </div>
-            <Button variant="outline" size="icon" disabled aria-label="Próxima rodada">
-              <ChevronRight />
-            </Button>
-          </div>
-
-          <div className="mt-8 grid gap-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <TicketSkeleton key={i} />
-            ))}
+            <div>
+              <div className="flex items-center justify-center gap-6 sm:gap-10">
+                <Button variant="outline" size="icon" disabled aria-label="Rodada anterior">
+                  <ChevronLeft />
+                </Button>
+                <div className="text-center">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                    Rodada
+                  </p>
+                  <Skeleton className="mx-auto mt-1 h-10 w-24" />
+                </div>
+                <Button variant="outline" size="icon" disabled aria-label="Próxima rodada">
+                  <ChevronRight />
+                </Button>
+              </div>
+              <div className="mt-8 grid gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <TicketSkeleton key={i} />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -144,7 +153,7 @@ export default function Brasileirao() {
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-5xl">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <Link href="/" className="text-sm text-muted-foreground underline hover:text-primary">
@@ -167,77 +176,91 @@ export default function Brasileirao() {
           </div>
         </div>
 
-        <div className="mt-10 flex items-center justify-center gap-6 sm:gap-10">
-          <Button
-            variant="outline"
-            size="icon"
-            disabled={rodadaSelecionada <= 1}
-            onClick={() => setRodadaSelecionada((r) => (r ?? 1) - 1)}
-            aria-label="Rodada anterior"
-          >
-            <ChevronLeft />
-          </Button>
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
+          <section>
+            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Classificação
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">Até a rodada {rodadaSelecionada}.</p>
+            <div className="mt-4">
+              <Classificacao ateRodada={rodadaSelecionada} />
+            </div>
+          </section>
 
-          <div className="text-center">
-            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-              Rodada
-            </p>
-            <p className="font-heading text-4xl font-semibold tabular-nums sm:text-5xl">
-              {rodadaSelecionada}
-              <span className="text-lg text-muted-foreground sm:text-xl"> / {rodadaMaxima}</span>
-            </p>
-          </div>
+          <section>
+            <div className="flex items-center justify-center gap-6 sm:gap-10">
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={rodadaSelecionada <= 1}
+                onClick={() => setRodadaSelecionada((r) => (r ?? 1) - 1)}
+                aria-label="Rodada anterior"
+              >
+                <ChevronLeft />
+              </Button>
 
-          <Button
-            variant="outline"
-            size="icon"
-            disabled={rodadaSelecionada >= rodadaMaxima}
-            onClick={() => setRodadaSelecionada((r) => (r ?? 1) + 1)}
-            aria-label="Próxima rodada"
-          >
-            <ChevronRight />
-          </Button>
-        </div>
+              <div className="text-center">
+                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                  Rodada
+                </p>
+                <p className="font-heading text-4xl font-semibold tabular-nums sm:text-5xl">
+                  {rodadaSelecionada}
+                  <span className="text-lg text-muted-foreground sm:text-xl"> / {rodadaMaxima}</span>
+                </p>
+              </div>
 
-        <div
-          className={`mt-8 grid gap-3 transition-opacity duration-200 motion-reduce:transition-none ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
-        >
-          {carregandoRodada ? (
-            Array.from({ length: 4 }).map((_, i) => <TicketSkeleton key={i} />)
-          ) : partidas.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">
-              Nenhuma partida cadastrada para essa rodada ainda.
-            </p>
-          ) : (
-            partidas.map((partida) => (
-              <Card key={partida.id} className="overflow-hidden">
-                <CardContent className="py-4">
-                  <p className="text-center text-[11px] uppercase tracking-wide text-muted-foreground">
-                    {formatarData(partida.data)}
-                  </p>
-                  <div className="mt-2 flex items-center justify-center gap-3 sm:gap-4">
-                    <Link
-                      href={`/times/${partida.time_mandante_id}`}
-                      className="min-w-0 flex-1 truncate text-right font-medium transition-colors hover:text-primary"
-                    >
-                      {partida.time_mandante}
-                    </Link>
-                    <div className="flex shrink-0 items-center gap-1.5 border-x border-dashed border-border px-3 font-mono text-lg font-semibold tabular-nums text-primary sm:text-xl">
-                      <span>{partida.gols_mandante}</span>
-                      <span className="text-sm text-muted-foreground">–</span>
-                      <span>{partida.gols_visitante}</span>
-                    </div>
-                    <Link
-                      href={`/times/${partida.time_visitante_id}`}
-                      className="min-w-0 flex-1 truncate font-medium transition-colors hover:text-primary"
-                    >
-                      {partida.time_visitante}
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={rodadaSelecionada >= rodadaMaxima}
+                onClick={() => setRodadaSelecionada((r) => (r ?? 1) + 1)}
+                aria-label="Próxima rodada"
+              >
+                <ChevronRight />
+              </Button>
+            </div>
+
+            <div
+              className={`mt-8 grid gap-3 transition-opacity duration-200 motion-reduce:transition-none ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
+            >
+              {carregandoRodada ? (
+                Array.from({ length: 4 }).map((_, i) => <TicketSkeleton key={i} />)
+              ) : partidas.length === 0 ? (
+                <p className="py-8 text-center text-muted-foreground">
+                  Nenhuma partida cadastrada para essa rodada ainda.
+                </p>
+              ) : (
+                partidas.map((partida) => (
+                  <Card key={partida.id} className="overflow-hidden">
+                    <CardContent className="py-4">
+                      <p className="text-center text-[11px] uppercase tracking-wide text-muted-foreground">
+                        {formatarData(partida.data)}
+                      </p>
+                      <div className="mt-2 flex items-center justify-center gap-3 sm:gap-4">
+                        <Link
+                          href={`/times/${partida.time_mandante_id}`}
+                          className="min-w-0 flex-1 truncate text-right font-medium transition-colors hover:text-primary"
+                        >
+                          {partida.time_mandante}
+                        </Link>
+                        <div className="flex shrink-0 items-center gap-1.5 border-x border-dashed border-border px-3 font-mono text-lg font-semibold tabular-nums text-primary sm:text-xl">
+                          <span>{partida.gols_mandante}</span>
+                          <span className="text-sm text-muted-foreground">–</span>
+                          <span>{partida.gols_visitante}</span>
+                        </div>
+                        <Link
+                          href={`/times/${partida.time_visitante_id}`}
+                          className="min-w-0 flex-1 truncate font-medium transition-colors hover:text-primary"
+                        >
+                          {partida.time_visitante}
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </section>
         </div>
       </div>
     </main>
