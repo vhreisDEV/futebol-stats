@@ -30,9 +30,9 @@ interface Estatisticas {
 }
 
 const resultadoEstilo: Record<string, string> = {
-  vitoria: "border-l-4 border-green-500 bg-green-950/40",
-  empate: "border-l-4 border-slate-500 bg-slate-800/60",
-  derrota: "border-l-4 border-red-500 bg-red-950/40",
+  vitoria: "border-l-4 border-green-500 bg-green-500/10",
+  empate: "border-l-4 border-border bg-card",
+  derrota: "border-l-4 border-red-500 bg-red-500/10",
 };
 
 const resultadoLabel: Record<string, string> = {
@@ -47,16 +47,18 @@ function ListaJogos({ jogos }: { jogos: Jogo[] }) {
       {jogos.map((jogo, index) => (
         <li
           key={index}
-          className={`rounded-md px-3 py-2 text-sm ${resultadoEstilo[jogo.resultado] ?? "border-l-4 border-slate-700 bg-slate-900"}`}
+          className={`rounded-md px-3 py-2 text-sm ${resultadoEstilo[jogo.resultado] ?? "border-l-4 border-border bg-card"}`}
         >
           <div className="flex items-center justify-between">
             <span className="font-medium">
               {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
             </span>
-            <span className="text-slate-400">{jogo.data}</span>
+            <span className="text-muted-foreground">{jogo.data}</span>
           </div>
-          <div className="mt-1 flex items-center justify-between text-slate-300">
-            <span>{jogo.gols_time}x{jogo.gols_adversario}</span>
+          <div className="mt-1 flex items-center justify-between text-muted-foreground">
+            <span className="font-mono tabular-nums text-foreground">
+              {jogo.gols_time}x{jogo.gols_adversario}
+            </span>
             <span>{resultadoLabel[jogo.resultado] ?? jogo.resultado}</span>
           </div>
         </li>
@@ -154,7 +156,7 @@ function CompararTimesConteudo() {
 
   if (carregando) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
         <p>Carregando times...</p>
       </main>
     );
@@ -162,7 +164,7 @@ function CompararTimesConteudo() {
 
   if (erro) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-red-400">
+      <main className="flex min-h-screen items-center justify-center bg-background text-destructive">
         <p>Erro: {erro}</p>
       </main>
     );
@@ -182,31 +184,31 @@ function CompararTimesConteudo() {
   ];
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-100">
+    <main className="min-h-screen bg-background px-6 py-10 text-foreground">
       <div className="mx-auto max-w-3xl">
         <Link
           href="/times"
-          className="text-sm text-slate-400 underline hover:text-white"
+          className="text-sm text-muted-foreground underline hover:text-primary"
         >
           ← Voltar para a lista de times
         </Link>
 
-        <h1 className="mt-4 text-3xl font-bold tracking-tight">
+        <h1 className="mt-4 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
           Comparar Times
         </h1>
-        <p className="mt-2 text-slate-400">
+        <p className="mt-2 text-muted-foreground">
           Selecione dois times para comparar suas estatísticas.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm text-slate-400">
+            <label className="mb-2 block text-sm text-muted-foreground">
               Time A
             </label>
             <select
               value={timeAId}
               onChange={(e) => setTimeAId(e.target.value)}
-              className="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-slate-100"
+              className="w-full rounded-lg border border-input bg-card px-4 py-2 text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <option value="">Selecione um time</option>
               {times.map((time) => (
@@ -218,13 +220,13 @@ function CompararTimesConteudo() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-slate-400">
+            <label className="mb-2 block text-sm text-muted-foreground">
               Time B
             </label>
             <select
               value={timeBId}
               onChange={(e) => setTimeBId(e.target.value)}
-              className="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-slate-100"
+              className="w-full rounded-lg border border-input bg-card px-4 py-2 text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <option value="">Selecione um time</option>
               {times.map((time) => (
@@ -237,25 +239,25 @@ function CompararTimesConteudo() {
         </div>
 
         {timeAId && timeBId && timeAId === timeBId && (
-          <p className="mt-8 text-amber-400">
+          <p className="mt-8 text-primary">
             Selecione dois times diferentes para comparar.
           </p>
         )}
 
         {carregandoComparacao && (
-          <p className="mt-8 text-slate-400">Carregando comparação...</p>
+          <p className="mt-8 text-muted-foreground">Carregando comparação...</p>
         )}
 
         {erroComparacao && (
-          <p className="mt-8 text-red-400">Erro: {erroComparacao}</p>
+          <p className="mt-8 text-destructive">Erro: {erroComparacao}</p>
         )}
 
         {estatisticasA && estatisticasB && timeA && timeB && (
-          <div className="mt-8 overflow-hidden rounded-lg border border-slate-800">
-            <div className="grid grid-cols-3 bg-slate-900 px-4 py-3 text-sm font-semibold">
-              <span className="text-white">{timeA.nome}</span>
-              <span className="text-center text-slate-500">Estatística</span>
-              <span className="text-right text-white">{timeB.nome}</span>
+          <div className="mt-8 overflow-hidden rounded-lg border border-border">
+            <div className="grid grid-cols-3 bg-card px-4 py-3 text-sm font-semibold">
+              <span className="text-foreground">{timeA.nome}</span>
+              <span className="text-center text-muted-foreground">Estatística</span>
+              <span className="text-right text-foreground">{timeB.nome}</span>
             </div>
 
             {linhas.map((linha) => {
@@ -267,13 +269,17 @@ function CompararTimesConteudo() {
               return (
                 <div
                   key={linha.chave}
-                  className="grid grid-cols-3 border-t border-slate-800 px-4 py-3 text-sm"
+                  className="grid grid-cols-3 border-t border-border px-4 py-3 text-sm"
                 >
-                  <span className={aMaior ? "font-semibold text-green-400" : "text-slate-300"}>
+                  <span
+                    className={`font-mono tabular-nums ${aMaior ? "font-semibold text-primary" : "text-muted-foreground"}`}
+                  >
                     {Array.isArray(valorA) ? "" : valorA}
                   </span>
-                  <span className="text-center text-slate-500">{linha.label}</span>
-                  <span className={`text-right ${bMaior ? "font-semibold text-green-400" : "text-slate-300"}`}>
+                  <span className="text-center text-muted-foreground">{linha.label}</span>
+                  <span
+                    className={`text-right font-mono tabular-nums ${bMaior ? "font-semibold text-primary" : "text-muted-foreground"}`}
+                  >
                     {Array.isArray(valorB) ? "" : valorB}
                   </span>
                 </div>
@@ -284,14 +290,16 @@ function CompararTimesConteudo() {
 
         {jogosA.length > 0 && jogosB.length > 0 && timeA && timeB && (
           <div className="mt-10">
-            <h2 className="text-lg font-semibold">Últimos Jogos</h2>
+            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Últimos Jogos
+            </h2>
             <div className="mt-4 grid gap-6 sm:grid-cols-2">
               <div>
-                <p className="mb-2 text-sm font-medium text-slate-400">{timeA.nome}</p>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">{timeA.nome}</p>
                 <ListaJogos jogos={jogosA} />
               </div>
               <div>
-                <p className="mb-2 text-sm font-medium text-slate-400">{timeB.nome}</p>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">{timeB.nome}</p>
                 <ListaJogos jogos={jogosB} />
               </div>
             </div>
@@ -306,7 +314,7 @@ export default function CompararTimes() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+        <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
           <p>Carregando...</p>
         </main>
       }

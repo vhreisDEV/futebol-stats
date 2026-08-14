@@ -103,7 +103,7 @@ export default function Home() {
       <div className="mx-auto max-w-2xl">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
               Football Analytics Platform
             </h1>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
@@ -123,7 +123,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="mt-8 flex items-center justify-between gap-4">
+        <div className="mt-10 flex items-center justify-center gap-6 sm:gap-10">
           <Button
             variant="outline"
             size="icon"
@@ -134,10 +134,15 @@ export default function Home() {
             <ChevronLeft />
           </Button>
 
-          <h2 className="text-lg font-semibold sm:text-xl">
-            Rodada {rodadaSelecionada}
-            <span className="text-muted-foreground"> / {rodadaMaxima}</span>
-          </h2>
+          <div className="text-center">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              Rodada
+            </p>
+            <p className="font-heading text-4xl font-semibold tabular-nums sm:text-5xl">
+              {rodadaSelecionada}
+              <span className="text-lg text-muted-foreground sm:text-xl"> / {rodadaMaxima}</span>
+            </p>
+          </div>
 
           <Button
             variant="outline"
@@ -150,7 +155,7 @@ export default function Home() {
           </Button>
         </div>
 
-        <div className="mt-6 grid gap-3">
+        <div className="mt-8 grid gap-3">
           {carregandoRodada ? (
             <p className="py-8 text-center text-muted-foreground">Carregando jogos...</p>
           ) : partidas.length === 0 ? (
@@ -159,22 +164,26 @@ export default function Home() {
             </p>
           ) : (
             partidas.map((partida) => (
-              <Card key={partida.id}>
-                <CardContent className="flex flex-col gap-2">
-                  <p className="text-xs text-muted-foreground">{formatarData(partida.data)}</p>
-                  <div className="flex items-center justify-between gap-3">
+              <Card key={partida.id} className="overflow-hidden">
+                <CardContent className="py-4">
+                  <p className="text-center text-[11px] uppercase tracking-wide text-muted-foreground">
+                    {formatarData(partida.data)}
+                  </p>
+                  <div className="mt-2 flex items-center justify-center gap-3 sm:gap-4">
                     <Link
                       href={`/times/${partida.time_mandante_id}`}
-                      className="min-w-0 flex-1 truncate font-medium hover:underline"
+                      className="min-w-0 flex-1 truncate text-right font-medium transition-colors hover:text-primary"
                     >
                       {partida.time_mandante}
                     </Link>
-                    <span className="shrink-0 font-semibold tabular-nums">
-                      {partida.gols_mandante} x {partida.gols_visitante}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-1.5 border-x border-dashed border-border px-3 font-mono text-lg font-semibold tabular-nums text-primary sm:text-xl">
+                      <span>{partida.gols_mandante}</span>
+                      <span className="text-sm text-muted-foreground">–</span>
+                      <span>{partida.gols_visitante}</span>
+                    </div>
                     <Link
                       href={`/times/${partida.time_visitante_id}`}
-                      className="min-w-0 flex-1 truncate text-right font-medium hover:underline"
+                      className="min-w-0 flex-1 truncate font-medium transition-colors hover:text-primary"
                     >
                       {partida.time_visitante}
                     </Link>

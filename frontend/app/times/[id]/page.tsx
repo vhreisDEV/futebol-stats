@@ -41,9 +41,9 @@ interface Estatisticas {
 }
 
 const resultadoEstilo: Record<string, string> = {
-  vitoria: "border-l-4 border-green-500 bg-green-950/40",
-  empate: "border-l-4 border-slate-500 bg-slate-800/60",
-  derrota: "border-l-4 border-red-500 bg-red-950/40",
+  vitoria: "border-l-4 border-green-500 bg-green-500/10",
+  empate: "border-l-4 border-border bg-card",
+  derrota: "border-l-4 border-red-500 bg-red-500/10",
 };
 
 const resultadoLabel: Record<string, string> = {
@@ -54,7 +54,7 @@ const resultadoLabel: Record<string, string> = {
 
 const resultadoCorQuadrado: Record<string, string> = {
   vitoria: "bg-green-600 text-white",
-  empate: "bg-slate-600 text-white",
+  empate: "bg-secondary text-secondary-foreground",
   derrota: "bg-red-600 text-white",
 };
 
@@ -106,16 +106,16 @@ function ModalEstatisticas({
       onClick={onFechar}
     >
       <div
-        className="max-h-[85vh] w-full max-w-5xl overflow-auto rounded-lg border border-slate-800 bg-slate-950 p-5"
+        className="max-h-[85vh] w-full max-w-5xl overflow-auto rounded-lg border border-border bg-popover p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">
+          <h2 className="font-heading text-base font-semibold uppercase tracking-wide text-foreground">
             {nomeTime} — Estatísticas Detalhadas
           </h2>
           <button
             onClick={onFechar}
-            className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-300 hover:bg-slate-800"
+            className="rounded-md border border-border px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             Fechar
           </button>
@@ -126,19 +126,19 @@ function ModalEstatisticas({
             className="grid gap-px text-xs"
             style={{ gridTemplateColumns: `160px 100px repeat(${jogos.length}, 100px)` }}
           >
-            <div className="bg-slate-900 px-2 py-2" />
-            <div className="border-l-2 border-purple-500 bg-indigo-950/60 px-2 py-2 text-center font-semibold text-purple-300">
+            <div className="bg-muted/40 px-2 py-2" />
+            <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-semibold text-primary">
               Média
             </div>
             {jogos.map((jogo, index) => (
-              <div key={index} className="bg-slate-900 px-2 py-2 text-center">
-                <p className="text-[11px] text-slate-400">{formatarData(jogo.data)}</p>
-                <p className="mt-0.5 font-medium text-white">
+              <div key={index} className="bg-muted/40 px-2 py-2 text-center">
+                <p className="text-[11px] text-muted-foreground">{formatarData(jogo.data)}</p>
+                <p className="mt-0.5 font-medium text-foreground">
                   {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
                 </p>
                 <span
-                  className={`mt-1 inline-flex h-7 w-14 items-center justify-center rounded text-[11px] font-semibold ${
-                    resultadoCorQuadrado[jogo.resultado] ?? "bg-slate-700 text-white"
+                  className={`mt-1 inline-flex h-7 w-14 items-center justify-center rounded font-mono text-[11px] font-semibold tabular-nums ${
+                    resultadoCorQuadrado[jogo.resultado] ?? "bg-secondary text-secondary-foreground"
                   }`}
                 >
                   {jogo.gols_time}x{jogo.gols_adversario}
@@ -150,20 +150,20 @@ function ModalEstatisticas({
               <>
                 <div
                   key={`${linha.chave}-label`}
-                  className="bg-slate-900/60 px-2 py-2 text-slate-300"
+                  className="bg-muted/20 px-2 py-2 text-muted-foreground"
                 >
                   {linha.label}
                 </div>
                 <div
                   key={`${linha.chave}-media`}
-                  className="border-l-2 border-purple-500 bg-indigo-950/60 px-2 py-2 text-center font-semibold text-purple-300"
+                  className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-mono font-semibold tabular-nums text-primary"
                 >
                   {media(jogos, linha.chave)}
                 </div>
                 {jogos.map((jogo, index) => (
                   <div
                     key={`${linha.chave}-${index}`}
-                    className="bg-slate-900/60 px-2 py-2 text-center text-slate-100"
+                    className="bg-muted/20 px-2 py-2 text-center font-mono tabular-nums text-foreground"
                   >
                     {jogo[linha.chave]}
                   </div>
@@ -227,7 +227,7 @@ export default function DetalheTime() {
 
   if (carregando) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
         <p>Carregando...</p>
       </main>
     );
@@ -235,9 +235,9 @@ export default function DetalheTime() {
 
   if (erro) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950 text-red-400">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background text-destructive">
         <p>Erro: {erro}</p>
-        <Link href="/" className="text-slate-300 underline hover:text-white">
+        <Link href="/times" className="text-muted-foreground underline hover:text-primary">
           Voltar para a lista de times
         </Link>
       </main>
@@ -245,66 +245,77 @@ export default function DetalheTime() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-100">
+    <main className="min-h-screen bg-background px-6 py-10 text-foreground">
       <div className="mx-auto max-w-2xl">
         <div className="flex items-center justify-between">
           <Link
             href="/times"
-            className="text-sm text-slate-400 underline hover:text-white"
+            className="text-sm text-muted-foreground underline hover:text-primary"
           >
             ← Voltar para a lista de times
           </Link>
           <div className="flex gap-4">
             <Link
               href={`/comparar?time=${id}`}
-              className="text-sm text-slate-400 underline hover:text-white"
+              className="text-sm text-muted-foreground underline hover:text-primary"
             >
               Comparar
             </Link>
             <Link
               href={`/projecao?mandante=${id}`}
-              className="text-sm text-slate-400 underline hover:text-white"
+              className="text-sm text-muted-foreground underline hover:text-primary"
             >
               Projeção
             </Link>
           </div>
         </div>
 
+        <h1 className="mt-4 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+          {nomeTime}
+        </h1>
+
         {estatisticas && (
-          <div className="mt-6 rounded-lg border border-slate-800 bg-slate-900 p-5">
-            <h2 className="text-lg font-semibold">Estatísticas</h2>
+          <div className="mt-6 rounded-lg border border-border bg-card p-5">
+            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Estatísticas
+            </h2>
             <div className="mt-4 grid grid-cols-2 gap-y-2 text-sm sm:grid-cols-3">
-              <p className="text-slate-300">
-                Jogos: <span className="font-medium text-white">{estatisticas.total_jogos}</span>
+              <p className="text-muted-foreground">
+                Jogos: <span className="font-medium text-foreground">{estatisticas.total_jogos}</span>
               </p>
               <p className="text-green-400">
                 Vitórias: <span className="font-medium">{estatisticas.vitorias}</span>
               </p>
-              <p className="text-slate-300">
-                Empates: <span className="font-medium">{estatisticas.empates}</span>
+              <p className="text-muted-foreground">
+                Empates: <span className="font-medium text-foreground">{estatisticas.empates}</span>
               </p>
               <p className="text-red-400">
                 Derrotas: <span className="font-medium">{estatisticas.derrotas}</span>
               </p>
-              <p className="text-slate-300">
-                Gols marcados: <span className="font-medium text-white">{estatisticas.gols_marcados}</span>
+              <p className="text-muted-foreground">
+                Gols marcados: <span className="font-medium text-foreground">{estatisticas.gols_marcados}</span>
               </p>
-              <p className="text-slate-300">
-                Gols sofridos: <span className="font-medium text-white">{estatisticas.gols_sofridos}</span>
+              <p className="text-muted-foreground">
+                Gols sofridos: <span className="font-medium text-foreground">{estatisticas.gols_sofridos}</span>
               </p>
-              <p className="text-slate-300 col-span-2 sm:col-span-3">
-                Média de gols por jogo: <span className="font-medium text-white">{estatisticas.media_gols}</span>
+              <p className="text-muted-foreground col-span-2 sm:col-span-3">
+                Média de gols por jogo:{" "}
+                <span className="font-mono font-medium tabular-nums text-primary">
+                  {estatisticas.media_gols}
+                </span>
               </p>
             </div>
           </div>
         )}
 
         <div className="mt-8 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Últimos Jogos</h2>
+          <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Últimos Jogos
+          </h2>
           {jogos.length > 0 && (
             <button
               onClick={() => setModalAberto(true)}
-              className="rounded-md border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-800"
+              className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
             >
               Ver estatísticas detalhadas
             </button>
@@ -316,16 +327,18 @@ export default function DetalheTime() {
             <li
               key={index}
               onClick={() => setModalAberto(true)}
-              className={`cursor-pointer rounded-md px-4 py-3 text-sm transition hover:opacity-80 ${resultadoEstilo[jogo.resultado] ?? "border-l-4 border-slate-700 bg-slate-900"}`}
+              className={`cursor-pointer rounded-md px-4 py-3 text-sm transition hover:opacity-80 ${resultadoEstilo[jogo.resultado] ?? "border-l-4 border-border bg-card"}`}
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium">
                   {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
                 </span>
-                <span className="text-slate-400">{jogo.data}</span>
+                <span className="text-muted-foreground">{formatarData(jogo.data)}</span>
               </div>
-              <div className="mt-1 flex items-center justify-between text-slate-300">
-                <span>{jogo.gols_time}x{jogo.gols_adversario}</span>
+              <div className="mt-1 flex items-center justify-between text-muted-foreground">
+                <span className="font-mono tabular-nums text-foreground">
+                  {jogo.gols_time}x{jogo.gols_adversario}
+                </span>
                 <span>{resultadoLabel[jogo.resultado] ?? jogo.resultado}</span>
               </div>
             </li>

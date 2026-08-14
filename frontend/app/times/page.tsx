@@ -52,7 +52,9 @@ export default function Times() {
       <div className="mx-auto max-w-2xl">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Times</h1>
+            <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+              Times
+            </h1>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
               Selecione um time para ver os últimos jogos e estatísticas.
             </p>
@@ -64,9 +66,11 @@ export default function Times() {
 
         <div className="mt-8 grid gap-3">
           {times.map((time) => (
-            <Link key={time.id} href={`/times/${time.id}`}>
-              <Card className="transition hover:bg-muted/50">
-                <CardContent className="font-medium">{time.nome}</CardContent>
+            <Link key={time.id} href={`/times/${time.id}`} className="group">
+              <Card className="transition-colors hover:bg-muted/50">
+                <CardContent className="font-medium transition-colors group-hover:text-primary">
+                  {time.nome}
+                </CardContent>
               </Card>
             </Link>
           ))}
