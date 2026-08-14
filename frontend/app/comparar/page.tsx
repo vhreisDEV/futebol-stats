@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface Time {
   id: number;
@@ -64,12 +65,15 @@ function ListaJogos({ jogos }: { jogos: Jogo[] }) {
   );
 }
 
-export default function CompararTimes() {
+function CompararTimesConteudo() {
+  const searchParams = useSearchParams();
+  const timePreSelecionado = searchParams.get("time") ?? "";
+
   const [times, setTimes] = useState<Time[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
-  const [timeAId, setTimeAId] = useState<string>("");
+  const [timeAId, setTimeAId] = useState<string>(timePreSelecionado);
   const [timeBId, setTimeBId] = useState<string>("");
 
   const [estatisticasA, setEstatisticasA] = useState<Estatisticas | null>(null);
@@ -295,5 +299,19 @@ export default function CompararTimes() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function CompararTimes() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+          <p>Carregando...</p>
+        </main>
+      }
+    >
+      <CompararTimesConteudo />
+    </Suspense>
   );
 }

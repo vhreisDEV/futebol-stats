@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface Time {
   id: number;
@@ -118,12 +119,15 @@ function TendenciaTexto({
   );
 }
 
-export default function ProjecaoPreJogo() {
+function ProjecaoPreJogoConteudo() {
+  const searchParams = useSearchParams();
+  const mandantePreSelecionado = searchParams.get("mandante") ?? "";
+
   const [times, setTimes] = useState<Time[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
-  const [mandanteId, setMandanteId] = useState<string>("");
+  const [mandanteId, setMandanteId] = useState<string>(mandantePreSelecionado);
   const [visitanteId, setVisitanteId] = useState<string>("");
 
   const [projecao, setProjecao] = useState<Projecao | null>(null);
@@ -193,7 +197,7 @@ export default function ProjecaoPreJogo() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-100">
       <div className="mx-auto max-w-3xl">
-        <Link href="/" className="text-sm text-slate-400 underline hover:text-white">
+        <Link href="/times" className="text-sm text-slate-400 underline hover:text-white">
           ← Voltar para a lista de times
         </Link>
 
@@ -342,5 +346,19 @@ export default function ProjecaoPreJogo() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function ProjecaoPreJogo() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+          <p>Carregando...</p>
+        </main>
+      }
+    >
+      <ProjecaoPreJogoConteudo />
+    </Suspense>
   );
 }

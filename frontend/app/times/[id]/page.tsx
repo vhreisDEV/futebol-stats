@@ -254,12 +254,20 @@ export default function DetalheTime() {
           >
             ← Voltar para a lista de times
           </Link>
-          <Link
-            href="/comparar"
-            className="text-sm text-slate-400 underline hover:text-white"
-          >
-            Comparar Times
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href={`/comparar?time=${id}`}
+              className="text-sm text-slate-400 underline hover:text-white"
+            >
+              Comparar
+            </Link>
+            <Link
+              href={`/projecao?mandante=${id}`}
+              className="text-sm text-slate-400 underline hover:text-white"
+            >
+              Projeção
+            </Link>
+          </div>
         </div>
 
         {estatisticas && (
