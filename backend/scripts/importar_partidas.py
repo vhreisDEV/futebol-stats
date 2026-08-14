@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import date, timedelta
 import requests
 from dotenv import load_dotenv
@@ -55,6 +56,14 @@ def parse_placar(score_str):
     # formato esperado: "2 - 0" (mandante - visitante)
     partes = score_str.split(" - ")
     return int(partes[0]), int(partes[1])
+
+
+def parse_rodada(round_str):
+    # formato esperado: "Regular Season - 22"
+    if not round_str:
+        return None
+    match = re.search(r"(\d+)\s*$", round_str)
+    return int(match.group(1)) if match else None
 
 
 def extrair_stat(lista_stats, nome_procurado):
@@ -133,6 +142,7 @@ def importar():
                     continue
 
                 gols_mandante, gols_visitante = parse_placar(detalhe["state"]["score"]["current"])
+                rodada = parse_rodada(detalhe.get("round"))
 
                 stats = buscar_estatisticas(id_externo)
                 if not stats:
@@ -156,6 +166,7 @@ def importar():
                     gols_mandante=gols_mandante,
                     gols_visitante=gols_visitante,
                     data=dia,
+                    rodada=rodada,
                     escanteios_mandante=m["escanteios"],
                     escanteios_visitante=v["escanteios"],
                     escanteios_1t_mandante=None,
