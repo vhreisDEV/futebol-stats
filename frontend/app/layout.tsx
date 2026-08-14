@@ -19,8 +19,8 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "VEAGA",
-  description: "Estatísticas e projeções de futebol.",
+  title: "VEAGA — Football Data & Analytics",
+  description: "Football Data & Analytics.",
 };
 
 export const viewport: Viewport = {

@@ -8,8 +8,8 @@ export default function Home() {
         <h1 className="font-heading text-4xl font-semibold uppercase tracking-wide sm:text-5xl">
           VEAGA
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-          Estatísticas e projeções de futebol.
+        <p className="mt-2 text-xs uppercase tracking-[0.25em] text-primary sm:text-sm">
+          Football Data &amp; Analytics
         </p>
 
         <Link href="/brasileirao" className="mt-10 block">
