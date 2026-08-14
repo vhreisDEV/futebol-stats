@@ -65,13 +65,13 @@ interface RodadaAtualResponse {
 
 function TicketSkeleton() {
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="py-1.5">
-        <Skeleton className="mx-auto h-2.5 w-16" />
-        <div className="mt-1.5 flex items-center justify-center gap-2 sm:gap-3">
-          <Skeleton className="h-3.5 flex-1" />
-          <Skeleton className="h-5 w-12 shrink-0" />
-          <Skeleton className="h-3.5 flex-1" />
+    <Card size="sm" className="overflow-hidden ring-0">
+      <CardContent className="py-0.5">
+        <Skeleton className="mx-auto h-2 w-14" />
+        <div className="mt-1 flex items-center justify-center gap-2">
+          <Skeleton className="h-3 flex-1" />
+          <Skeleton className="h-4 w-10 shrink-0" />
+          <Skeleton className="h-3 flex-1" />
         </div>
       </CardContent>
     </Card>
@@ -266,7 +266,7 @@ export default function Brasileirao() {
             </div>
 
             <div
-              className={`mt-4 grid gap-1.5 transition-opacity duration-200 motion-reduce:transition-none ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
+              className={`mt-3 grid gap-1 transition-opacity duration-200 motion-reduce:transition-none ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
             >
               {carregandoRodada ? (
                 Array.from({ length: 4 }).map((_, i) => <TicketSkeleton key={i} />)
@@ -278,14 +278,15 @@ export default function Brasileirao() {
                 partidas.map((partida) => (
                   <Card
                     key={partida.id}
+                    size="sm"
                     onClick={() => setPartidaAbertaId(partida.id)}
-                    className="cursor-pointer overflow-hidden transition-colors hover:border-primary/40"
+                    className="cursor-pointer overflow-hidden ring-0 transition-colors hover:bg-muted/50"
                   >
-                    <CardContent className="py-1.5">
-                      <p className="text-center text-[10px] uppercase tracking-wide text-muted-foreground">
+                    <CardContent className="py-0.5">
+                      <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground">
                         {formatarData(partida.data)}
                       </p>
-                      <div className="mt-0.5 flex items-center justify-center gap-2 sm:gap-3">
+                      <div className="mt-0.5 flex items-center justify-center gap-2">
                         <Link
                           href={`/times/${partida.time_mandante_id}`}
                           onClick={(e) => e.stopPropagation()}
@@ -293,7 +294,7 @@ export default function Brasileirao() {
                         >
                           {partida.time_mandante}
                         </Link>
-                        <div className="flex shrink-0 items-center gap-1 border-x border-dashed border-border px-2 font-mono text-sm font-semibold tabular-nums text-primary">
+                        <div className="flex shrink-0 items-center gap-1 font-mono text-sm font-semibold tabular-nums text-primary">
                           <span>{partida.gols_mandante}</span>
                           <span className="text-xs text-muted-foreground">–</span>
                           <span>{partida.gols_visitante}</span>
