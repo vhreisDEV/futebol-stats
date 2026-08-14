@@ -18,7 +18,7 @@ def get_db():
 
 @router.get("/", response_model=List[TimeBase])
 def listar_times(db: Session = Depends(get_db)):
-    return db.query(Time).all()
+    return db.query(Time).order_by(Time.nome).all()
 
 @router.get("/{time_id}/jogos", response_model=List[JogoResponse])
 def listar_ultimos_jogos(time_id: int, quantidade: int = 10, db: Session = Depends(get_db)):
