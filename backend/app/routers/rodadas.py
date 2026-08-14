@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
 from app.models.partida import Partida
-from app.schemas.rodada import RodadaResponse, PartidaRodadaResponse
+from app.schemas.rodada import RodadaResponse, PartidaRodadaResponse, RodadaAtualResponse
 
 router = APIRouter(prefix="/rodadas", tags=["Rodadas"])
+
+TOTAL_RODADAS_BRASILEIRAO = 38
 
 
 def get_db():
@@ -14,6 +17,16 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@router.get("/atual", response_model=RodadaAtualResponse)
+def obter_rodada_atual(db: Session = Depends(get_db)):
+    maior_rodada = db.query(func.max(Partida.rodada)).scalar()
+
+    if maior_rodada is None:
+        raise HTTPException(status_code=404, detail="Nenhuma partida com rodada cadastrada")
+
+    return RodadaAtualResponse(rodada_atual=maior_rodada, rodada_maxima=TOTAL_RODADAS_BRASILEIRAO)
 
 
 @router.get("/{numero}", response_model=RodadaResponse)

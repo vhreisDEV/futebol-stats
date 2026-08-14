@@ -15,3 +15,8 @@ class PartidaRodadaResponse(BaseModel):
 class RodadaResponse(BaseModel):
     rodada: int
     partidas: List[PartidaRodadaResponse]
+
+
+class RodadaAtualResponse(BaseModel):
+    rodada_atual: int
+    rodada_maxima: int
