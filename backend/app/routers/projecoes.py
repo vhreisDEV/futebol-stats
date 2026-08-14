@@ -76,6 +76,7 @@ def obter_projecao(
             mandante=escanteios.get("escanteios_esperados_mandante"),
             visitante=escanteios.get("escanteios_esperados_visitante"),
             total=escanteios.get("total_esperado"),
+            linha_referencia=escanteios.get("linha_referencia"),
             tendencia=escanteios.get("tendencia"),
         ),
         cartoes=CartoesEsperados(
@@ -84,6 +85,8 @@ def obter_projecao(
             vermelhos_mandante=cartoes.get("cartoes_vermelhos_esperados_mandante"),
             vermelhos_visitante=cartoes.get("cartoes_vermelhos_esperados_visitante"),
             total=cartoes.get("total_cartoes_esperado"),
+            linha_referencia=cartoes.get("linha_referencia"),
+            tendencia=cartoes.get("tendencia"),
         ),
         chutes=ChutesEsperados(
             totais_mandante=chutes.get("chutes_totais_esperados_mandante"),

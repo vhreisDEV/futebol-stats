@@ -1,13 +1,19 @@
 from app.services.medias import _buscar_jogos_anteriores, _extrair_perspectiva
 
 JANELA_PADRAO = 10
+SUAVIZACAO_K = 1  # técnica de Laplace: evita que qualquer resultado fique em 0% ou 100% absoluto
 
 
 def calcular_forma(db, time_id, data_referencia, janela, mando=None):
     """
-    Calcula a forma (taxas de vitória/empate/derrota) de um time nos últimos
-    `janela` jogos anteriores a `data_referencia`, opcionalmente filtrando
-    por mando de campo. Reaproveita a mesma busca de jogos da Issue 6.
+    Calcula a forma (contagem e taxas de vitória/empate/derrota) de um time
+    nos últimos `janela` jogos anteriores a `data_referencia`, opcionalmente
+    filtrando por mando de campo.
+
+    As taxas (taxa_vitoria/taxa_empate/taxa_derrota) usam suavização de
+    Laplace: mesmo que um time tenha 0 vitórias na amostra, a taxa não sai
+    como exatamente 0% — reflete que a amostra é pequena, não uma
+    impossibilidade estatística.
     """
     jogos = _buscar_jogos_anteriores(db, time_id, data_referencia, janela, mando)
     n = len(jogos)
@@ -33,14 +39,16 @@ def calcular_forma(db, time_id, data_referencia, janela, mando=None):
         else:
             derrotas += 1
 
+    denominador_suavizado = n + (3 * SUAVIZACAO_K)
+
     return {
         "jogos_considerados": n,
         "vitorias": vitorias,
         "empates": empates,
         "derrotas": derrotas,
-        "taxa_vitoria": round(vitorias / n, 4),
-        "taxa_empate": round(empates / n, 4),
-        "taxa_derrota": round(derrotas / n, 4),
+        "taxa_vitoria": round((vitorias + SUAVIZACAO_K) / denominador_suavizado, 4),
+        "taxa_empate": round((empates + SUAVIZACAO_K) / denominador_suavizado, 4),
+        "taxa_derrota": round((derrotas + SUAVIZACAO_K) / denominador_suavizado, 4),
     }
 
 
@@ -59,8 +67,8 @@ def _forma_com_fallback(db, time_id, data_referencia, mando):
 def calcular_probabilidade_resultado(db, time_mandante_id, time_visitante_id, data_referencia):
     """
     Calcula a probabilidade de vitória do mandante, empate e vitória do
-    visitante, com base na frequência histórica de cada time condicionada
-    ao mando de campo (mandante jogando em casa, visitante jogando fora).
+    visitante, com base na frequência histórica (já suavizada) de cada time
+    condicionada ao mando de campo.
 
     As três probabilidades são normalizadas para somar 100%.
     """
@@ -83,13 +91,9 @@ def calcular_probabilidade_resultado(db, time_mandante_id, time_visitante_id, da
 
     soma = p_vitoria_mandante_bruta + p_vitoria_visitante_bruta + p_empate_bruta
 
-    if soma == 0:
-        # caso extremo: nenhuma vitória nem empate nas amostras (só derrotas dos dois lados)
-        p_vitoria_mandante = p_empate = p_vitoria_visitante = round(100 / 3, 2)
-    else:
-        p_vitoria_mandante = round((p_vitoria_mandante_bruta / soma) * 100, 2)
-        p_empate = round((p_empate_bruta / soma) * 100, 2)
-        p_vitoria_visitante = round((p_vitoria_visitante_bruta / soma) * 100, 2)
+    p_vitoria_mandante = round((p_vitoria_mandante_bruta / soma) * 100, 2)
+    p_empate = round((p_empate_bruta / soma) * 100, 2)
+    p_vitoria_visitante = round((p_vitoria_visitante_bruta / soma) * 100, 2)
 
     return {
         "probabilidade_vitoria_mandante": p_vitoria_mandante,

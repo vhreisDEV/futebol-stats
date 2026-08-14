@@ -17,6 +17,7 @@ class EscanteiosEsperados(BaseModel):
     mandante: Optional[float]
     visitante: Optional[float]
     total: Optional[float]
+    linha_referencia: Optional[float]
     tendencia: Optional[str]
 
 
@@ -26,6 +27,8 @@ class CartoesEsperados(BaseModel):
     vermelhos_mandante: Optional[float]
     vermelhos_visitante: Optional[float]
     total: Optional[float]
+    linha_referencia: Optional[float]
+    tendencia: Optional[str]
 
 
 class ChutesEsperados(BaseModel):

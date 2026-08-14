@@ -1,6 +1,7 @@
 from app.services.medias import calcular_medias
 
 JANELA_PADRAO = 10
+LINHA_REFERENCIA_PADRAO = 3.5  # linha comum de mercado para total de cartões numa partida
 
 
 def _medias_com_fallback(db, time_id, data_referencia, mando):
@@ -15,12 +16,17 @@ def _medias_com_fallback(db, time_id, data_referencia, mando):
     return medias
 
 
-def calcular_cartoes_esperados(db, time_mandante_id, time_visitante_id, data_referencia):
+def calcular_cartoes_esperados(db, time_mandante_id, time_visitante_id, data_referencia,
+                                linha_referencia=LINHA_REFERENCIA_PADRAO):
     """
     Calcula os cartões esperados (amarelos e vermelhos) de mandante e
     visitante para uma partida, com base na própria média de cartões de
     cada time (não combina com o adversário, diferente de gols/escanteios,
     já que cartão depende mais do estilo do time do que do rival).
+
+    Também calcula uma tendência over/under em relação a uma linha de
+    referência (padrão: 3.5 cartões no total da partida, amarelos +
+    vermelhos somados).
 
     Mesmo fallback das Issues 7 e 9: se um time não tiver jogos suficientes
     no recorte de mando, cai para a média geral daquele time.
@@ -35,6 +41,8 @@ def calcular_cartoes_esperados(db, time_mandante_id, time_visitante_id, data_ref
             "cartoes_vermelhos_esperados_mandante": None,
             "cartoes_vermelhos_esperados_visitante": None,
             "total_cartoes_esperado": None,
+            "linha_referencia": linha_referencia,
+            "tendencia": None,
             "motivo": "Histórico insuficiente para um dos times, mesmo com fallback para média geral.",
             "detalhe_mandante": medias_mandante,
             "detalhe_visitante": medias_visitante,
@@ -51,12 +59,16 @@ def calcular_cartoes_esperados(db, time_mandante_id, time_visitante_id, data_ref
         2,
     )
 
+    tendencia = "over" if total_cartoes_esperado > linha_referencia else "under"
+
     return {
         "cartoes_amarelos_esperados_mandante": cartoes_amarelos_mandante,
         "cartoes_amarelos_esperados_visitante": cartoes_amarelos_visitante,
         "cartoes_vermelhos_esperados_mandante": cartoes_vermelhos_mandante,
         "cartoes_vermelhos_esperados_visitante": cartoes_vermelhos_visitante,
         "total_cartoes_esperado": total_cartoes_esperado,
+        "linha_referencia": linha_referencia,
+        "tendencia": tendencia,
         "janela_usada": JANELA_PADRAO,
         "detalhe_mandante": medias_mandante,
         "detalhe_visitante": medias_visitante,
