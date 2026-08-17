@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { API_URL } from "@/lib/api";
 
 interface RodadaAtualResponse {
   rodada_atual: number;
@@ -15,12 +16,12 @@ export default function Home() {
   const [totalTimes, setTotalTimes] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/rodadas/atual")
+    fetch(`${API_URL}/rodadas/atual`)
       .then((r) => (r.ok ? r.json() : null))
       .then((dados) => setRodada(dados))
       .catch(() => {});
 
-    fetch("http://127.0.0.1:8000/times/")
+    fetch(`${API_URL}/times/`)
       .then((r) => (r.ok ? r.json() : []))
       .then((dados) => setTotalTimes(Array.isArray(dados) ? dados.length : null))
       .catch(() => {});

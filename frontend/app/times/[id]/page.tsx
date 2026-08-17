@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
 import { corTime, iniciais } from "@/lib/times-visual";
+import { API_URL } from "@/lib/api";
 
 interface Jogo {
   id: number;
@@ -329,21 +330,21 @@ export default function DetalheTime() {
     const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
 
     Promise.all([
-      fetch(`http://127.0.0.1:8000/times/${id}/jogos?quantidade=${quantidade}${mandoParam}`).then((r) => {
+      fetch(`${API_URL}/times/${id}/jogos?quantidade=${quantidade}${mandoParam}`).then((r) => {
         if (!r.ok) {
           throw new Error("Time não encontrado ou erro ao buscar os jogos");
         }
         return r.json();
       }),
 
-      fetch(`http://127.0.0.1:8000/times/${id}/estatisticas?quantidade=${quantidade}${mandoParam}`).then((r) => {
+      fetch(`${API_URL}/times/${id}/estatisticas?quantidade=${quantidade}${mandoParam}`).then((r) => {
         if (!r.ok) {
           throw new Error("Time não encontrado ou erro ao buscar as estatísticas");
         }
         return r.json();
       }),
 
-      fetch(`http://127.0.0.1:8000/times/`).then((r) => r.json()),
+      fetch(`${API_URL}/times/`).then((r) => r.json()),
     ])
       .then(([dadosJogos, dadosEstatisticas, dadosTimes]) => {
         setJogos(dadosJogos);
@@ -367,7 +368,7 @@ export default function DetalheTime() {
 
     setCarregandoComparacao(true);
 
-    fetch(`http://127.0.0.1:8000/times/${comparacaoTimeId}/estatisticas`)
+    fetch(`${API_URL}/times/${comparacaoTimeId}/estatisticas`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar estatísticas");
         return r.json();
@@ -387,7 +388,7 @@ export default function DetalheTime() {
 
     setCarregandoProjecaoRapida(true);
 
-    fetch(`http://127.0.0.1:8000/projecoes/${id}/${projecaoVisitanteId}`)
+    fetch(`${API_URL}/projecoes/${id}/${projecaoVisitanteId}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar projeção");
         return r.json();

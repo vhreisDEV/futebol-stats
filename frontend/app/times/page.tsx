@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { corTime, iniciais } from "@/lib/times-visual";
+import { API_URL } from "@/lib/api";
 
 interface Time {
   id: number;
@@ -18,7 +19,7 @@ export default function Times() {
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/times/")
+    fetch(`${API_URL}/times/`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar times");
         return r.json();

@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { API_URL } from "@/lib/api";
 
 interface LinhaClassificacao {
   posicao: number;
@@ -63,7 +64,7 @@ export function Classificacao() {
   // tem jogos atrasados, entao "classificacao ate a rodada X" nao bate
   // com a tabela real numa boa parte do campeonato.
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/classificacao/")
+    fetch(`${API_URL}/classificacao/`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar classificação");
         return r.json();

@@ -24,6 +24,7 @@ import {
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
+import { API_URL } from "@/lib/api";
 
 function CabecalhoCampeonato() {
   return (
@@ -108,7 +109,7 @@ export default function Brasileirao() {
   const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/rodadas/atual")
+    fetch(`${API_URL}/rodadas/atual`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar a rodada atual");
         return r.json();
@@ -129,7 +130,7 @@ export default function Brasileirao() {
 
     setCarregandoRodada(true);
 
-    fetch(`http://127.0.0.1:8000/rodadas/${rodadaSelecionada}`)
+    fetch(`${API_URL}/rodadas/${rodadaSelecionada}`)
       .then((r) => {
         if (r.status === 404) return { rodada: rodadaSelecionada, partidas: [] };
         if (!r.ok) throw new Error("Erro ao buscar a rodada");

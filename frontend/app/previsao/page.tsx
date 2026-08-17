@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { API_URL } from "@/lib/api";
 
 interface Time {
   id: number;
@@ -224,7 +225,7 @@ function ProjecaoPreJogoConteudo() {
   const [erroProjecao, setErroProjecao] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/times/")
+    fetch(`${API_URL}/times/`)
       .then((resposta) => {
         if (!resposta.ok) {
           throw new Error("Erro ao buscar times");
@@ -250,7 +251,7 @@ function ProjecaoPreJogoConteudo() {
     setCarregandoProjecao(true);
     setErroProjecao(null);
 
-    fetch(`http://127.0.0.1:8000/projecoes/${mandanteId}/${visitanteId}`)
+    fetch(`${API_URL}/projecoes/${mandanteId}/${visitanteId}`)
       .then((resposta) => {
         if (!resposta.ok) {
           throw new Error("Erro ao buscar projeção");

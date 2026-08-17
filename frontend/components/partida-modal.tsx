@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { API_URL } from "@/lib/api";
 
 interface PartidaDetalhe {
   id: number;
@@ -97,7 +98,7 @@ export function PartidaModal({
     setCarregando(true);
     setErro(null);
 
-    fetch(`http://127.0.0.1:8000/partidas/${partidaId}`)
+    fetch(`${API_URL}/partidas/${partidaId}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar dados da partida");
         return r.json();

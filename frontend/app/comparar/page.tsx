@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { PartidaModal } from "@/components/partida-modal";
+import { API_URL } from "@/lib/api";
 
 interface Time {
   id: number;
@@ -133,7 +134,7 @@ function CompararTimesConteudo() {
   const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/times/")
+    fetch(`${API_URL}/times/`)
       .then((resposta) => {
         if (!resposta.ok) {
           throw new Error("Erro ao buscar times");
@@ -171,19 +172,19 @@ function CompararTimesConteudo() {
     setErroComparacao(null);
 
     Promise.all([
-      fetch(`http://127.0.0.1:8000/times/${timeAId}/estatisticas?quantidade=${quantidade}`).then((r) => {
+      fetch(`${API_URL}/times/${timeAId}/estatisticas?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar estatísticas do Time A");
         return r.json();
       }),
-      fetch(`http://127.0.0.1:8000/times/${timeBId}/estatisticas?quantidade=${quantidade}`).then((r) => {
+      fetch(`${API_URL}/times/${timeBId}/estatisticas?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar estatísticas do Time B");
         return r.json();
       }),
-      fetch(`http://127.0.0.1:8000/times/${timeAId}/jogos?quantidade=${quantidade}`).then((r) => {
+      fetch(`${API_URL}/times/${timeAId}/jogos?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar jogos do Time A");
         return r.json();
       }),
-      fetch(`http://127.0.0.1:8000/times/${timeBId}/jogos?quantidade=${quantidade}`).then((r) => {
+      fetch(`${API_URL}/times/${timeBId}/jogos?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar jogos do Time B");
         return r.json();
       }),

@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { JogadorModal } from "@/components/jogador-modal";
+import { API_URL } from "@/lib/api";
 
 interface RankingItem {
   jogador_id: number;
@@ -92,7 +93,7 @@ export default function Jogadores() {
   const [jogadorAbertoId, setJogadorAbertoId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/times/")
+    fetch(`${API_URL}/times/`)
       .then((r) => r.json())
       .then((dados: Time[]) => setTimes(dados))
       .catch(() => {});
@@ -105,7 +106,7 @@ export default function Jogadores() {
     const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
     const timeParam = timeSelecionado ? `&time_id=${timeSelecionado}` : "";
 
-    fetch(`http://127.0.0.1:8000/jogadores/ranking/${statSelecionado}?limit=20${mandoParam}${timeParam}`)
+    fetch(`${API_URL}/jogadores/ranking/${statSelecionado}?limit=20${mandoParam}${timeParam}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar ranking");
         return r.json();

@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { corTime, iniciais } from "@/lib/times-visual";
+import { API_URL } from "@/lib/api";
 
 interface Perfil {
   id: number;
@@ -98,11 +99,11 @@ export function JogadorModal({
     const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
 
     Promise.all([
-      fetch(`http://127.0.0.1:8000/jogadores/${jogadorId}`).then((r) => {
+      fetch(`${API_URL}/jogadores/${jogadorId}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar jogador");
         return r.json();
       }),
-      fetch(`http://127.0.0.1:8000/jogadores/${jogadorId}/jogos?quantidade=${quantidade}${mandoParam}`).then((r) => {
+      fetch(`${API_URL}/jogadores/${jogadorId}/jogos?quantidade=${quantidade}${mandoParam}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar jogos do jogador");
         return r.json();
       }),
