@@ -204,11 +204,15 @@ function ModalEstatisticas({
   onFechar: () => void;
 }) {
   const cores = corTime(nomeTime);
-  const larguraFixa = 168; // label (108px) + coluna Média (60px)
+  const larguraLabel = 108;
+  const larguraMedia = 60;
+  const larguraJogo = 92;
+  const larguraFixa = larguraLabel + larguraMedia;
+  const larguraGrade = larguraFixa + jogos.length * larguraJogo;
 
   return (
     <Dialog open onOpenChange={(open) => !open && onFechar()}>
-      <DialogContent className="max-h-[85vh] w-full max-w-[95vw] overflow-auto sm:max-w-5xl">
+      <DialogContent className="max-h-[85vh] w-auto max-w-[95vw] overflow-auto sm:max-w-[95vw]">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <span
@@ -223,7 +227,7 @@ function ModalEstatisticas({
           </div>
         </DialogHeader>
 
-        <div className="min-w-[680px]">
+        <div style={{ minWidth: larguraGrade }}>
           <div
             className="flex items-center gap-2 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
             style={{ paddingLeft: larguraFixa }}
@@ -236,7 +240,7 @@ function ModalEstatisticas({
           <div className="overflow-hidden rounded-lg ring-1 ring-border">
             <div
               className="grid gap-px bg-border text-xs"
-              style={{ gridTemplateColumns: `108px 60px repeat(${jogos.length}, 92px)` }}
+              style={{ gridTemplateColumns: `${larguraLabel}px ${larguraMedia}px repeat(${jogos.length}, ${larguraJogo}px)` }}
             >
               <div className="bg-card px-2 py-2" />
               <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-semibold text-primary">
@@ -245,9 +249,7 @@ function ModalEstatisticas({
               {jogos.map((jogo, index) => (
                 <div key={index} className="bg-card px-2 py-2 text-center">
                   <p className="text-[11px] text-muted-foreground">{formatarData(jogo.data)}</p>
-                  <p className="mt-0.5 truncate font-medium text-foreground">
-                    {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
-                  </p>
+                  <p className="mt-0.5 truncate font-medium text-foreground">{jogo.adversario}</p>
                   <span
                     className={`mt-1 inline-flex h-7 w-14 items-center justify-center rounded font-mono text-[11px] font-semibold tabular-nums ${
                       resultadoCorQuadrado[jogo.resultado] ?? "bg-secondary text-secondary-foreground"
@@ -507,16 +509,21 @@ export default function DetalheTime() {
             </div>
 
             {estatisticas.sequencia_recente.length > 0 && (
-              <div className="flex items-center justify-center gap-1.5 border-t border-border px-4 py-2.5">
-                <span className="mr-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Forma</span>
-                {[...estatisticas.sequencia_recente].reverse().map((resultado, i) => (
-                  <span
-                    key={i}
-                    className={`flex size-5 items-center justify-center rounded-full text-[10px] font-bold ${resultadoBadge[resultado] ?? "bg-muted text-muted-foreground"}`}
-                  >
-                    {resultadoInicial[resultado] ?? "?"}
-                  </span>
-                ))}
+              <div className="border-t border-border px-4 py-2.5">
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  <span className="mr-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Forma</span>
+                  {estatisticas.sequencia_recente.map((resultado, i) => (
+                    <span
+                      key={i}
+                      className={`flex size-5 items-center justify-center rounded-full text-[10px] font-bold ${resultadoBadge[resultado] ?? "bg-muted text-muted-foreground"}`}
+                    >
+                      {resultadoInicial[resultado] ?? "?"}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-center text-[9px] uppercase tracking-wide text-muted-foreground">
+                  Último jogo → Mais antigo
+                </p>
               </div>
             )}
           </div>
