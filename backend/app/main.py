@@ -7,6 +7,11 @@ app = FastAPI(title="VEAGA")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
+    # Tuneis rapidos do Cloudflare (cloudflared) usam um subdominio
+    # aleatorio *.trycloudflare.com a cada execucao -- liberado so pra
+    # teste temporario via link publico, API e toda leitura (sem rota
+    # de escrita), risco baixo.
+    allow_origin_regex=r"https://.*\.trycloudflare\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
