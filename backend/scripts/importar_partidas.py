@@ -1,6 +1,6 @@
 import os
 import re
-from datetime import date, timedelta
+from datetime import datetime
 import requests
 from dotenv import load_dotenv
 
@@ -20,18 +20,37 @@ HEADERS = {
 LEAGUE_ID_BRASILEIRAO = 61205
 SEASON = 2026
 
-DIAS_PARA_TRAS = 30           # até quantos dias no passado vamos escanear
-MAX_IMPORTACOES_POR_EXECUCAO = 40  # limite de segurança para não estourar a cota diária (100 req/dia)
+MAX_IMPORTACOES_POR_EXECUCAO = 90  # limite de seguranca para nao estourar a cota diaria (100 req/dia)
 
 
-def buscar_partidas_por_data(dia_str):
-    resp = requests.get(
-        f"{BASE_URL}/matches",
-        headers=HEADERS,
-        params={"leagueId": LEAGUE_ID_BRASILEIRAO, "date": dia_str, "limit": 20},
-    )
-    resp.raise_for_status()
-    return resp.json().get("data", [])
+def buscar_temporada_completa():
+    # Lista a temporada inteira paginada (id, rodada, placar, times, status
+    # de cada partida ja vem nessa resposta -- nao precisa de uma chamada
+    # extra por partida so pra pegar isso).
+    partidas = []
+    offset = 0
+    limit = 100
+
+    while True:
+        resp = requests.get(
+            f"{BASE_URL}/matches",
+            headers=HEADERS,
+            params={"leagueId": LEAGUE_ID_BRASILEIRAO, "season": SEASON, "limit": limit, "offset": offset},
+        )
+        if resp.status_code == 429:
+            print(f"  Cota excedida ao listar a temporada (offset {offset}). "
+                  f"Usando as {len(partidas)} partidas já listadas nessa execução.")
+            break
+        resp.raise_for_status()
+        dados = resp.json()
+        partidas.extend(dados.get("data", []))
+
+        total = dados.get("pagination", {}).get("totalCount", len(partidas))
+        offset += limit
+        if offset >= total:
+            break
+
+    return partidas
 
 
 def buscar_estatisticas(match_id):
@@ -40,16 +59,6 @@ def buscar_estatisticas(match_id):
         return None
     resp.raise_for_status()
     return resp.json()
-
-
-def buscar_detalhe_partida(match_id):
-    resp = requests.get(f"{BASE_URL}/matches/{match_id}", headers=HEADERS)
-    resp.raise_for_status()
-    dados = resp.json()
-    # o endpoint devolve uma lista com um único item, não o objeto direto
-    if isinstance(dados, list):
-        return dados[0] if dados else None
-    return dados
 
 
 def parse_placar(score_str):
@@ -64,6 +73,11 @@ def parse_rodada(round_str):
         return None
     match = re.search(r"(\d+)\s*$", round_str)
     return int(match.group(1)) if match else None
+
+
+def parse_data(data_iso):
+    # formato esperado: "2026-07-16T22:30:00.000Z"
+    return datetime.fromisoformat(data_iso.replace("Z", "+00:00")).date()
 
 
 def extrair_stat(lista_stats, nome_procurado):
@@ -96,103 +110,97 @@ def importar():
     importadas = 0
     ja_existiam = 0
     ignoradas_sem_time = 0
+    nao_finalizadas = 0
 
     try:
-        hoje = date.today()
+        partidas_temporada = buscar_temporada_completa()
+        print(f"{len(partidas_temporada)} partidas na temporada (todas as rodadas).\n")
 
-        for i in range(1, DIAS_PARA_TRAS + 1):
+        for p in partidas_temporada:
             if importadas >= MAX_IMPORTACOES_POR_EXECUCAO:
-                print(f"\nLimite de {MAX_IMPORTACOES_POR_EXECUCAO} importações por execução atingido. Pare e rode de novo depois.")
+                print(f"\nLimite de {MAX_IMPORTACOES_POR_EXECUCAO} importações por execução atingido. Rode de novo depois.")
                 break
 
-            dia = hoje - timedelta(days=i)
-            dia_str = dia.strftime("%Y-%m-%d")
-
-            partidas_do_dia = buscar_partidas_por_data(dia_str)
-            if not partidas_do_dia:
+            estado = p.get("state", {}).get("description", "")
+            if "Finished" not in estado and "Full-time" not in estado and "FT" not in estado:
+                nao_finalizadas += 1
                 continue
 
-            for p in partidas_do_dia:
-                if importadas >= MAX_IMPORTACOES_POR_EXECUCAO:
-                    break
+            id_externo = p["id"]
 
-                estado = p.get("state", {}).get("description", "")
-                if "Finished" not in estado and "Full-time" not in estado and "FT" not in estado:
-                    continue
+            ja_no_banco = db.query(Partida).filter(Partida.id_externo == id_externo).first()
+            if ja_no_banco:
+                ja_existiam += 1
+                continue
 
-                id_externo = p["id"]
+            time_mandante = db.query(Time).filter(Time.id_externo == p["homeTeam"]["id"]).first()
+            time_visitante = db.query(Time).filter(Time.id_externo == p["awayTeam"]["id"]).first()
 
-                ja_no_banco = db.query(Partida).filter(Partida.id_externo == id_externo).first()
-                if ja_no_banco:
-                    ja_existiam += 1
-                    continue
+            if not time_mandante or not time_visitante:
+                print(f"  Pulando partida {id_externo}: time não cadastrado no banco "
+                      f"({p['homeTeam']['name']} x {p['awayTeam']['name']}) — rode sincronizar_times.py")
+                ignoradas_sem_time += 1
+                continue
 
-                time_mandante = db.query(Time).filter(Time.id_externo == p["homeTeam"]["id"]).first()
-                time_visitante = db.query(Time).filter(Time.id_externo == p["awayTeam"]["id"]).first()
+            score_atual = p.get("state", {}).get("score", {}).get("current")
+            if not score_atual:
+                print(f"  Pulando partida {id_externo}: sem placar disponível")
+                continue
 
-                if not time_mandante or not time_visitante:
-                    print(f"  Pulando partida {id_externo}: time não cadastrado no banco "
-                          f"({p['homeTeam']['name']} x {p['awayTeam']['name']}) — rode sincronizar_times.py")
-                    ignoradas_sem_time += 1
-                    continue
+            gols_mandante, gols_visitante = parse_placar(score_atual)
+            rodada = parse_rodada(p.get("round"))
+            data_partida = parse_data(p["date"])
 
-                detalhe = buscar_detalhe_partida(id_externo)
-                if not detalhe:
-                    print(f"  Pulando partida {id_externo}: detalhe não encontrado")
-                    continue
+            stats = buscar_estatisticas(id_externo)
+            if not stats:
+                print(f"  Pulando partida {id_externo}: sem estatísticas disponíveis")
+                continue
 
-                gols_mandante, gols_visitante = parse_placar(detalhe["state"]["score"]["current"])
-                rodada = parse_rodada(detalhe.get("round"))
+            stats_mandante = next((s for s in stats if s["team"]["id"] == p["homeTeam"]["id"]), None)
+            stats_visitante = next((s for s in stats if s["team"]["id"] == p["awayTeam"]["id"]), None)
 
-                stats = buscar_estatisticas(id_externo)
-                if not stats:
-                    print(f"  Pulando partida {id_externo}: sem estatísticas disponíveis")
-                    continue
+            if not stats_mandante or not stats_visitante:
+                print(f"  Pulando partida {id_externo}: estatísticas incompletas")
+                continue
 
-                stats_mandante = next((s for s in stats if s["team"]["id"] == p["homeTeam"]["id"]), None)
-                stats_visitante = next((s for s in stats if s["team"]["id"] == p["awayTeam"]["id"]), None)
+            m = mapear_estatisticas_time(stats_mandante["statistics"])
+            v = mapear_estatisticas_time(stats_visitante["statistics"])
 
-                if not stats_mandante or not stats_visitante:
-                    print(f"  Pulando partida {id_externo}: estatísticas incompletas")
-                    continue
+            nova_partida = Partida(
+                id_externo=id_externo,
+                time_mandante_id=time_mandante.id,
+                time_visitante_id=time_visitante.id,
+                gols_mandante=gols_mandante,
+                gols_visitante=gols_visitante,
+                data=data_partida,
+                rodada=rodada,
+                escanteios_mandante=m["escanteios"],
+                escanteios_visitante=v["escanteios"],
+                escanteios_1t_mandante=None,
+                escanteios_1t_visitante=None,
+                escanteios_2t_mandante=None,
+                escanteios_2t_visitante=None,
+                chutes_mandante=m["chutes"],
+                chutes_visitante=v["chutes"],
+                chutes_1t_mandante=None,
+                chutes_1t_visitante=None,
+                chutes_gol_mandante=m["chutes_gol"],
+                chutes_gol_visitante=v["chutes_gol"],
+                cartoes_amarelos_mandante=m["cartoes_amarelos"],
+                cartoes_amarelos_visitante=v["cartoes_amarelos"],
+                cartoes_vermelhos_mandante=m["cartoes_vermelhos"],
+                cartoes_vermelhos_visitante=v["cartoes_vermelhos"],
+            )
+            db.add(nova_partida)
+            db.commit()
 
-                m = mapear_estatisticas_time(stats_mandante["statistics"])
-                v = mapear_estatisticas_time(stats_visitante["statistics"])
-
-                nova_partida = Partida(
-                    id_externo=id_externo,
-                    time_mandante_id=time_mandante.id,
-                    time_visitante_id=time_visitante.id,
-                    gols_mandante=gols_mandante,
-                    gols_visitante=gols_visitante,
-                    data=dia,
-                    rodada=rodada,
-                    escanteios_mandante=m["escanteios"],
-                    escanteios_visitante=v["escanteios"],
-                    escanteios_1t_mandante=None,
-                    escanteios_1t_visitante=None,
-                    escanteios_2t_mandante=None,
-                    escanteios_2t_visitante=None,
-                    chutes_mandante=m["chutes"],
-                    chutes_visitante=v["chutes"],
-                    chutes_1t_mandante=None,
-                    chutes_1t_visitante=None,
-                    chutes_gol_mandante=m["chutes_gol"],
-                    chutes_gol_visitante=v["chutes_gol"],
-                    cartoes_amarelos_mandante=m["cartoes_amarelos"],
-                    cartoes_amarelos_visitante=v["cartoes_amarelos"],
-                    cartoes_vermelhos_mandante=m["cartoes_vermelhos"],
-                    cartoes_vermelhos_visitante=v["cartoes_vermelhos"],
-                )
-                db.add(nova_partida)
-                db.commit()
-
-                print(f"  Importada: {p['homeTeam']['name']} {gols_mandante} x {gols_visitante} "
-                      f"{p['awayTeam']['name']} ({dia_str})")
-                importadas += 1
+            print(f"  Importada: rodada {rodada} — {p['homeTeam']['name']} {gols_mandante} x {gols_visitante} "
+                  f"{p['awayTeam']['name']} ({data_partida})")
+            importadas += 1
 
         print(f"\nImportação concluída. {importadas} partidas novas importadas, "
-              f"{ja_existiam} já existiam, {ignoradas_sem_time} ignoradas por time não cadastrado.")
+              f"{ja_existiam} já existiam, {nao_finalizadas} ainda não finalizadas, "
+              f"{ignoradas_sem_time} ignoradas por time não cadastrado.")
 
     finally:
         db.close()
