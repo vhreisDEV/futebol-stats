@@ -11,21 +11,33 @@ interface Time {
   nome: string;
 }
 
-const PALETA_TIME = [
-  "bg-blue-500/15 text-blue-400",
-  "bg-emerald-500/15 text-emerald-400",
-  "bg-amber-500/15 text-amber-400",
-  "bg-rose-500/15 text-rose-400",
-  "bg-violet-500/15 text-violet-400",
-  "bg-sky-500/15 text-sky-400",
-  "bg-orange-500/15 text-orange-400",
-  "bg-teal-500/15 text-teal-400",
-  "bg-fuchsia-500/15 text-fuchsia-400",
-  "bg-lime-500/15 text-lime-400",
-];
+// Cores reais das camisas/escudos de cada time (aproximadas) -- usadas
+// como identidade visual provisoria ate termos os escudos de verdade.
+const CORES_TIME: Record<string, { fundo: string; borda: string; textoEscuro?: boolean }> = {
+  "Athletico-PR": { fundo: "#C8102E", borda: "#000000" },
+  "Atlético-MG": { fundo: "#000000", borda: "#FFFFFF" },
+  Bahia: { fundo: "#0038A8", borda: "#E4022C" },
+  Botafogo: { fundo: "#000000", borda: "#FFFFFF" },
+  Chapecoense: { fundo: "#1B7B3A", borda: "#FFFFFF" },
+  Corinthians: { fundo: "#000000", borda: "#FFFFFF" },
+  Coritiba: { fundo: "#0F7A3D", borda: "#FFFFFF" },
+  Cruzeiro: { fundo: "#003DA5", borda: "#FFFFFF" },
+  Flamengo: { fundo: "#C8102E", borda: "#000000" },
+  Fluminense: { fundo: "#8B1538", borda: "#046A38" },
+  Grêmio: { fundo: "#0D80C7", borda: "#000000" },
+  Internacional: { fundo: "#E2001A", borda: "#FFFFFF" },
+  Mirassol: { fundo: "#FFD400", borda: "#1B7B3A", textoEscuro: true },
+  Palmeiras: { fundo: "#006437", borda: "#FFFFFF" },
+  "Red Bull Bragantino": { fundo: "#D50032", borda: "#FFFFFF" },
+  Remo: { fundo: "#0033A0", borda: "#FFFFFF" },
+  Santos: { fundo: "#FFFFFF", borda: "#000000", textoEscuro: true },
+  "São Paulo": { fundo: "#C1121C", borda: "#000000" },
+  "Vasco da Gama": { fundo: "#000000", borda: "#FFFFFF" },
+  Vitória: { fundo: "#C8102E", borda: "#000000" },
+};
 
-function corTime(id: number) {
-  return PALETA_TIME[id % PALETA_TIME.length];
+function corTime(nome: string) {
+  return CORES_TIME[nome] ?? { fundo: "#3f3f46", borda: "#71717a" };
 }
 
 function iniciais(nome: string) {
@@ -94,12 +106,15 @@ export default function Times() {
                   </CardContent>
                 </Card>
               ))
-            : times.map((time) => (
+            : times.map((time) => {
+                const cores = corTime(time.nome);
+                return (
                 <Link key={time.id} href={`/times/${time.id}`} className="group">
                   <Card size="sm" className="ring-0 transition-colors hover:bg-muted/50">
                     <CardContent className="flex items-center gap-3">
                       <span
-                        className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${corTime(time.id)}`}
+                        className={`flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${cores.textoEscuro ? "text-black" : "text-white"}`}
+                        style={{ backgroundColor: cores.fundo, borderColor: cores.borda }}
                       >
                         {iniciais(time.nome)}
                       </span>
@@ -110,7 +125,8 @@ export default function Times() {
                     </CardContent>
                   </Card>
                 </Link>
-              ))}
+                );
+              })}
         </div>
       </div>
     </main>
