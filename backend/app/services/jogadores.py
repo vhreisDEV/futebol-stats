@@ -19,12 +19,20 @@ STATS_VALIDAS = {
 }
 
 
-def calcular_ranking(db, stat, limit=20):
+def _filtro_mando_stat(mando):
+    if mando == "casa":
+        return Partida.time_mandante_id == EstatisticaJogadorPartida.time_id
+    if mando == "fora":
+        return Partida.time_visitante_id == EstatisticaJogadorPartida.time_id
+    return None
+
+
+def calcular_ranking(db, stat, limit=20, mando=None):
     coluna = STATS_VALIDAS.get(stat)
     if coluna is None:
         return None
 
-    linhas = (
+    query = (
         db.query(
             Jogador.id.label("jogador_id"),
             Jogador.nome,
@@ -37,11 +45,13 @@ def calcular_ranking(db, stat, limit=20):
         .join(EstatisticaJogadorPartida, EstatisticaJogadorPartida.jogador_id == Jogador.id)
         .outerjoin(Time, Time.id == Jogador.time_id)
         .filter(coluna.isnot(None))
-        .group_by(Jogador.id)
-        .order_by(func.sum(coluna).desc())
-        .limit(limit)
-        .all()
     )
+
+    filtro_mando = _filtro_mando_stat(mando)
+    if filtro_mando is not None:
+        query = query.join(Partida, Partida.id == EstatisticaJogadorPartida.partida_id).filter(filtro_mando)
+
+    linhas = query.group_by(Jogador.id).order_by(func.sum(coluna).desc()).limit(limit).all()
 
     resultado = []
     for linha in linhas:
@@ -61,15 +71,18 @@ def calcular_ranking(db, stat, limit=20):
     return resultado
 
 
-def obter_ultimos_jogos_jogador(db, jogador_id, quantidade=10):
-    linhas = (
+def obter_ultimos_jogos_jogador(db, jogador_id, quantidade=10, mando=None):
+    query = (
         db.query(EstatisticaJogadorPartida)
         .join(Partida, Partida.id == EstatisticaJogadorPartida.partida_id)
         .filter(EstatisticaJogadorPartida.jogador_id == jogador_id)
-        .order_by(Partida.data.desc())
-        .limit(quantidade)
-        .all()
     )
+
+    filtro_mando = _filtro_mando_stat(mando)
+    if filtro_mando is not None:
+        query = query.filter(filtro_mando)
+
+    linhas = query.order_by(Partida.data.desc()).limit(quantidade).all()
 
     return [_montar_jogo_jogador(linha) for linha in linhas]
 

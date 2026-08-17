@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { JogadorModal } from "@/components/jogador-modal";
 
@@ -37,6 +38,7 @@ const CATEGORIAS: { chave: string; label: string }[] = [
 
 export default function Jogadores() {
   const [statSelecionado, setStatSelecionado] = useState("gols");
+  const [mando, setMando] = useState("todos");
   const [ranking, setRanking] = useState<RankingItem[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -46,7 +48,9 @@ export default function Jogadores() {
     setCarregando(true);
     setErro(null);
 
-    fetch(`http://127.0.0.1:8000/jogadores/ranking/${statSelecionado}?limit=20`)
+    const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
+
+    fetch(`http://127.0.0.1:8000/jogadores/ranking/${statSelecionado}?limit=20${mandoParam}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar ranking");
         return r.json();
@@ -59,7 +63,7 @@ export default function Jogadores() {
         setErro(err.message);
         setCarregando(false);
       });
-  }, [statSelecionado]);
+  }, [statSelecionado, mando]);
 
   const categoriaAtual = CATEGORIAS.find((c) => c.chave === statSelecionado) ?? CATEGORIAS[0];
 
@@ -100,14 +104,25 @@ export default function Jogadores() {
           </nav>
 
           <section>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 {categoriaAtual.label}
               </h2>
-              {!carregando && ranking.length > 0 && (
-                <p className="text-xs text-muted-foreground">Toque em um jogador para ver os detalhes.</p>
-              )}
+              <ToggleGroup
+                variant="outline"
+                size="sm"
+                value={[mando]}
+                onValueChange={(v: string[]) => v[0] && setMando(v[0])}
+              >
+                <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
+                <ToggleGroupItem value="casa">Casa</ToggleGroupItem>
+                <ToggleGroupItem value="fora">Fora</ToggleGroupItem>
+              </ToggleGroup>
             </div>
+
+            {!carregando && ranking.length > 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">Toque em um jogador para ver os detalhes.</p>
+            )}
 
             {carregando && (
               <div className="mt-3 grid gap-1.5">

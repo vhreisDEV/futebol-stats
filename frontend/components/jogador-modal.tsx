@@ -83,6 +83,7 @@ export function JogadorModal({
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [jogos, setJogos] = useState<JogoJogador[]>([]);
   const [quantidade, setQuantidade] = useState(10);
+  const [mando, setMando] = useState("todos");
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -92,12 +93,14 @@ export function JogadorModal({
     setCarregando(true);
     setErro(null);
 
+    const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
+
     Promise.all([
       fetch(`http://127.0.0.1:8000/jogadores/${jogadorId}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar jogador");
         return r.json();
       }),
-      fetch(`http://127.0.0.1:8000/jogadores/${jogadorId}/jogos?quantidade=${quantidade}`).then((r) => {
+      fetch(`http://127.0.0.1:8000/jogadores/${jogadorId}/jogos?quantidade=${quantidade}${mandoParam}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar jogos do jogador");
         return r.json();
       }),
@@ -111,7 +114,7 @@ export function JogadorModal({
         setErro(err.message);
         setCarregando(false);
       });
-  }, [jogadorId, quantidade]);
+  }, [jogadorId, quantidade, mando]);
 
   if (jogadorId === null) return null;
 
@@ -158,6 +161,20 @@ export function JogadorModal({
             <ToggleGroupItem value="10">Últimos 10</ToggleGroupItem>
             <ToggleGroupItem value="20">Últimos 20</ToggleGroupItem>
             <ToggleGroupItem value="30">Últimos 30</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs text-muted-foreground">Mando de campo</span>
+          <ToggleGroup
+            variant="outline"
+            size="sm"
+            value={[mando]}
+            onValueChange={(v: string[]) => v[0] && setMando(v[0])}
+          >
+            <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
+            <ToggleGroupItem value="casa">Casa</ToggleGroupItem>
+            <ToggleGroupItem value="fora">Fora</ToggleGroupItem>
           </ToggleGroup>
         </div>
 

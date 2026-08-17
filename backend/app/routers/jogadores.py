@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.database import SessionLocal
 from app.models.jogador import Jogador
@@ -19,8 +19,10 @@ def get_db():
 
 
 @router.get("/ranking/{stat}", response_model=JogadorRankingResponse)
-def ranking_por_stat(stat: str, limit: int = 20, db: Session = Depends(get_db)):
-    ranking = calcular_ranking(db, stat, limit)
+def ranking_por_stat(
+    stat: str, limit: int = 20, mando: Optional[str] = None, db: Session = Depends(get_db)
+):
+    ranking = calcular_ranking(db, stat, limit, mando)
     if ranking is None:
         raise HTTPException(status_code=404, detail="Estatistica invalida")
     return {"stat": stat, "ranking": ranking}
@@ -41,8 +43,10 @@ def perfil_jogador(jogador_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{jogador_id}/jogos", response_model=List[JogoJogadorResponse])
-def jogos_jogador(jogador_id: int, quantidade: int = 10, db: Session = Depends(get_db)):
+def jogos_jogador(
+    jogador_id: int, quantidade: int = 10, mando: Optional[str] = None, db: Session = Depends(get_db)
+):
     jogador = db.query(Jogador).filter(Jogador.id == jogador_id).first()
     if not jogador:
         raise HTTPException(status_code=404, detail="Jogador nao encontrado")
-    return obter_ultimos_jogos_jogador(db, jogador_id, quantidade)
+    return obter_ultimos_jogos_jogador(db, jogador_id, quantidade, mando)
