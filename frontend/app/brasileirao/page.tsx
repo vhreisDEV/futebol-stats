@@ -11,7 +11,6 @@ import {
   Users,
   Shield,
   UserRound,
-  type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
+import { NavChip } from "@/components/nav-chip";
 
 function CabecalhoCampeonato() {
   return (
@@ -48,37 +48,6 @@ function CabecalhoCampeonato() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
-}
-
-type CorNav = "gold" | "rose" | "orange" | "neutral";
-
-const estilosNavChip: Record<CorNav, string> = {
-  gold: "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20",
-  rose: "border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20",
-  orange: "border-orange-500/40 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20",
-  neutral: "border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
-};
-
-function NavChip({
-  href,
-  label,
-  icon: Icon,
-  cor,
-}: {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  cor: CorNav;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${estilosNavChip[cor]}`}
-    >
-      <Icon className="size-3.5" />
-      {label}
-    </Link>
   );
 }
 

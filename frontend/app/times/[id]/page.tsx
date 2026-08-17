@@ -3,10 +3,12 @@
 import { Fragment, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { PartidaModal } from "@/components/partida-modal";
+import { NavChip } from "@/components/nav-chip";
+import { corTime, iniciais } from "@/lib/times-visual";
 
 interface Jogo {
   id: number;
@@ -416,7 +418,7 @@ export default function DetalheTime() {
   return (
     <main className="min-h-screen bg-background px-6 py-10 text-foreground">
       <div className="mx-auto max-w-2xl">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <Link
             href="/times"
             className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
@@ -424,25 +426,28 @@ export default function DetalheTime() {
             <ChevronLeft className="h-3.5 w-3.5" />
             Times
           </Link>
-          <div className="flex gap-4">
-            <Link
-              href={`/comparar?time=${id}`}
-              className="text-sm text-muted-foreground underline hover:text-primary"
-            >
-              Comparar
-            </Link>
-            <Link
-              href={`/previsao?mandante=${id}`}
-              className="text-sm text-muted-foreground underline hover:text-primary"
-            >
-              Projeção
-            </Link>
+          <div className="flex gap-2">
+            <NavChip href={`/comparar?time=${id}`} label="Comparar" icon={Users} cor="rose" />
+            <NavChip href={`/previsao?mandante=${id}`} label="Projeção" icon={TrendingUp} cor="gold" />
           </div>
         </div>
 
-        <h1 className="mt-4 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-          {nomeTime}
-        </h1>
+        <div className="mt-4 flex items-center gap-3">
+          {(() => {
+            const cores = corTime(nomeTime);
+            return (
+              <span
+                className={`flex size-11 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold ${cores.textoEscuro ? "text-black" : "text-white"}`}
+                style={{ backgroundColor: cores.fundo, borderColor: cores.borda }}
+              >
+                {iniciais(nomeTime)}
+              </span>
+            );
+          })()}
+          <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+            {nomeTime}
+          </h1>
+        </div>
 
         <div className="mt-6 flex items-center justify-between">
           <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -462,44 +467,60 @@ export default function DetalheTime() {
         </div>
 
         {estatisticas && (
-          <div className="mt-3 rounded-lg border border-border bg-card p-5">
-            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Estatísticas
-            </h2>
-            <div className="mt-4 grid grid-cols-2 gap-y-2 text-sm sm:grid-cols-3">
-              <p className="text-muted-foreground">
-                Jogos: <span className="font-medium text-foreground">{estatisticas.total_jogos}</span>
-              </p>
-              <p className="text-green-400">
-                Vitórias: <span className="font-medium">{estatisticas.vitorias}</span>
-              </p>
-              <p className="text-muted-foreground">
-                Empates: <span className="font-medium text-foreground">{estatisticas.empates}</span>
-              </p>
-              <p className="text-red-400">
-                Derrotas: <span className="font-medium">{estatisticas.derrotas}</span>
-              </p>
-              <p className="text-muted-foreground">
-                Gols marcados: <span className="font-medium text-foreground">{estatisticas.gols_marcados}</span>
-              </p>
-              <p className="text-muted-foreground">
-                Gols sofridos: <span className="font-medium text-foreground">{estatisticas.gols_sofridos}</span>
-              </p>
-              <p className="text-muted-foreground col-span-2 sm:col-span-3">
-                Média de gols por jogo:{" "}
-                <span className="font-mono font-medium tabular-nums text-primary">
-                  {estatisticas.media_gols}
-                </span>
-              </p>
+          <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
+            <div className="grid grid-cols-4 divide-x divide-border text-center">
+              <div className="px-2 py-3">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">J</p>
+                <p className="mt-0.5 font-mono text-lg font-bold tabular-nums">{estatisticas.total_jogos}</p>
+              </div>
+              <div className="px-2 py-3">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">V</p>
+                <p className="mt-0.5 font-mono text-lg font-bold tabular-nums text-green-400">{estatisticas.vitorias}</p>
+              </div>
+              <div className="px-2 py-3">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">E</p>
+                <p className="mt-0.5 font-mono text-lg font-bold tabular-nums text-muted-foreground">{estatisticas.empates}</p>
+              </div>
+              <div className="px-2 py-3">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">D</p>
+                <p className="mt-0.5 font-mono text-lg font-bold tabular-nums text-red-400">{estatisticas.derrotas}</p>
+              </div>
             </div>
+
+            <div className="border-t border-border px-4 py-2.5 text-center text-xs text-muted-foreground">
+              Gols marcados <span className="font-mono font-medium text-foreground">{estatisticas.gols_marcados}</span>
+              <span className="mx-2 text-border">·</span>
+              Gols sofridos <span className="font-mono font-medium text-foreground">{estatisticas.gols_sofridos}</span>
+              <span className="mx-2 text-border">·</span>
+              Média <span className="font-mono font-medium text-primary">{estatisticas.media_gols}</span>
+            </div>
+
+            {estatisticas.sequencia_recente.length > 0 && (
+              <div className="flex items-center justify-center gap-1.5 border-t border-border px-4 py-2.5">
+                <span className="mr-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Forma</span>
+                {[...estatisticas.sequencia_recente].reverse().map((resultado, i) => (
+                  <span
+                    key={i}
+                    className={`flex size-5 items-center justify-center rounded-full text-[10px] font-bold ${resultadoBadge[resultado] ?? "bg-muted text-muted-foreground"}`}
+                  >
+                    {resultadoInicial[resultado] ?? "?"}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         <div className="mt-8">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Comparar com
-            </h2>
+            <div className="flex items-center gap-2">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-rose-500/10 text-rose-400">
+                <Users className="size-3.5" />
+              </span>
+              <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Comparar com
+              </h2>
+            </div>
             <select
               value={comparacaoTimeId}
               onChange={(e) => setComparacaoTimeId(e.target.value)}
@@ -559,9 +580,10 @@ export default function DetalheTime() {
               <div className="border-t border-border bg-card px-4 py-2 text-center">
                 <Link
                   href={`/comparar?time=${id}&timeB=${comparacaoTimeId}`}
-                  className="text-xs text-muted-foreground underline hover:text-primary"
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
                 >
-                  Ver comparação completa →
+                  Ver comparação completa
+                  <ChevronRight className="size-3" />
                 </Link>
               </div>
             </div>
@@ -570,9 +592,14 @@ export default function DetalheTime() {
 
         <div className="mt-8">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Projeção contra
-            </h2>
+            <div className="flex items-center gap-2">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <TrendingUp className="size-3.5" />
+              </span>
+              <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Projeção contra
+              </h2>
+            </div>
             <select
               value={projecaoVisitanteId}
               onChange={(e) => setProjecaoVisitanteId(e.target.value)}
@@ -618,9 +645,10 @@ export default function DetalheTime() {
               </div>
               <Link
                 href={`/previsao?mandante=${id}&visitante=${projecaoVisitanteId}`}
-                className="mt-3 inline-block text-xs text-muted-foreground underline hover:text-primary"
+                className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
               >
-                Ver projeção completa →
+                Ver projeção completa
+                <ChevronRight className="size-3" />
               </Link>
             </div>
           )}
