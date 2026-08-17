@@ -9,7 +9,7 @@ def main():
     db = SessionLocal()
 
     flamengo = db.query(Time).filter(Time.nome == "Flamengo").first()
-    vitoria = db.query(Time).filter(Time.nome == "Vitoria").first()
+    vitoria = db.query(Time).filter(Time.nome == "Vitória").first()
 
     if not flamengo or not vitoria:
         print("Um dos times não foi encontrado no banco.")

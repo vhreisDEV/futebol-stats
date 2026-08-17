@@ -1,6 +1,8 @@
 from app.services.medias import calcular_medias, _buscar_jogos_anteriores
 
 JANELA_PADRAO = 10
+LINHA_REFERENCIA_CHUTES_PADRAO = 24.5  # linha de referencia para total de chutes na partida
+LINHA_REFERENCIA_CHUTES_GOL_PADRAO = 8.5  # linha de referencia para total de chutes ao gol na partida
 
 
 def _medias_com_fallback(db, time_id, data_referencia, mando):
@@ -44,12 +46,17 @@ def _media_chutes_1t(db, time_id, data_referencia, mando):
     }
 
 
-def calcular_chutes_esperados(db, time_mandante_id, time_visitante_id, data_referencia):
+def calcular_chutes_esperados(db, time_mandante_id, time_visitante_id, data_referencia,
+                               linha_referencia_geral=LINHA_REFERENCIA_CHUTES_PADRAO,
+                               linha_referencia_ao_gol=LINHA_REFERENCIA_CHUTES_GOL_PADRAO):
     """
     Calcula chutes totais esperados, chutes ao gol esperados (fórmula
     ataque x defesa, igual gols/escanteios) e chutes no 1º tempo esperados
     (média própria de cada time, ignorando jogos sem esse dado — comum em
     partidas reais, onde o campo é nulo).
+
+    Também calcula tendência over/under para o total de chutes e para o
+    total de chutes ao gol, mesmo padrão usado em escanteios/cartões.
     """
     medias_mandante = _medias_com_fallback(db, time_mandante_id, data_referencia, mando="mandante")
     medias_visitante = _medias_com_fallback(db, time_visitante_id, data_referencia, mando="visitante")
@@ -58,8 +65,14 @@ def calcular_chutes_esperados(db, time_mandante_id, time_visitante_id, data_refe
         return {
             "chutes_totais_esperados_mandante": None,
             "chutes_totais_esperados_visitante": None,
+            "total_geral_esperado": None,
+            "linha_referencia_geral": linha_referencia_geral,
+            "tendencia_geral": None,
             "chutes_gol_esperados_mandante": None,
             "chutes_gol_esperados_visitante": None,
+            "total_ao_gol_esperado": None,
+            "linha_referencia_ao_gol": linha_referencia_ao_gol,
+            "tendencia_ao_gol": None,
             "chutes_1t_esperados_mandante": None,
             "chutes_1t_esperados_visitante": None,
             "motivo": "Histórico insuficiente para um dos times, mesmo com fallback para média geral.",
@@ -81,6 +94,12 @@ def calcular_chutes_esperados(db, time_mandante_id, time_visitante_id, data_refe
         (medias_visitante["media_chutes_gol_a_favor"] + medias_mandante["media_chutes_gol_contra"]) / 2, 2
     )
 
+    total_geral_esperado = round(chutes_totais_mandante + chutes_totais_visitante, 2)
+    tendencia_geral = "over" if total_geral_esperado > linha_referencia_geral else "under"
+
+    total_ao_gol_esperado = round(chutes_gol_mandante + chutes_gol_visitante, 2)
+    tendencia_ao_gol = "over" if total_ao_gol_esperado > linha_referencia_ao_gol else "under"
+
     chutes_1t_mandante_info = _media_chutes_1t(db, time_mandante_id, data_referencia, mando="mandante")
     chutes_1t_visitante_info = _media_chutes_1t(db, time_visitante_id, data_referencia, mando="visitante")
 
@@ -90,8 +109,14 @@ def calcular_chutes_esperados(db, time_mandante_id, time_visitante_id, data_refe
     return {
         "chutes_totais_esperados_mandante": chutes_totais_mandante,
         "chutes_totais_esperados_visitante": chutes_totais_visitante,
+        "total_geral_esperado": total_geral_esperado,
+        "linha_referencia_geral": linha_referencia_geral,
+        "tendencia_geral": tendencia_geral,
         "chutes_gol_esperados_mandante": chutes_gol_mandante,
         "chutes_gol_esperados_visitante": chutes_gol_visitante,
+        "total_ao_gol_esperado": total_ao_gol_esperado,
+        "linha_referencia_ao_gol": linha_referencia_ao_gol,
+        "tendencia_ao_gol": tendencia_ao_gol,
         "chutes_1t_esperados_mandante": chutes_1t_mandante,
         "chutes_1t_esperados_visitante": chutes_1t_visitante,
         "chutes_1t_detalhe_mandante": chutes_1t_mandante_info,

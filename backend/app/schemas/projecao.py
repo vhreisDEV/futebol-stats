@@ -34,8 +34,14 @@ class CartoesEsperados(BaseModel):
 class ChutesEsperados(BaseModel):
     totais_mandante: Optional[float]
     totais_visitante: Optional[float]
+    total_geral: Optional[float]
+    linha_referencia_geral: Optional[float]
+    tendencia_geral: Optional[str]
     ao_gol_mandante: Optional[float]
     ao_gol_visitante: Optional[float]
+    total_ao_gol: Optional[float]
+    linha_referencia_ao_gol: Optional[float]
+    tendencia_ao_gol: Optional[str]
     primeiro_tempo_mandante: Optional[float]
     primeiro_tempo_visitante: Optional[float]
 

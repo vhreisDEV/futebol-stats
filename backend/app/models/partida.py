@@ -17,15 +17,15 @@ class Partida(Base):
 
     escanteios_mandante = Column(Integer, nullable=False, default=0)
     escanteios_visitante = Column(Integer, nullable=False, default=0)
-    escanteios_1t_mandante = Column(Integer, nullable=True, default=0)
-    escanteios_1t_visitante = Column(Integer, nullable=True, default=0)
-    escanteios_2t_mandante = Column(Integer, nullable=True, default=0)
-    escanteios_2t_visitante = Column(Integer, nullable=True, default=0)
+    escanteios_1t_mandante = Column(Integer, nullable=True)
+    escanteios_1t_visitante = Column(Integer, nullable=True)
+    escanteios_2t_mandante = Column(Integer, nullable=True)
+    escanteios_2t_visitante = Column(Integer, nullable=True)
 
     chutes_mandante = Column(Integer, nullable=False, default=0)
     chutes_visitante = Column(Integer, nullable=False, default=0)
-    chutes_1t_mandante = Column(Integer, nullable=True, default=0)
-    chutes_1t_visitante = Column(Integer, nullable=True, default=0)
+    chutes_1t_mandante = Column(Integer, nullable=True)
+    chutes_1t_visitante = Column(Integer, nullable=True)
     chutes_gol_mandante = Column(Integer, nullable=False, default=0)
     chutes_gol_visitante = Column(Integer, nullable=False, default=0)
 

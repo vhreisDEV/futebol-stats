@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import List
+from typing import List, Optional
 
 
 class TimeBase(BaseModel):
@@ -20,14 +20,14 @@ class JogoResponse(BaseModel):
     gols_adversario: int
     escanteios_time: int
     escanteios_adversario: int
-    escanteios_1t_time: int
-    escanteios_1t_adversario: int
-    escanteios_2t_time: int
-    escanteios_2t_adversario: int
+    escanteios_1t_time: Optional[int]
+    escanteios_1t_adversario: Optional[int]
+    escanteios_2t_time: Optional[int]
+    escanteios_2t_adversario: Optional[int]
     chutes_time: int
     chutes_adversario: int
-    chutes_1t_time: int
-    chutes_1t_adversario: int
+    chutes_1t_time: Optional[int]
+    chutes_1t_adversario: Optional[int]
     chutes_gol_time: int
     chutes_gol_adversario: int
     cartoes_amarelos_time: int
