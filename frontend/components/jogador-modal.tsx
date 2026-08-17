@@ -27,6 +27,7 @@ interface JogoJogador {
   desarmes: number | null;
   faltas_cometidas: number | null;
   faltas_sofridas: number | null;
+  defesas: number | null;
   cartoes_amarelos: number;
   cartoes_vermelhos: number;
 }
@@ -45,6 +46,7 @@ const linhasTabela: LinhaTabela[] = [
   { label: "Desarmes", chave: "desarmes" },
   { label: "Faltas cometidas", chave: "faltas_cometidas" },
   { label: "Faltas sofridas", chave: "faltas_sofridas" },
+  { label: "Defesas", chave: "defesas" },
   { label: "Cartões amarelos", chave: "cartoes_amarelos" },
   { label: "Cartões vermelhos", chave: "cartoes_vermelhos" },
 ];

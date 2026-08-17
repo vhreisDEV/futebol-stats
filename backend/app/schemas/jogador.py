@@ -41,5 +41,6 @@ class JogoJogadorResponse(BaseModel):
     desarmes: Optional[int]
     faltas_cometidas: Optional[int]
     faltas_sofridas: Optional[int]
+    defesas: Optional[int]
     cartoes_amarelos: int
     cartoes_vermelhos: int

@@ -3,6 +3,8 @@ sem tocar em Time/Partida. Rode antes de gerar de novo ou antes de importar
 dados reais de jogador."""
 
 from app.database import SessionLocal
+from app.models.time import Time  # noqa: F401 -- precisa estar importado para o relationship("Time") resolver
+from app.models.partida import Partida  # noqa: F401 -- idem para relationship("Partida")
 from app.models.jogador import Jogador
 from app.models.estatistica_jogador_partida import EstatisticaJogadorPartida
 

@@ -39,12 +39,12 @@ ELENCO = [
 ]
 
 PERFIS = {
-    "Goleiro": dict(chutes=(0, 0), chutes_gol=(0, 0), desarmes=(0, 1), faltas_c=(0, 1), faltas_s=(0, 1), gol_chance=0.0, assist_chance=0.0, cartao_chance=0.03),
-    "Zagueiro": dict(chutes=(0, 1), chutes_gol=(0, 1), desarmes=(1, 5), faltas_c=(0, 3), faltas_s=(0, 2), gol_chance=0.03, assist_chance=0.01, cartao_chance=0.12),
-    "Lateral": dict(chutes=(0, 2), chutes_gol=(0, 1), desarmes=(1, 4), faltas_c=(0, 2), faltas_s=(0, 2), gol_chance=0.02, assist_chance=0.05, cartao_chance=0.1),
-    "Volante": dict(chutes=(0, 2), chutes_gol=(0, 1), desarmes=(2, 6), faltas_c=(1, 4), faltas_s=(0, 2), gol_chance=0.02, assist_chance=0.04, cartao_chance=0.15),
-    "Meia": dict(chutes=(0, 4), chutes_gol=(0, 2), desarmes=(0, 3), faltas_c=(0, 2), faltas_s=(0, 3), gol_chance=0.08, assist_chance=0.1, cartao_chance=0.08),
-    "Atacante": dict(chutes=(1, 6), chutes_gol=(0, 3), desarmes=(0, 1), faltas_c=(0, 2), faltas_s=(0, 3), gol_chance=0.18, assist_chance=0.08, cartao_chance=0.06),
+    "Goleiro": dict(chutes=(0, 0), chutes_gol=(0, 0), desarmes=(0, 1), faltas_c=(0, 1), faltas_s=(0, 1), defesas=(1, 8), gol_chance=0.0, assist_chance=0.0, cartao_chance=0.03),
+    "Zagueiro": dict(chutes=(0, 1), chutes_gol=(0, 1), desarmes=(1, 5), faltas_c=(0, 3), faltas_s=(0, 2), defesas=None, gol_chance=0.03, assist_chance=0.01, cartao_chance=0.12),
+    "Lateral": dict(chutes=(0, 2), chutes_gol=(0, 1), desarmes=(1, 4), faltas_c=(0, 2), faltas_s=(0, 2), defesas=None, gol_chance=0.02, assist_chance=0.05, cartao_chance=0.1),
+    "Volante": dict(chutes=(0, 2), chutes_gol=(0, 1), desarmes=(2, 6), faltas_c=(1, 4), faltas_s=(0, 2), defesas=None, gol_chance=0.02, assist_chance=0.04, cartao_chance=0.15),
+    "Meia": dict(chutes=(0, 4), chutes_gol=(0, 2), desarmes=(0, 3), faltas_c=(0, 2), faltas_s=(0, 3), defesas=None, gol_chance=0.08, assist_chance=0.1, cartao_chance=0.08),
+    "Atacante": dict(chutes=(1, 6), chutes_gol=(0, 3), desarmes=(0, 1), faltas_c=(0, 2), faltas_s=(0, 3), defesas=None, gol_chance=0.18, assist_chance=0.08, cartao_chance=0.06),
 }
 
 JOGADORES_POR_TIME_EM_CAMPO = 14  # 11 titulares + ~3 reservas que entraram
@@ -82,6 +82,7 @@ def gerar_stat_linha(jogador, partida, time_id, perfil, titular):
     assist = 1 if random.random() < perfil["assist_chance"] * fator else 0
     cartao_amarelo = 1 if random.random() < perfil["cartao_chance"] else 0
     cartao_vermelho = 1 if cartao_amarelo and random.random() < 0.05 else 0
+    defesas = faixa(perfil["defesas"]) if perfil["defesas"] is not None else None
 
     return EstatisticaJogadorPartida(
         jogador_id=jogador.id,
@@ -95,6 +96,7 @@ def gerar_stat_linha(jogador, partida, time_id, perfil, titular):
         desarmes=faixa(perfil["desarmes"]),
         faltas_cometidas=faixa(perfil["faltas_c"]),
         faltas_sofridas=faixa(perfil["faltas_s"]),
+        defesas=defesas,
         cartoes_amarelos=cartao_amarelo,
         cartoes_vermelhos=cartao_vermelho,
     )

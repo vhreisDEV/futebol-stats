@@ -26,6 +26,7 @@ class EstatisticaJogadorPartida(Base):
     desarmes = Column(Integer, nullable=True)
     faltas_cometidas = Column(Integer, nullable=True)
     faltas_sofridas = Column(Integer, nullable=True)
+    defesas = Column(Integer, nullable=True)  # so se aplica a goleiros
 
     jogador = relationship("Jogador", foreign_keys=[jogador_id])
     partida = relationship("Partida", foreign_keys=[partida_id])

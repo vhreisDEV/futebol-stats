@@ -20,9 +20,13 @@ def get_db():
 
 @router.get("/ranking/{stat}", response_model=JogadorRankingResponse)
 def ranking_por_stat(
-    stat: str, limit: int = 20, mando: Optional[str] = None, db: Session = Depends(get_db)
+    stat: str,
+    limit: int = 20,
+    mando: Optional[str] = None,
+    time_id: Optional[int] = None,
+    db: Session = Depends(get_db),
 ):
-    ranking = calcular_ranking(db, stat, limit, mando)
+    ranking = calcular_ranking(db, stat, limit, mando, time_id)
     if ranking is None:
         raise HTTPException(status_code=404, detail="Estatistica invalida")
     return {"stat": stat, "ranking": ranking}

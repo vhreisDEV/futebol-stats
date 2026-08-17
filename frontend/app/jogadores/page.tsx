@@ -24,6 +24,11 @@ interface RankingResponse {
   ranking: RankingItem[];
 }
 
+interface Time {
+  id: number;
+  nome: string;
+}
+
 const CATEGORIAS: { chave: string; label: string }[] = [
   { chave: "gols", label: "Gols" },
   { chave: "assistencias", label: "Assistências" },
@@ -32,6 +37,7 @@ const CATEGORIAS: { chave: string; label: string }[] = [
   { chave: "desarmes", label: "Desarmes" },
   { chave: "faltas_cometidas", label: "Faltas Cometidas" },
   { chave: "faltas_sofridas", label: "Faltas Sofridas" },
+  { chave: "defesas", label: "Defesas (goleiros)" },
   { chave: "cartoes_amarelos", label: "Cartões Amarelos" },
   { chave: "cartoes_vermelhos", label: "Cartões Vermelhos" },
 ];
@@ -39,18 +45,28 @@ const CATEGORIAS: { chave: string; label: string }[] = [
 export default function Jogadores() {
   const [statSelecionado, setStatSelecionado] = useState("gols");
   const [mando, setMando] = useState("todos");
+  const [timeSelecionado, setTimeSelecionado] = useState("");
+  const [times, setTimes] = useState<Time[]>([]);
   const [ranking, setRanking] = useState<RankingItem[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [jogadorAbertoId, setJogadorAbertoId] = useState<number | null>(null);
 
   useEffect(() => {
+    fetch("http://127.0.0.1:8000/times/")
+      .then((r) => r.json())
+      .then((dados: Time[]) => setTimes(dados))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     setCarregando(true);
     setErro(null);
 
     const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
+    const timeParam = timeSelecionado ? `&time_id=${timeSelecionado}` : "";
 
-    fetch(`http://127.0.0.1:8000/jogadores/ranking/${statSelecionado}?limit=20${mandoParam}`)
+    fetch(`http://127.0.0.1:8000/jogadores/ranking/${statSelecionado}?limit=20${mandoParam}${timeParam}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar ranking");
         return r.json();
@@ -63,7 +79,7 @@ export default function Jogadores() {
         setErro(err.message);
         setCarregando(false);
       });
-  }, [statSelecionado, mando]);
+  }, [statSelecionado, mando, timeSelecionado]);
 
   const categoriaAtual = CATEGORIAS.find((c) => c.chave === statSelecionado) ?? CATEGORIAS[0];
 
@@ -108,20 +124,38 @@ export default function Jogadores() {
               <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 {categoriaAtual.label}
               </h2>
-              <ToggleGroup
-                variant="outline"
-                size="sm"
-                value={[mando]}
-                onValueChange={(v: string[]) => v[0] && setMando(v[0])}
-              >
-                <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
-                <ToggleGroupItem value="casa">Casa</ToggleGroupItem>
-                <ToggleGroupItem value="fora">Fora</ToggleGroupItem>
-              </ToggleGroup>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={timeSelecionado}
+                  onChange={(e) => setTimeSelecionado(e.target.value)}
+                  className="rounded-lg border border-input bg-card px-3 py-1.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <option value="">Top 20 da liga</option>
+                  {times.map((time) => (
+                    <option key={time.id} value={time.id}>
+                      {time.nome}
+                    </option>
+                  ))}
+                </select>
+                <ToggleGroup
+                  variant="outline"
+                  size="sm"
+                  value={[mando]}
+                  onValueChange={(v: string[]) => v[0] && setMando(v[0])}
+                >
+                  <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
+                  <ToggleGroupItem value="casa">Casa</ToggleGroupItem>
+                  <ToggleGroupItem value="fora">Fora</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
             </div>
 
             {!carregando && ranking.length > 0 && (
-              <p className="mt-1 text-xs text-muted-foreground">Toque em um jogador para ver os detalhes.</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {timeSelecionado
+                  ? `Elenco completo de ${times.find((t) => String(t.id) === timeSelecionado)?.nome ?? "time"} — toque em um jogador para ver os detalhes.`
+                  : "Toque em um jogador para ver os detalhes."}
+              </p>
             )}
 
             {carregando && (

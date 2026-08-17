@@ -1,11 +1,11 @@
-from sqlalchemy import func
+from sqlalchemy import func, case
 from app.models.jogador import Jogador
 from app.models.estatistica_jogador_partida import EstatisticaJogadorPartida
 from app.models.partida import Partida
 from app.models.time import Time
 
 # Estatisticas que o usuario quer acompanhar: chutes, chutes ao gol,
-# faltas cometidas/sofridas, desarmes, gol/assistencia, cartoes.
+# faltas cometidas/sofridas, desarmes, gol/assistencia, cartoes, defesas.
 STATS_VALIDAS = {
     "gols": EstatisticaJogadorPartida.gols,
     "assistencias": EstatisticaJogadorPartida.assistencias,
@@ -16,7 +16,11 @@ STATS_VALIDAS = {
     "faltas_sofridas": EstatisticaJogadorPartida.faltas_sofridas,
     "cartoes_amarelos": EstatisticaJogadorPartida.cartoes_amarelos,
     "cartoes_vermelhos": EstatisticaJogadorPartida.cartoes_vermelhos,
+    "defesas": EstatisticaJogadorPartida.defesas,
 }
+
+# Estatisticas que so fazem sentido para goleiros.
+STATS_SO_GOLEIRO = {"defesas"}
 
 
 def _filtro_mando_stat(mando):
@@ -27,11 +31,36 @@ def _filtro_mando_stat(mando):
     return None
 
 
-def calcular_ranking(db, stat, limit=20, mando=None):
+def calcular_ranking(db, stat, limit=20, mando=None, time_id=None):
     coluna = STATS_VALIDAS.get(stat)
     if coluna is None:
         return None
 
+    if time_id is not None:
+        linhas = _ranking_elenco_completo(db, coluna, mando, time_id, stat)
+    else:
+        linhas = _ranking_top_liga(db, coluna, mando, limit, stat)
+
+    resultado = []
+    for linha in linhas:
+        total = linha.total or 0
+        jogos = linha.jogos or 0
+        resultado.append(
+            {
+                "jogador_id": linha.jogador_id,
+                "nome": linha.nome,
+                "posicao": linha.posicao,
+                "time_id": linha.time_id,
+                "time_nome": linha.time_nome,
+                "jogos": jogos,
+                "total": total,
+                "media": round(total / jogos, 2) if jogos else 0,
+            }
+        )
+    return resultado
+
+
+def _ranking_top_liga(db, coluna, mando, limit, stat):
     query = (
         db.query(
             Jogador.id.label("jogador_id"),
@@ -47,28 +76,52 @@ def calcular_ranking(db, stat, limit=20, mando=None):
         .filter(coluna.isnot(None))
     )
 
+    if stat in STATS_SO_GOLEIRO:
+        query = query.filter(Jogador.posicao == "Goleiro")
+
     filtro_mando = _filtro_mando_stat(mando)
     if filtro_mando is not None:
         query = query.join(Partida, Partida.id == EstatisticaJogadorPartida.partida_id).filter(filtro_mando)
 
-    linhas = query.group_by(Jogador.id).order_by(func.sum(coluna).desc()).limit(limit).all()
+    return query.group_by(Jogador.id).order_by(func.sum(coluna).desc()).limit(limit).all()
 
-    resultado = []
-    for linha in linhas:
-        total = linha.total or 0
-        resultado.append(
-            {
-                "jogador_id": linha.jogador_id,
-                "nome": linha.nome,
-                "posicao": linha.posicao,
-                "time_id": linha.time_id,
-                "time_nome": linha.time_nome,
-                "jogos": linha.jogos,
-                "total": total,
-                "media": round(total / linha.jogos, 2) if linha.jogos else 0,
-            }
+
+def _ranking_elenco_completo(db, coluna, mando, time_id, stat):
+    """Todos os jogadores do time, mesmo sem nenhuma estatistica na
+    categoria escolhida (aparecem com total 0), para dar pra achar
+    qualquer jogador do elenco -- nao so quem entra no top da liga."""
+    condicao_mando = _filtro_mando_stat(mando)
+    if condicao_mando is not None:
+        expressao_total = func.sum(case((condicao_mando, coluna), else_=0))
+        expressao_jogos = func.sum(case((condicao_mando, 1), else_=0))
+    else:
+        expressao_total = func.sum(coluna)
+        expressao_jogos = func.count(EstatisticaJogadorPartida.id)
+
+    query = (
+        db.query(
+            Jogador.id.label("jogador_id"),
+            Jogador.nome,
+            Jogador.posicao,
+            Time.id.label("time_id"),
+            Time.nome.label("time_nome"),
+            func.coalesce(expressao_jogos, 0).label("jogos"),
+            func.coalesce(expressao_total, 0).label("total"),
         )
-    return resultado
+        .outerjoin(Time, Time.id == Jogador.time_id)
+        .outerjoin(EstatisticaJogadorPartida, EstatisticaJogadorPartida.jogador_id == Jogador.id)
+        .outerjoin(Partida, Partida.id == EstatisticaJogadorPartida.partida_id)
+        .filter(Jogador.time_id == time_id)
+    )
+
+    if stat in STATS_SO_GOLEIRO:
+        query = query.filter(Jogador.posicao == "Goleiro")
+
+    return (
+        query.group_by(Jogador.id)
+        .order_by(func.coalesce(expressao_total, 0).desc())
+        .all()
+    )
 
 
 def obter_ultimos_jogos_jogador(db, jogador_id, quantidade=10, mando=None):
@@ -106,6 +159,7 @@ def _montar_jogo_jogador(linha):
         "desarmes": linha.desarmes,
         "faltas_cometidas": linha.faltas_cometidas,
         "faltas_sofridas": linha.faltas_sofridas,
+        "defesas": linha.defesas,
         "cartoes_amarelos": linha.cartoes_amarelos,
         "cartoes_vermelhos": linha.cartoes_vermelhos,
     }
