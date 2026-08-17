@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, TrendingUp, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
 import { corTime, iniciais } from "@/lib/times-visual";
@@ -202,83 +203,93 @@ function ModalEstatisticas({
   jogos: Jogo[];
   onFechar: () => void;
 }) {
+  const cores = corTime(nomeTime);
+  const larguraFixa = 168; // label (108px) + coluna Média (60px)
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
-      onClick={onFechar}
-    >
-      <div
-        className="max-h-[85vh] w-full max-w-5xl overflow-auto rounded-lg border border-border bg-popover p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-heading text-base font-semibold uppercase tracking-wide text-foreground">
-            {nomeTime} — Estatísticas Detalhadas
-          </h2>
-          <button
-            onClick={onFechar}
-            className="rounded-md border border-border px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            Fechar
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open) => !open && onFechar()}>
+      <DialogContent className="max-h-[85vh] w-full max-w-[95vw] overflow-auto sm:max-w-5xl">
+        <DialogHeader>
+          <div className="flex items-center gap-2">
+            <span
+              className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold ${cores.textoEscuro ? "text-black" : "text-white"}`}
+              style={{ backgroundColor: cores.fundo, borderColor: cores.borda }}
+            >
+              {iniciais(nomeTime)}
+            </span>
+            <DialogTitle className="uppercase tracking-wide">
+              {nomeTime} — Estatísticas Detalhadas
+            </DialogTitle>
+          </div>
+        </DialogHeader>
 
-        <div className="min-w-[700px]">
+        <div className="min-w-[680px]">
           <div
-            className="grid gap-px text-xs"
-            style={{ gridTemplateColumns: `160px 100px repeat(${jogos.length}, 100px)` }}
+            className="flex items-center gap-2 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+            style={{ paddingLeft: larguraFixa }}
           >
-            <div className="bg-muted/40 px-2 py-2" />
-            <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-semibold text-primary">
-              Média
-            </div>
-            {jogos.map((jogo, index) => (
-              <div key={index} className="bg-muted/40 px-2 py-2 text-center">
-                <p className="text-[11px] text-muted-foreground">{formatarData(jogo.data)}</p>
-                <p className="mt-0.5 font-medium text-foreground">
-                  {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
-                </p>
-                <span
-                  className={`mt-1 inline-flex h-7 w-14 items-center justify-center rounded font-mono text-[11px] font-semibold tabular-nums ${
-                    resultadoCorQuadrado[jogo.resultado] ?? "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {jogo.gols_time}x{jogo.gols_adversario}
-                </span>
-              </div>
-            ))}
+            <span>Último jogo</span>
+            <div className="h-px flex-1 bg-border" />
+            <span>Mais antigo</span>
+          </div>
 
-            {linhasTabela.map((linha) => (
-              <Fragment key={linha.chave}>
-                <div
-                  key={`${linha.chave}-label`}
-                  className="bg-muted/20 px-2 py-2 text-muted-foreground"
-                >
-                  {linha.label}
+          <div className="overflow-hidden rounded-lg ring-1 ring-border">
+            <div
+              className="grid gap-px bg-border text-xs"
+              style={{ gridTemplateColumns: `108px 60px repeat(${jogos.length}, 92px)` }}
+            >
+              <div className="bg-card px-2 py-2" />
+              <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-semibold text-primary">
+                Média
+              </div>
+              {jogos.map((jogo, index) => (
+                <div key={index} className="bg-card px-2 py-2 text-center">
+                  <p className="text-[11px] text-muted-foreground">{formatarData(jogo.data)}</p>
+                  <p className="mt-0.5 truncate font-medium text-foreground">
+                    {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
+                  </p>
+                  <span
+                    className={`mt-1 inline-flex h-7 w-14 items-center justify-center rounded font-mono text-[11px] font-semibold tabular-nums ${
+                      resultadoCorQuadrado[jogo.resultado] ?? "bg-secondary text-secondary-foreground"
+                    }`}
+                  >
+                    {jogo.gols_time}x{jogo.gols_adversario}
+                  </span>
                 </div>
-                <div
-                  key={`${linha.chave}-media`}
-                  className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-mono font-semibold tabular-nums text-primary"
-                >
-                  {valorOuTraco(media(jogos, linha.chave))}
-                </div>
-                {jogos.map((jogo, index) => {
-                  const valor = jogo[linha.chave];
-                  return (
-                    <div
-                      key={`${linha.chave}-${index}`}
-                      className="bg-muted/20 px-2 py-2 text-center font-mono tabular-nums text-foreground"
-                    >
-                      {valor === null ? "—" : valor}
-                    </div>
-                  );
-                })}
-              </Fragment>
-            ))}
+              ))}
+
+              {linhasTabela.map((linha) => (
+                <Fragment key={linha.chave}>
+                  <div
+                    key={`${linha.chave}-label`}
+                    className="bg-background px-2 py-2 text-[11px] text-muted-foreground"
+                  >
+                    {linha.label}
+                  </div>
+                  <div
+                    key={`${linha.chave}-media`}
+                    className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-mono font-semibold tabular-nums text-primary"
+                  >
+                    {valorOuTraco(media(jogos, linha.chave))}
+                  </div>
+                  {jogos.map((jogo, index) => {
+                    const valor = jogo[linha.chave];
+                    return (
+                      <div
+                        key={`${linha.chave}-${index}`}
+                        className="bg-background px-2 py-2 text-center font-mono tabular-nums text-foreground"
+                      >
+                        {valor === null ? "—" : valor}
+                      </div>
+                    );
+                  })}
+                </Fragment>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
