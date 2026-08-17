@@ -64,6 +64,33 @@ def _forma_com_fallback(db, time_id, data_referencia, mando):
     return forma
 
 
+def _normalizar_percentuais(brutos):
+    """
+    Converte valores brutos proporcionais em percentuais que somam
+    exatamente 100.00%, usando o método dos maiores restos.
+
+    Arredondar cada percentual de forma independente (round(x/soma*100, 2))
+    pode fazer a soma exibida fechar em 99.99% ou 100.01% mesmo com a
+    divisão pela soma correta — é só um efeito colateral de arredondar 3
+    números de forma isolada. O método dos maiores restos distribui as
+    "sobras" de arredondamento para quem tem a maior parte fracionária,
+    então a soma fecha em 100.00% sem inflar ou empatar artificialmente
+    nenhum dos três valores.
+    """
+    soma = sum(brutos)
+    unidade = 10000  # cada unidade = 0.01%
+
+    exatos = [b / soma * unidade for b in brutos]
+    base = [int(e) for e in exatos]
+    resto = unidade - sum(base)
+
+    ordem_por_resto = sorted(range(len(brutos)), key=lambda i: exatos[i] - base[i], reverse=True)
+    for i in range(resto):
+        base[ordem_por_resto[i]] += 1
+
+    return [valor / 100 for valor in base]
+
+
 def calcular_probabilidade_resultado(db, time_mandante_id, time_visitante_id, data_referencia):
     """
     Calcula a probabilidade de vitória do mandante, empate e vitória do
@@ -89,11 +116,9 @@ def calcular_probabilidade_resultado(db, time_mandante_id, time_visitante_id, da
     p_vitoria_visitante_bruta = forma_visitante["taxa_vitoria"]
     p_empate_bruta = (forma_mandante["taxa_empate"] + forma_visitante["taxa_empate"]) / 2
 
-    soma = p_vitoria_mandante_bruta + p_vitoria_visitante_bruta + p_empate_bruta
-
-    p_vitoria_mandante = round((p_vitoria_mandante_bruta / soma) * 100, 2)
-    p_empate = round((p_empate_bruta / soma) * 100, 2)
-    p_vitoria_visitante = round((p_vitoria_visitante_bruta / soma) * 100, 2)
+    p_vitoria_mandante, p_empate, p_vitoria_visitante = _normalizar_percentuais(
+        [p_vitoria_mandante_bruta, p_empate_bruta, p_vitoria_visitante_bruta]
+    )
 
     return {
         "probabilidade_vitoria_mandante": p_vitoria_mandante,

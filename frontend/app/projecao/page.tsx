@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -54,6 +55,15 @@ interface Projecao {
     primeiro_tempo_mandante: number | null;
     primeiro_tempo_visitante: number | null;
   };
+}
+
+function formatarData(dataStr: string) {
+  const partes = dataStr.split("-");
+  if (partes.length === 3) {
+    const [ano, mes, dia] = partes;
+    return `${dia}/${mes}/${ano}`;
+  }
+  return dataStr;
 }
 
 function valorOuTraco(valor: number | null) {
@@ -139,10 +149,9 @@ function TendenciaTexto({
       <span className="font-mono font-semibold tabular-nums text-primary">
         {palavra} {linhaReferencia}
       </span>{" "}
-      {unidade} na partida (total esperado:{" "}
-      <span className="font-mono font-semibold tabular-nums text-primary">{arredondado(total)}</span>
-      {" "}
-      <span className="text-muted-foreground">({total})</span>).
+      {unidade} na partida — média exata prevista:{" "}
+      <span className="font-mono font-semibold tabular-nums text-primary">{total}</span>{" "}
+      <span className="text-muted-foreground">(arredondado: {arredondado(total)})</span>.
     </p>
   );
 }
@@ -233,8 +242,12 @@ function ProjecaoPreJogoConteudo() {
   return (
     <main className="min-h-screen bg-background px-6 py-10 text-foreground">
       <div className="mx-auto max-w-3xl">
-        <Link href="/brasileirao" className="text-sm text-muted-foreground underline hover:text-primary">
-          ← Voltar para o Brasileirão
+        <Link
+          href="/brasileirao"
+          className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+          Brasileirão
         </Link>
 
         <h1 className="mt-4 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
@@ -242,6 +255,10 @@ function ProjecaoPreJogoConteudo() {
         </h1>
         <p className="mt-2 text-muted-foreground">
           Selecione mandante e visitante para ver a previsão estatística do confronto.
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Considera apenas jogos do Brasileirão Série A — os times também disputam outras
+          competições (Copa do Brasil, Libertadores, Sul-Americana etc.), que não entram nesta conta.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -319,7 +336,7 @@ function ProjecaoPreJogoConteudo() {
                 Gols esperados (média): {valorOuTraco(projecao.gols.mandante)} x {valorOuTraco(projecao.gols.visitante)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Referência: {projecao.data_referencia}
+                Referência: {formatarData(projecao.data_referencia)}
               </p>
             </div>
 
@@ -416,11 +433,14 @@ function ProjecaoPreJogoConteudo() {
                   unidade="chutes ao gol"
                 />
               </div>
+              {/* Em stand-by: Highlightly não fornece chutes por tempo (1ºT).
+                  Reativar quando encontrarmos uma fonte com esse detalhamento.
               <LinhaComparativa
                 label="Chutes 1º tempo"
                 valorMandante={projecao.chutes.primeiro_tempo_mandante}
                 valorVisitante={projecao.chutes.primeiro_tempo_visitante}
               />
+              */}
             </CartaoProjecao>
           </div>
         )}

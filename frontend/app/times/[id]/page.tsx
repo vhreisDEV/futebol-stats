@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -102,10 +103,12 @@ interface LinhaTabela {
 const linhasTabela: LinhaTabela[] = [
   { label: "Gols", chave: "gols_time" },
   { label: "Escanteios", chave: "escanteios_time" },
-  { label: "Escanteios 1ºT", chave: "escanteios_1t_time" },
-  { label: "Escanteios 2ºT", chave: "escanteios_2t_time" },
+  // Em stand-by: Highlightly não fornece escanteios/chutes por tempo (1ºT/2ºT).
+  // Reativar quando encontrarmos uma fonte com esse detalhamento.
+  // { label: "Escanteios 1ºT", chave: "escanteios_1t_time" },
+  // { label: "Escanteios 2ºT", chave: "escanteios_2t_time" },
   { label: "Chutes", chave: "chutes_time" },
-  { label: "Chutes 1ºT", chave: "chutes_1t_time" },
+  // { label: "Chutes 1ºT", chave: "chutes_1t_time" },
   { label: "Chutes ao gol", chave: "chutes_gol_time" },
   { label: "Cartões amarelos", chave: "cartoes_amarelos_time" },
   { label: "Cartões vermelhos", chave: "cartoes_vermelhos_time" },
@@ -342,7 +345,11 @@ export default function DetalheTime() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background text-destructive">
         <p>Erro: {erro}</p>
-        <Link href="/times" className="text-muted-foreground underline hover:text-primary">
+        <Link
+          href="/times"
+          className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
           Voltar para a lista de times
         </Link>
       </main>
@@ -355,9 +362,10 @@ export default function DetalheTime() {
         <div className="flex items-center justify-between">
           <Link
             href="/times"
-            className="text-sm text-muted-foreground underline hover:text-primary"
+            className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
           >
-            ← Voltar para a lista de times
+            <ChevronLeft className="h-3.5 w-3.5" />
+            Times
           </Link>
           <div className="flex gap-4">
             <Link

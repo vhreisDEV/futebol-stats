@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Time {
@@ -206,9 +207,10 @@ function CompararTimesConteudo() {
       <div className="mx-auto max-w-3xl">
         <Link
           href="/brasileirao"
-          className="text-sm text-muted-foreground underline hover:text-primary"
+          className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
         >
-          ← Voltar para o Brasileirão
+          <ChevronLeft className="h-3.5 w-3.5" />
+          Brasileirão
         </Link>
 
         <h1 className="mt-4 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
