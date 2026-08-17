@@ -191,7 +191,7 @@ export default function Brasileirao() {
               href="/projecao"
               className={buttonVariants({ variant: "default" })}
             >
-              Projeções
+              Previsão de Jogos
             </Link>
             <Link
               href="/comparar"
@@ -201,7 +201,7 @@ export default function Brasileirao() {
                   "!border-rose-500/40 !text-rose-400 hover:!bg-rose-500/10 hover:!text-rose-300",
               })}
             >
-              Comparação
+              Comparar Times
             </Link>
             <Link
               href="/times"
