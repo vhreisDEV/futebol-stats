@@ -112,6 +112,28 @@ def mapear_estatisticas_time(lista_stats):
     }
 
 
+def buscar_partida_existente(db, id_externo, rodada, time_mandante_id, time_visitante_id):
+    # Primeiro tenta pelo id externo (partida ja importada de verdade antes).
+    partida = db.query(Partida).filter(Partida.id_externo == id_externo).first()
+    if partida:
+        return partida
+
+    # Senao, pode ser um placeholder agendada/adiada pre-cadastrado (via
+    # backfill_calendario_2026.py ou uma execucao anterior deste script)
+    # que ainda nao tem id_externo -- reaproveita a linha em vez de duplicar
+    # o confronto.
+    return (
+        db.query(Partida)
+        .filter(
+            Partida.id_externo.is_(None),
+            Partida.rodada == rodada,
+            Partida.time_mandante_id == time_mandante_id,
+            Partida.time_visitante_id == time_visitante_id,
+        )
+        .first()
+    )
+
+
 def importar():
     if not API_KEY:
         print("ERRO: HIGHLIGHTLY_API_KEY não encontrada no .env")
@@ -134,11 +156,6 @@ def importar():
 
             id_externo = p["id"]
 
-            ja_no_banco = db.query(Partida).filter(Partida.id_externo == id_externo).first()
-            if ja_no_banco:
-                ja_existiam += 1
-                continue
-
             time_mandante = db.query(Time).filter(Time.id_externo == p["homeTeam"]["id"]).first()
             time_visitante = db.query(Time).filter(Time.id_externo == p["awayTeam"]["id"]).first()
 
@@ -153,18 +170,32 @@ def importar():
             rodada = parse_rodada(p.get("round"))
             data_partida = parse_data(p["date"])
 
+            partida_existente = buscar_partida_existente(
+                db, id_externo, rodada, time_mandante.id, time_visitante.id
+            )
+
+            if partida_existente and partida_existente.status == "finalizada":
+                # Ja importamos essa partida com placar e estatisticas antes.
+                ja_existiam += 1
+                continue
+
             if status != "finalizada":
-                # Agendada ou adiada: guarda so o essencial (times, data,
-                # rodada, status), sem gastar chamada nenhuma de estatisticas
-                # -- nao ha placar/stats pra buscar ainda.
-                db.add(Partida(
-                    id_externo=id_externo,
-                    time_mandante_id=time_mandante.id,
-                    time_visitante_id=time_visitante.id,
-                    status=status,
-                    data=data_partida,
-                    rodada=rodada,
-                ))
+                # Agendada ou adiada: so precisa dos dados basicos, sem gastar
+                # chamada nenhuma de estatisticas -- nao ha placar/stats pra
+                # buscar ainda.
+                if partida_existente:
+                    partida_existente.id_externo = id_externo
+                    partida_existente.status = status
+                    partida_existente.data = data_partida
+                else:
+                    db.add(Partida(
+                        id_externo=id_externo,
+                        time_mandante_id=time_mandante.id,
+                        time_visitante_id=time_visitante.id,
+                        status=status,
+                        data=data_partida,
+                        rodada=rodada,
+                    ))
                 db.commit()
                 print(f"  {status.upper()}: rodada {rodada} — {p['homeTeam']['name']} x "
                       f"{p['awayTeam']['name']} ({data_partida})")
@@ -193,7 +224,7 @@ def importar():
             m = mapear_estatisticas_time(stats_mandante["statistics"])
             v = mapear_estatisticas_time(stats_visitante["statistics"])
 
-            nova_partida = Partida(
+            dados_finalizada = dict(
                 id_externo=id_externo,
                 time_mandante_id=time_mandante.id,
                 time_visitante_id=time_visitante.id,
@@ -219,7 +250,12 @@ def importar():
                 cartoes_vermelhos_mandante=m["cartoes_vermelhos"],
                 cartoes_vermelhos_visitante=v["cartoes_vermelhos"],
             )
-            db.add(nova_partida)
+
+            if partida_existente:
+                for campo, valor in dados_finalizada.items():
+                    setattr(partida_existente, campo, valor)
+            else:
+                db.add(Partida(**dados_finalizada))
             db.commit()
 
             print(f"  Importada: rodada {rodada} — {p['homeTeam']['name']} {gols_mandante} x {gols_visitante} "
