@@ -42,6 +42,15 @@ const resultadoLabel: Record<string, string> = {
   derrota: "Derrota",
 };
 
+function formatarData(dataStr: string) {
+  const partes = dataStr.split("-");
+  if (partes.length === 3) {
+    const [ano, mes, dia] = partes;
+    return `${dia}/${mes}/${ano}`;
+  }
+  return dataStr;
+}
+
 function ListaJogos({ jogos }: { jogos: Jogo[] }) {
   return (
     <ul className="grid gap-2">
@@ -54,7 +63,7 @@ function ListaJogos({ jogos }: { jogos: Jogo[] }) {
             <span className="font-medium">
               {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
             </span>
-            <span className="text-muted-foreground">{jogo.data}</span>
+            <span className="text-muted-foreground">{formatarData(jogo.data)}</span>
           </div>
           <div className="mt-1 flex items-center justify-between text-muted-foreground">
             <span className="font-mono tabular-nums text-foreground">
@@ -196,10 +205,10 @@ function CompararTimesConteudo() {
     <main className="min-h-screen bg-background px-6 py-10 text-foreground">
       <div className="mx-auto max-w-3xl">
         <Link
-          href="/times"
+          href="/brasileirao"
           className="text-sm text-muted-foreground underline hover:text-primary"
         >
-          ← Voltar para a lista de times
+          ← Voltar para o Brasileirão
         </Link>
 
         <h1 className="mt-4 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">

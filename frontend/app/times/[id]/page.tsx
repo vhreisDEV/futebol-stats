@@ -15,14 +15,14 @@ interface Jogo {
   gols_adversario: number;
   escanteios_time: number;
   escanteios_adversario: number;
-  escanteios_1t_time: number;
-  escanteios_1t_adversario: number;
-  escanteios_2t_time: number;
-  escanteios_2t_adversario: number;
+  escanteios_1t_time: number | null;
+  escanteios_1t_adversario: number | null;
+  escanteios_2t_time: number | null;
+  escanteios_2t_adversario: number | null;
   chutes_time: number;
   chutes_adversario: number;
-  chutes_1t_time: number;
-  chutes_1t_adversario: number;
+  chutes_1t_time: number | null;
+  chutes_1t_adversario: number | null;
   chutes_gol_time: number;
   chutes_gol_adversario: number;
   cartoes_amarelos_time: number;
@@ -112,9 +112,14 @@ const linhasTabela: LinhaTabela[] = [
 ];
 
 function media(jogos: Jogo[], chave: keyof Jogo) {
-  if (jogos.length === 0) return 0;
-  const soma = jogos.reduce((acc, jogo) => acc + Number(jogo[chave]), 0);
-  return Math.round((soma / jogos.length) * 10) / 10;
+  const valores = jogos
+    .map((jogo) => jogo[chave])
+    .filter((valor): valor is number => typeof valor === "number");
+
+  if (valores.length === 0) return null;
+
+  const soma = valores.reduce((acc, valor) => acc + valor, 0);
+  return Math.round((soma / valores.length) * 10) / 10;
 }
 
 // Converte "aaaa-mm-dd" para "dd/mm/aaaa". Se o formato vier diferente, retorna a string original.
@@ -194,16 +199,19 @@ function ModalEstatisticas({
                   key={`${linha.chave}-media`}
                   className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-mono font-semibold tabular-nums text-primary"
                 >
-                  {media(jogos, linha.chave)}
+                  {valorOuTraco(media(jogos, linha.chave))}
                 </div>
-                {jogos.map((jogo, index) => (
-                  <div
-                    key={`${linha.chave}-${index}`}
-                    className="bg-muted/20 px-2 py-2 text-center font-mono tabular-nums text-foreground"
-                  >
-                    {jogo[linha.chave]}
-                  </div>
-                ))}
+                {jogos.map((jogo, index) => {
+                  const valor = jogo[linha.chave];
+                  return (
+                    <div
+                      key={`${linha.chave}-${index}`}
+                      className="bg-muted/20 px-2 py-2 text-center font-mono tabular-nums text-foreground"
+                    >
+                      {valor === null ? "—" : valor}
+                    </div>
+                  );
+                })}
               </Fragment>
             ))}
           </div>

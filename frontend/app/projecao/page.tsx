@@ -43,8 +43,14 @@ interface Projecao {
   chutes: {
     totais_mandante: number | null;
     totais_visitante: number | null;
+    total_geral: number | null;
+    linha_referencia_geral: number | null;
+    tendencia_geral: string | null;
     ao_gol_mandante: number | null;
     ao_gol_visitante: number | null;
+    total_ao_gol: number | null;
+    linha_referencia_ao_gol: number | null;
+    tendencia_ao_gol: string | null;
     primeiro_tempo_mandante: number | null;
     primeiro_tempo_visitante: number | null;
   };
@@ -54,7 +60,7 @@ function valorOuTraco(valor: number | null) {
   return valor === null || valor === undefined ? "—" : valor;
 }
 
-function placarArredondado(valor: number | null) {
+function arredondado(valor: number | null) {
   return valor === null || valor === undefined ? "—" : Math.round(valor);
 }
 
@@ -92,16 +98,20 @@ function LinhaComparativa({
     typeof valorMandante === "number" && typeof valorVisitante === "number" && valorVisitante > valorMandante;
 
   return (
-    <div className="grid grid-cols-3 border-t border-border px-1 py-3 text-sm first:border-t-0">
-      <span className={`font-mono tabular-nums ${aMaior ? "font-semibold text-primary" : "text-muted-foreground"}`}>
-        {valorOuTraco(valorMandante)}
-      </span>
+    <div className="grid grid-cols-3 items-baseline border-t border-border px-1 py-3 text-sm first:border-t-0">
+      <div className={aMaior ? "text-primary" : "text-muted-foreground"}>
+        <span className="font-mono text-base font-semibold tabular-nums">{arredondado(valorMandante)}</span>
+        {valorMandante !== null && (
+          <span className="ml-1 font-mono text-[11px] text-muted-foreground">({valorMandante})</span>
+        )}
+      </div>
       <span className="text-center text-muted-foreground">{label}</span>
-      <span
-        className={`text-right font-mono tabular-nums ${bMaior ? "font-semibold text-primary" : "text-muted-foreground"}`}
-      >
-        {valorOuTraco(valorVisitante)}
-      </span>
+      <div className={`text-right ${bMaior ? "text-primary" : "text-muted-foreground"}`}>
+        {valorVisitante !== null && (
+          <span className="mr-1 font-mono text-[11px] text-muted-foreground">({valorVisitante})</span>
+        )}
+        <span className="font-mono text-base font-semibold tabular-nums">{arredondado(valorVisitante)}</span>
+      </div>
     </div>
   );
 }
@@ -118,19 +128,21 @@ function TendenciaTexto({
   unidade: string;
 }) {
   if (total === null || linhaReferencia === null || !tendencia) {
-    return <p className="text-sm text-muted-foreground">Sem dado suficiente para calcular tendência.</p>;
+    return <p className="text-xs text-muted-foreground">Sem dado suficiente para calcular tendência.</p>;
   }
 
   const palavra = tendencia === "over" ? "mais de" : "menos de";
 
   return (
-    <p className="text-sm text-muted-foreground">
+    <p className="text-xs text-muted-foreground">
       Tendência de{" "}
       <span className="font-mono font-semibold tabular-nums text-primary">
         {palavra} {linhaReferencia}
       </span>{" "}
       {unidade} na partida (total esperado:{" "}
-      <span className="font-mono font-semibold tabular-nums text-primary">{total}</span>).
+      <span className="font-mono font-semibold tabular-nums text-primary">{arredondado(total)}</span>
+      {" "}
+      <span className="text-muted-foreground">({total})</span>).
     </p>
   );
 }
@@ -221,15 +233,15 @@ function ProjecaoPreJogoConteudo() {
   return (
     <main className="min-h-screen bg-background px-6 py-10 text-foreground">
       <div className="mx-auto max-w-3xl">
-        <Link href="/times" className="text-sm text-muted-foreground underline hover:text-primary">
-          ← Voltar para a lista de times
+        <Link href="/brasileirao" className="text-sm text-muted-foreground underline hover:text-primary">
+          ← Voltar para o Brasileirão
         </Link>
 
         <h1 className="mt-4 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-          Projeção Pré-Jogo
+          Previsão de Jogos
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Selecione mandante e visitante para ver a projeção estatística do confronto.
+          Selecione mandante e visitante para ver a previsão estatística do confronto.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -266,6 +278,12 @@ function ProjecaoPreJogoConteudo() {
           </div>
         </div>
 
+        <p className="mt-3 text-xs text-muted-foreground">
+          A previsão é específica para este mando de campo — trocar quem é mandante e quem é
+          visitante muda o resultado, já que o aproveitamento em casa costuma ser diferente do
+          aproveitamento fora.
+        </p>
+
         {mandanteId && visitanteId && mandanteId === visitanteId && (
           <p className="mt-8 text-primary">Selecione dois times diferentes.</p>
         )}
@@ -291,7 +309,7 @@ function ProjecaoPreJogoConteudo() {
                   {projecao.time_mandante}
                 </span>
                 <span className="font-mono text-3xl font-bold tabular-nums text-primary sm:text-4xl">
-                  {placarArredondado(projecao.gols.mandante)}–{placarArredondado(projecao.gols.visitante)}
+                  {arredondado(projecao.gols.mandante)}–{arredondado(projecao.gols.visitante)}
                 </span>
                 <span className="truncate text-left font-heading text-sm uppercase tracking-wide sm:text-lg">
                   {projecao.time_visitante}
@@ -377,11 +395,27 @@ function ProjecaoPreJogoConteudo() {
                 valorMandante={projecao.chutes.totais_mandante}
                 valorVisitante={projecao.chutes.totais_visitante}
               />
+              <div className="border-t border-border pt-3 pb-1">
+                <TendenciaTexto
+                  total={projecao.chutes.total_geral}
+                  linhaReferencia={projecao.chutes.linha_referencia_geral}
+                  tendencia={projecao.chutes.tendencia_geral}
+                  unidade="chutes"
+                />
+              </div>
               <LinhaComparativa
                 label="Chutes ao gol"
                 valorMandante={projecao.chutes.ao_gol_mandante}
                 valorVisitante={projecao.chutes.ao_gol_visitante}
               />
+              <div className="border-t border-border pt-3 pb-1">
+                <TendenciaTexto
+                  total={projecao.chutes.total_ao_gol}
+                  linhaReferencia={projecao.chutes.linha_referencia_ao_gol}
+                  tendencia={projecao.chutes.tendencia_ao_gol}
+                  unidade="chutes ao gol"
+                />
+              </div>
               <LinhaComparativa
                 label="Chutes 1º tempo"
                 valorMandante={projecao.chutes.primeiro_tempo_mandante}
