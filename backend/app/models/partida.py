@@ -16,7 +16,9 @@ class Partida(Base):
     time_mandante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
     time_visitante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
     status = Column(String, nullable=False, default=STATUS_PARTIDA_PADRAO)
-    data = Column(Date, nullable=False)
+    # Nula quando so temos o confronto da rodada (mandante x visitante) mas
+    # ainda nao a data/hora oficial da CBF para esse jogo.
+    data = Column(Date, nullable=True)
     rodada = Column(Integer, nullable=True)
 
     # Nulos ate a partida ser finalizada (agendada/adiada nao tem placar

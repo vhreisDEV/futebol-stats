@@ -5,7 +5,7 @@ from typing import Optional
 
 class PartidaDetalheResponse(BaseModel):
     id: int
-    data: date
+    data: Optional[date]
     status: str
     rodada: Optional[int]
     time_mandante_id: int

@@ -53,7 +53,7 @@ function CabecalhoCampeonato() {
 
 interface PartidaRodada {
   id: number;
-  data: string;
+  data: string | null;
   status: string;
   time_mandante_id: number;
   time_mandante: string;
@@ -88,7 +88,8 @@ function TicketSkeleton() {
   );
 }
 
-function formatarData(dataStr: string) {
+function formatarData(dataStr: string | null) {
+  if (!dataStr) return "Data a definir";
   const partes = dataStr.split("-");
   if (partes.length === 3) {
     const [ano, mes, dia] = partes;

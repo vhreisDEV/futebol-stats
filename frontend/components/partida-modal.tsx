@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface PartidaDetalhe {
   id: number;
-  data: string;
+  data: string | null;
   status: string;
   rodada: number | null;
   time_mandante_id: number;
@@ -38,7 +38,8 @@ const STATUS_LABEL: Record<string, string> = {
   agendada: "Ainda não realizada",
 };
 
-function formatarData(dataStr: string) {
+function formatarData(dataStr: string | null) {
+  if (!dataStr) return "Data a definir";
   const partes = dataStr.split("-");
   if (partes.length === 3) {
     const [ano, mes, dia] = partes;
