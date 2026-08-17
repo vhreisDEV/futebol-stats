@@ -54,12 +54,13 @@ function CabecalhoCampeonato() {
 interface PartidaRodada {
   id: number;
   data: string;
+  status: string;
   time_mandante_id: number;
   time_mandante: string;
   time_visitante_id: number;
   time_visitante: string;
-  gols_mandante: number;
-  gols_visitante: number;
+  gols_mandante: number | null;
+  gols_visitante: number | null;
 }
 
 interface RodadaResponse {
@@ -284,11 +285,21 @@ export default function Brasileirao() {
                             {partida.time_mandante}
                           </Link>
                         </div>
-                        <div className="flex shrink-0 items-center gap-1 font-mono text-sm font-semibold tabular-nums text-primary">
-                          <span>{partida.gols_mandante}</span>
-                          <span className="text-xs text-muted-foreground">–</span>
-                          <span>{partida.gols_visitante}</span>
-                        </div>
+                        {partida.status === "adiada" ? (
+                          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-amber-400">
+                            Adiado
+                          </span>
+                        ) : partida.status === "agendada" ? (
+                          <span className="shrink-0 text-[10px] uppercase tracking-wide text-muted-foreground">
+                            A jogar
+                          </span>
+                        ) : (
+                          <div className="flex shrink-0 items-center gap-1 font-mono text-sm font-semibold tabular-nums text-primary">
+                            <span>{partida.gols_mandante}</span>
+                            <span className="text-xs text-muted-foreground">–</span>
+                            <span>{partida.gols_visitante}</span>
+                          </div>
+                        )}
                         <div className="min-w-0 flex-1 text-left">
                           <Link
                             href={`/times/${partida.time_visitante_id}`}

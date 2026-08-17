@@ -13,7 +13,7 @@ def _filtro_mando(time_id, mando):
 def obter_ultimos_jogos(db, time_id, quantidade=10, mando=None):
     partidas = (
         db.query(Partida)
-        .filter(_filtro_mando(time_id, mando))
+        .filter(_filtro_mando(time_id, mando), Partida.status == "finalizada")
         .order_by(Partida.data.desc())
         .limit(quantidade)
         .all()
@@ -28,6 +28,7 @@ def obter_jogos_ate_rodada(db, time_id, rodada):
         .filter(
             or_(Partida.time_mandante_id == time_id, Partida.time_visitante_id == time_id),
             Partida.rodada <= rodada,
+            Partida.status == "finalizada",
         )
         .order_by(Partida.data.desc())
         .all()

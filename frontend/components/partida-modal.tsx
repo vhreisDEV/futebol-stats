@@ -13,24 +13,30 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface PartidaDetalhe {
   id: number;
   data: string;
+  status: string;
   rodada: number | null;
   time_mandante_id: number;
   time_mandante: string;
   time_visitante_id: number;
   time_visitante: string;
-  gols_mandante: number;
-  gols_visitante: number;
-  escanteios_mandante: number;
-  escanteios_visitante: number;
-  chutes_mandante: number;
-  chutes_visitante: number;
-  chutes_gol_mandante: number;
-  chutes_gol_visitante: number;
-  cartoes_amarelos_mandante: number;
-  cartoes_amarelos_visitante: number;
-  cartoes_vermelhos_mandante: number;
-  cartoes_vermelhos_visitante: number;
+  gols_mandante: number | null;
+  gols_visitante: number | null;
+  escanteios_mandante: number | null;
+  escanteios_visitante: number | null;
+  chutes_mandante: number | null;
+  chutes_visitante: number | null;
+  chutes_gol_mandante: number | null;
+  chutes_gol_visitante: number | null;
+  cartoes_amarelos_mandante: number | null;
+  cartoes_amarelos_visitante: number | null;
+  cartoes_vermelhos_mandante: number | null;
+  cartoes_vermelhos_visitante: number | null;
 }
+
+const STATUS_LABEL: Record<string, string> = {
+  adiada: "Adiada",
+  agendada: "Ainda não realizada",
+};
 
 function formatarData(dataStr: string) {
   const partes = dataStr.split("-");
@@ -47,24 +53,24 @@ function LinhaEstatistica({
   visitante,
 }: {
   label: string;
-  mandante: number;
-  visitante: number;
+  mandante: number | null;
+  visitante: number | null;
 }) {
-  const mandanteVence = mandante > visitante;
-  const visitanteVence = visitante > mandante;
+  const mandanteVence = mandante !== null && visitante !== null && mandante > visitante;
+  const visitanteVence = mandante !== null && visitante !== null && visitante > mandante;
 
   return (
     <div className="grid grid-cols-3 items-center gap-2 py-1.5 text-sm">
       <span
         className={`font-mono tabular-nums ${mandanteVence ? "font-semibold text-primary" : "text-muted-foreground"}`}
       >
-        {mandante}
+        {mandante ?? "—"}
       </span>
       <span className="text-center text-xs text-muted-foreground">{label}</span>
       <span
         className={`text-right font-mono tabular-nums ${visitanteVence ? "font-semibold text-primary" : "text-muted-foreground"}`}
       >
-        {visitante}
+        {visitante ?? "—"}
       </span>
     </div>
   );
@@ -130,9 +136,17 @@ export function PartidaModal({
                 >
                   {partida.time_mandante}
                 </Link>
-                <span className="shrink-0 font-mono text-2xl font-bold tabular-nums text-primary">
-                  {partida.gols_mandante}–{partida.gols_visitante}
-                </span>
+                {partida.status === "finalizada" ? (
+                  <span className="shrink-0 font-mono text-2xl font-bold tabular-nums text-primary">
+                    {partida.gols_mandante}–{partida.gols_visitante}
+                  </span>
+                ) : (
+                  <span
+                    className={`shrink-0 text-xs font-bold uppercase tracking-wide ${partida.status === "adiada" ? "text-amber-400" : "text-muted-foreground"}`}
+                  >
+                    {STATUS_LABEL[partida.status] ?? partida.status}
+                  </span>
+                )}
                 <Link
                   href={`/times/${partida.time_visitante_id}`}
                   className="truncate text-left font-heading text-sm uppercase tracking-wide transition-colors hover:text-primary"
@@ -144,7 +158,7 @@ export function PartidaModal({
           )}
         </DialogHeader>
 
-        {partida && (
+        {partida && partida.status === "finalizada" && (
           <div className="divide-y divide-border">
             <LinhaEstatistica
               label="Escanteios"
@@ -172,6 +186,14 @@ export function PartidaModal({
               visitante={partida.cartoes_vermelhos_visitante}
             />
           </div>
+        )}
+
+        {partida && partida.status !== "finalizada" && (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            {partida.status === "adiada"
+              ? "Essa partida foi adiada. Assim que for remarcada e jogada, o placar e as estatísticas aparecem aqui automaticamente."
+              : "Essa partida ainda não foi realizada."}
+          </p>
         )}
       </DialogContent>
     </Dialog>

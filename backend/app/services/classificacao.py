@@ -10,7 +10,8 @@ def calcular_classificacao(db, ate_rodada=None):
 
     for time in times:
         query = db.query(Partida).filter(
-            or_(Partida.time_mandante_id == time.id, Partida.time_visitante_id == time.id)
+            or_(Partida.time_mandante_id == time.id, Partida.time_visitante_id == time.id),
+            Partida.status == "finalizada",
         )
         if ate_rodada is not None:
             query = query.filter(Partida.rodada <= ate_rodada)

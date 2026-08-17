@@ -21,7 +21,12 @@ def get_db():
 
 @router.get("/atual", response_model=RodadaAtualResponse)
 def obter_rodada_atual(db: Session = Depends(get_db)):
-    maior_rodada = db.query(func.max(Partida.rodada)).scalar()
+    # So considera rodadas com pelo menos uma partida ja finalizada -- senao,
+    # pre-cadastrar o calendario completo (agendada/adiada) adiantaria a
+    # "rodada atual" para rodadas que ainda nem comecaram.
+    maior_rodada = (
+        db.query(func.max(Partida.rodada)).filter(Partida.status == "finalizada").scalar()
+    )
 
     if maior_rodada is None:
         raise HTTPException(status_code=404, detail="Nenhuma partida com rodada cadastrada")
@@ -47,6 +52,7 @@ def obter_rodada(numero: int, db: Session = Depends(get_db)):
             PartidaRodadaResponse(
                 id=p.id,
                 data=p.data,
+                status=p.status,
                 time_mandante_id=p.time_mandante_id,
                 time_mandante=p.time_mandante.nome,
                 time_visitante_id=p.time_visitante_id,

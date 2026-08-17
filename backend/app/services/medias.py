@@ -12,7 +12,7 @@ def _buscar_jogos_anteriores(db, time_id, data_referencia, janela, mando=None):
         "mandante" -> apenas jogos em casa
         "visitante"-> apenas jogos fora
     """
-    query = db.query(Partida).filter(Partida.data < data_referencia)
+    query = db.query(Partida).filter(Partida.data < data_referencia, Partida.status == "finalizada")
 
     if mando == "mandante":
         query = query.filter(Partida.time_mandante_id == time_id)

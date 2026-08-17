@@ -80,6 +80,17 @@ def parse_data(data_iso):
     return datetime.fromisoformat(data_iso.replace("Z", "+00:00")).date()
 
 
+def mapear_status(estado):
+    # ATENCAO: a redacao exata que a Highlightly usa para "adiada" ainda nao
+    # foi confirmada (cota estava zerada quando isso foi escrito) -- ajustar
+    # esses termos assim que virmos um caso real de partida adiada na API.
+    if "Finished" in estado or "Full-time" in estado or "FT" in estado:
+        return "finalizada"
+    if "Postponed" in estado or "Adiad" in estado or "Suspended" in estado:
+        return "adiada"
+    return "agendada"
+
+
 def extrair_stat(lista_stats, nome_procurado):
     for stat in lista_stats:
         if stat["displayName"] == nome_procurado:
@@ -108,9 +119,9 @@ def importar():
 
     db = SessionLocal()
     importadas = 0
+    placeholders = 0
     ja_existiam = 0
     ignoradas_sem_time = 0
-    nao_finalizadas = 0
 
     try:
         partidas_temporada = buscar_temporada_completa()
@@ -120,11 +131,6 @@ def importar():
             if importadas >= MAX_IMPORTACOES_POR_EXECUCAO:
                 print(f"\nLimite de {MAX_IMPORTACOES_POR_EXECUCAO} importações por execução atingido. Rode de novo depois.")
                 break
-
-            estado = p.get("state", {}).get("description", "")
-            if "Finished" not in estado and "Full-time" not in estado and "FT" not in estado:
-                nao_finalizadas += 1
-                continue
 
             id_externo = p["id"]
 
@@ -142,14 +148,35 @@ def importar():
                 ignoradas_sem_time += 1
                 continue
 
+            estado = p.get("state", {}).get("description", "")
+            status = mapear_status(estado)
+            rodada = parse_rodada(p.get("round"))
+            data_partida = parse_data(p["date"])
+
+            if status != "finalizada":
+                # Agendada ou adiada: guarda so o essencial (times, data,
+                # rodada, status), sem gastar chamada nenhuma de estatisticas
+                # -- nao ha placar/stats pra buscar ainda.
+                db.add(Partida(
+                    id_externo=id_externo,
+                    time_mandante_id=time_mandante.id,
+                    time_visitante_id=time_visitante.id,
+                    status=status,
+                    data=data_partida,
+                    rodada=rodada,
+                ))
+                db.commit()
+                print(f"  {status.upper()}: rodada {rodada} — {p['homeTeam']['name']} x "
+                      f"{p['awayTeam']['name']} ({data_partida})")
+                placeholders += 1
+                continue
+
             score_atual = p.get("state", {}).get("score", {}).get("current")
             if not score_atual:
-                print(f"  Pulando partida {id_externo}: sem placar disponível")
+                print(f"  Pulando partida {id_externo}: marcada como finalizada mas sem placar disponível")
                 continue
 
             gols_mandante, gols_visitante = parse_placar(score_atual)
-            rodada = parse_rodada(p.get("round"))
-            data_partida = parse_data(p["date"])
 
             stats = buscar_estatisticas(id_externo)
             if not stats:
@@ -170,6 +197,7 @@ def importar():
                 id_externo=id_externo,
                 time_mandante_id=time_mandante.id,
                 time_visitante_id=time_visitante.id,
+                status="finalizada",
                 gols_mandante=gols_mandante,
                 gols_visitante=gols_visitante,
                 data=data_partida,
@@ -198,8 +226,8 @@ def importar():
                   f"{p['awayTeam']['name']} ({data_partida})")
             importadas += 1
 
-        print(f"\nImportação concluída. {importadas} partidas novas importadas, "
-              f"{ja_existiam} já existiam, {nao_finalizadas} ainda não finalizadas, "
+        print(f"\nImportação concluída. {importadas} partidas finalizadas importadas, "
+              f"{placeholders} agendadas/adiadas registradas, {ja_existiam} já existiam, "
               f"{ignoradas_sem_time} ignoradas por time não cadastrado.")
 
     finally:
