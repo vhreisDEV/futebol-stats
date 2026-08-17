@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { corTime, iniciais } from "@/lib/times-visual";
@@ -29,18 +29,57 @@ interface Time {
   nome: string;
 }
 
-const CATEGORIAS: { chave: string; label: string }[] = [
-  { chave: "gols", label: "Gols" },
-  { chave: "assistencias", label: "Assistências" },
-  { chave: "chutes", label: "Chutes" },
-  { chave: "chutes_gol", label: "Chutes ao Gol" },
-  { chave: "desarmes", label: "Desarmes" },
-  { chave: "faltas_cometidas", label: "Faltas Cometidas" },
-  { chave: "faltas_sofridas", label: "Faltas Sofridas" },
-  { chave: "defesas", label: "Defesas (goleiros)" },
-  { chave: "cartoes_amarelos", label: "Cartões Amarelos" },
-  { chave: "cartoes_vermelhos", label: "Cartões Vermelhos" },
+interface Categoria {
+  chave: string;
+  label: string;
+}
+
+const GRUPOS_CATEGORIAS: { titulo: string; itens: Categoria[] }[] = [
+  {
+    titulo: "Ataque",
+    itens: [
+      { chave: "gols", label: "Gols" },
+      { chave: "assistencias", label: "Assistências" },
+      { chave: "chutes", label: "Chutes" },
+      { chave: "chutes_gol", label: "Chutes ao Gol" },
+    ],
+  },
+  {
+    titulo: "Defesa",
+    itens: [
+      { chave: "desarmes", label: "Desarmes" },
+      { chave: "faltas_cometidas", label: "Faltas Cometidas" },
+      { chave: "faltas_sofridas", label: "Faltas Sofridas" },
+      { chave: "defesas", label: "Defesas (goleiros)" },
+    ],
+  },
+  {
+    titulo: "Disciplina",
+    itens: [
+      { chave: "cartoes_amarelos", label: "Cartões Amarelos" },
+      { chave: "cartoes_vermelhos", label: "Cartões Vermelhos" },
+    ],
+  },
 ];
+
+const TODAS_CATEGORIAS = GRUPOS_CATEGORIAS.flatMap((g) => g.itens);
+
+function BadgePosicao({ index }: { index: number }) {
+  if (index === 0) {
+    return (
+      <span className="flex w-5 shrink-0 items-center justify-center">
+        <Crown className="size-4 text-primary" strokeWidth={2.5} />
+      </span>
+    );
+  }
+  const cor =
+    index === 1 ? "text-slate-300" : index === 2 ? "text-amber-600" : "text-muted-foreground";
+  return (
+    <span className={`flex w-5 shrink-0 items-center justify-center font-mono text-xs font-semibold ${cor}`}>
+      {index + 1}
+    </span>
+  );
+}
 
 export default function Jogadores() {
   const [statSelecionado, setStatSelecionado] = useState("gols");
@@ -81,7 +120,7 @@ export default function Jogadores() {
       });
   }, [statSelecionado, mando, timeSelecionado]);
 
-  const categoriaAtual = CATEGORIAS.find((c) => c.chave === statSelecionado) ?? CATEGORIAS[0];
+  const categoriaAtual = TODAS_CATEGORIAS.find((c) => c.chave === statSelecionado) ?? TODAS_CATEGORIAS[0];
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
@@ -102,20 +141,27 @@ export default function Jogadores() {
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[190px_1fr] lg:items-start">
-          <nav className="flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
-            {CATEGORIAS.map((cat) => (
-              <button
-                key={cat.chave}
-                type="button"
-                onClick={() => setStatSelecionado(cat.chave)}
-                className={`shrink-0 rounded-md px-3 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors ${
-                  statSelecionado === cat.chave
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {cat.label}
-              </button>
+          <nav className="flex gap-4 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+            {GRUPOS_CATEGORIAS.map((grupo) => (
+              <div key={grupo.titulo} className="flex shrink-0 gap-1.5 lg:flex-col lg:gap-1">
+                <span className="hidden px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70 lg:block">
+                  {grupo.titulo}
+                </span>
+                {grupo.itens.map((cat) => (
+                  <button
+                    key={cat.chave}
+                    type="button"
+                    onClick={() => setStatSelecionado(cat.chave)}
+                    className={`shrink-0 rounded-md px-3 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors ${
+                      statSelecionado === cat.chave
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
             ))}
           </nav>
 
@@ -185,16 +231,14 @@ export default function Jogadores() {
                         onClick={() => setJogadorAbertoId(item.jogador_id)}
                         className="flex w-full items-center gap-3 rounded-md bg-card px-3 py-2.5 text-left ring-1 ring-foreground/10 transition-colors hover:ring-primary/40"
                       >
-                        <span className="w-5 shrink-0 text-center font-mono text-xs text-muted-foreground">
-                          {index + 1}
-                        </span>
+                        <BadgePosicao index={index} />
                         <span
                           className={`flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
                             cores.textoEscuro ? "text-black" : "text-white"
                           }`}
                           style={{ backgroundColor: cores.fundo, borderColor: cores.borda }}
                         >
-                          {iniciais(item.time_nome ?? item.nome)}
+                          {iniciais(item.nome)}
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{item.nome}</p>

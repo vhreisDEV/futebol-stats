@@ -137,7 +137,7 @@ export function JogadorModal({
                 className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold ${cores.textoEscuro ? "text-black" : "text-white"}`}
                 style={{ backgroundColor: cores.fundo, borderColor: cores.borda }}
               >
-                {iniciais(perfil.time_nome ?? perfil.nome)}
+                {iniciais(perfil.nome)}
               </span>
             )}
             <DialogTitle className="uppercase tracking-wide">
