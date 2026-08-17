@@ -308,6 +308,7 @@ export default function DetalheTime() {
   const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
   const [nomeTime, setNomeTime] = useState("");
   const [quantidade, setQuantidade] = useState(10);
+  const [mando, setMando] = useState<string>("todos");
   const [times, setTimes] = useState<Time[]>([]);
 
   const [comparacaoTimeId, setComparacaoTimeId] = useState("");
@@ -324,15 +325,17 @@ export default function DetalheTime() {
     setCarregando(true);
     setErro(null);
 
+    const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
+
     Promise.all([
-      fetch(`http://127.0.0.1:8000/times/${id}/jogos?quantidade=${quantidade}`).then((r) => {
+      fetch(`http://127.0.0.1:8000/times/${id}/jogos?quantidade=${quantidade}${mandoParam}`).then((r) => {
         if (!r.ok) {
           throw new Error("Time não encontrado ou erro ao buscar os jogos");
         }
         return r.json();
       }),
 
-      fetch(`http://127.0.0.1:8000/times/${id}/estatisticas?quantidade=${quantidade}`).then((r) => {
+      fetch(`http://127.0.0.1:8000/times/${id}/estatisticas?quantidade=${quantidade}${mandoParam}`).then((r) => {
         if (!r.ok) {
           throw new Error("Time não encontrado ou erro ao buscar as estatísticas");
         }
@@ -353,7 +356,7 @@ export default function DetalheTime() {
         setErro(err.message);
         setCarregando(false);
       });
-  }, [id, quantidade]);
+  }, [id, quantidade, mando]);
 
   useEffect(() => {
     if (!comparacaoTimeId) {
@@ -476,6 +479,22 @@ export default function DetalheTime() {
             <ToggleGroupItem value="10">Últimos 10</ToggleGroupItem>
             <ToggleGroupItem value="20">Últimos 20</ToggleGroupItem>
             <ToggleGroupItem value="30">Últimos 30</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between">
+          <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Mando de campo
+          </h2>
+          <ToggleGroup
+            variant="outline"
+            size="sm"
+            value={[mando]}
+            onValueChange={(v: string[]) => v[0] && setMando(v[0])}
+          >
+            <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
+            <ToggleGroupItem value="casa">Casa</ToggleGroupItem>
+            <ToggleGroupItem value="fora">Fora</ToggleGroupItem>
           </ToggleGroup>
         </div>
 

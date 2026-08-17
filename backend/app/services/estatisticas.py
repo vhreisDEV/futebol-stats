@@ -2,10 +2,18 @@ from sqlalchemy import or_
 from app.models.partida import Partida
 
 
-def obter_ultimos_jogos(db, time_id, quantidade=10):
+def _filtro_mando(time_id, mando):
+    if mando == "casa":
+        return Partida.time_mandante_id == time_id
+    if mando == "fora":
+        return Partida.time_visitante_id == time_id
+    return or_(Partida.time_mandante_id == time_id, Partida.time_visitante_id == time_id)
+
+
+def obter_ultimos_jogos(db, time_id, quantidade=10, mando=None):
     partidas = (
         db.query(Partida)
-        .filter(or_(Partida.time_mandante_id == time_id, Partida.time_visitante_id == time_id))
+        .filter(_filtro_mando(time_id, mando))
         .order_by(Partida.data.desc())
         .limit(quantidade)
         .all()
