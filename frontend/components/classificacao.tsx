@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Crown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -95,26 +96,27 @@ export function Classificacao() {
     <div>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">#</TableHead>
-            <TableHead className="h-7 px-1.5 text-[11px]">Time</TableHead>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">P</TableHead>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">J</TableHead>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">V</TableHead>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">E</TableHead>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">D</TableHead>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">GP</TableHead>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">GC</TableHead>
-            <TableHead className="h-7 px-1.5 text-center text-[11px]">SG</TableHead>
+          <TableRow className="!border-b-2 !border-b-primary/30">
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">#</TableHead>
+            <TableHead className="h-7 px-1.5 text-[11px] uppercase tracking-wide text-primary/80">Time</TableHead>
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">P</TableHead>
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">J</TableHead>
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">V</TableHead>
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">E</TableHead>
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">D</TableHead>
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">GP</TableHead>
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">GC</TableHead>
+            <TableHead className="h-7 px-1.5 text-center text-[11px] uppercase tracking-wide text-primary/80">SG</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {tabela.map((linha) => {
             const zona = zonaDaPosicao(linha.posicao);
+            const lider = linha.posicao === 1;
             return (
               <TableRow
                 key={linha.time_id}
-                className={`!border-l-4 text-xs ${zona?.corBorda ?? "!border-l-transparent"}`}
+                className={`!border-l-4 text-xs ${zona?.corBorda ?? "!border-l-transparent"} ${lider ? "!bg-primary/[0.06]" : ""}`}
               >
                 <TableCell className="px-1.5 py-1 text-center font-mono tabular-nums text-muted-foreground">
                   {linha.posicao}
@@ -122,8 +124,9 @@ export function Classificacao() {
                 <TableCell className="px-1.5 py-1">
                   <Link
                     href={`/times/${linha.time_id}`}
-                    className="font-medium transition-colors hover:text-primary"
+                    className="flex items-center gap-1 font-medium transition-colors hover:text-primary"
                   >
+                    {lider && <Crown className="size-3 shrink-0 text-primary" strokeWidth={2.5} />}
                     {linha.time}
                   </Link>
                 </TableCell>

@@ -3,7 +3,15 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import {
+  ChevronLeft,
+  ArrowLeftRight,
+  Flag,
+  RectangleVertical,
+  Target,
+  Percent,
+  type LucideIcon,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -84,16 +92,55 @@ function corDoFavorito(valor: number | null, outros: (number | null)[]) {
   return eMaior ? "text-primary" : "text-muted-foreground";
 }
 
-function CartaoProjecao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+const CATEGORIAS: Record<string, { borda: string; badge: string; icon: LucideIcon }> = {
+  probabilidade: { borda: "border-t-primary", badge: "bg-primary/10 text-primary", icon: Percent },
+  escanteios: { borda: "border-t-blue-500", badge: "bg-blue-500/10 text-blue-400", icon: Flag },
+  cartoes: { borda: "border-t-amber-500", badge: "bg-amber-500/10 text-amber-400", icon: RectangleVertical },
+  chutes: { borda: "border-t-violet-500", badge: "bg-violet-500/10 text-violet-400", icon: Target },
+};
+
+function CartaoProjecao({
+  titulo,
+  categoria,
+  children,
+}: {
+  titulo: string;
+  categoria: keyof typeof CATEGORIAS;
+  children: React.ReactNode;
+}) {
+  const { borda, badge, icon: Icon } = CATEGORIAS[categoria];
   return (
-    <Card>
-      <CardHeader>
+    <Card className={`border-t-2 ${borda}`}>
+      <CardHeader className="flex-row items-center gap-2 space-y-0">
+        <span className={`flex size-6 shrink-0 items-center justify-center rounded-md ${badge}`}>
+          <Icon className="size-3.5" />
+        </span>
         <CardTitle className="text-xs uppercase tracking-wide text-muted-foreground">
           {titulo}
         </CardTitle>
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>
+  );
+}
+
+function BarraProbabilidade({
+  mandante,
+  empate,
+  visitante,
+}: {
+  mandante: number | null;
+  empate: number | null;
+  visitante: number | null;
+}) {
+  if (mandante === null || empate === null || visitante === null) return null;
+
+  return (
+    <div className="mt-4 flex h-1.5 overflow-hidden rounded-full bg-muted">
+      <div className="bg-primary" style={{ width: `${mandante}%` }} />
+      <div className="bg-muted-foreground/40" style={{ width: `${empate}%` }} />
+      <div className="bg-sky-500" style={{ width: `${visitante}%` }} />
+    </div>
   );
 }
 
@@ -265,8 +312,8 @@ function ProjecaoPreJogoConteudo() {
           competições (Copa do Brasil, Libertadores, Sul-Americana etc.), que não entram nesta conta.
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div>
+        <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
+          <div className="w-full">
             <label className="mb-2 block text-sm text-muted-foreground">Mandante</label>
             <select
               value={mandanteId}
@@ -282,7 +329,21 @@ function ProjecaoPreJogoConteudo() {
             </select>
           </div>
 
-          <div>
+          <button
+            type="button"
+            onClick={() => {
+              setMandanteId(visitanteId);
+              setVisitanteId(mandanteId);
+            }}
+            disabled={!mandanteId && !visitanteId}
+            aria-label="Trocar mandante e visitante"
+            title="Trocar mandante e visitante"
+            className="flex size-9 shrink-0 items-center justify-center self-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary disabled:pointer-events-none disabled:opacity-40 sm:mb-1.5"
+          >
+            <ArrowLeftRight className="size-4" />
+          </button>
+
+          <div className="w-full">
             <label className="mb-2 block text-sm text-muted-foreground">Visitante</label>
             <select
               value={visitanteId}
@@ -321,30 +382,38 @@ function ProjecaoPreJogoConteudo() {
 
         {projecao && (
           <div className="mt-10 grid gap-6">
-            <div className="rounded-lg border border-primary/30 bg-primary/5 p-6 text-center">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="overflow-hidden rounded-lg border border-primary/30 bg-primary/5">
+              <p className="pt-4 text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 Placar mais provável
               </p>
-              <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
-                <span className="truncate text-right font-heading text-sm uppercase tracking-wide sm:text-lg">
-                  {projecao.time_mandante}
-                </span>
-                <span className="font-mono text-3xl font-bold tabular-nums text-primary sm:text-4xl">
-                  {arredondado(projecao.gols.mandante)}–{arredondado(projecao.gols.visitante)}
-                </span>
-                <span className="truncate text-left font-heading text-sm uppercase tracking-wide sm:text-lg">
-                  {projecao.time_visitante}
-                </span>
+              <div className="mt-3 grid grid-cols-[1fr_auto_1fr] divide-x divide-primary/20">
+                <div className="flex items-center justify-end px-3 py-4">
+                  <span className="truncate font-heading text-sm uppercase tracking-wide sm:text-lg">
+                    {projecao.time_mandante}
+                  </span>
+                </div>
+                <div className="flex items-center justify-center px-4 py-4">
+                  <span className="font-mono text-3xl font-bold tabular-nums text-primary sm:text-4xl">
+                    {arredondado(projecao.gols.mandante)}–{arredondado(projecao.gols.visitante)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-start px-3 py-4">
+                  <span className="truncate font-heading text-sm uppercase tracking-wide sm:text-lg">
+                    {projecao.time_visitante}
+                  </span>
+                </div>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Gols esperados (média): {valorOuTraco(projecao.gols.mandante)} x {valorOuTraco(projecao.gols.visitante)}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Referência: {formatarData(projecao.data_referencia)}
-              </p>
+              <div className="border-t border-primary/20 px-4 py-3 text-center">
+                <p className="text-xs text-muted-foreground">
+                  Gols esperados (média): {valorOuTraco(projecao.gols.mandante)} x {valorOuTraco(projecao.gols.visitante)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Referência: {formatarData(projecao.data_referencia)}
+                </p>
+              </div>
             </div>
 
-            <CartaoProjecao titulo="Probabilidade de resultado">
+            <CartaoProjecao titulo="Probabilidade de resultado" categoria="probabilidade">
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p
@@ -371,9 +440,14 @@ function ProjecaoPreJogoConteudo() {
                   <p className="mt-1 text-xs text-muted-foreground">{projecao.time_visitante}</p>
                 </div>
               </div>
+              <BarraProbabilidade
+                mandante={projecao.resultado.vitoria_mandante}
+                empate={projecao.resultado.empate}
+                visitante={projecao.resultado.vitoria_visitante}
+              />
             </CartaoProjecao>
 
-            <CartaoProjecao titulo="Escanteios esperados">
+            <CartaoProjecao titulo="Escanteios esperados" categoria="escanteios">
               <LinhaComparativa
                 label="Escanteios"
                 valorMandante={projecao.escanteios.mandante}
@@ -389,7 +463,7 @@ function ProjecaoPreJogoConteudo() {
               </div>
             </CartaoProjecao>
 
-            <CartaoProjecao titulo="Cartões esperados">
+            <CartaoProjecao titulo="Cartões esperados" categoria="cartoes">
               <LinhaComparativa
                 label="Amarelos"
                 valorMandante={projecao.cartoes.amarelos_mandante}
@@ -410,7 +484,7 @@ function ProjecaoPreJogoConteudo() {
               </div>
             </CartaoProjecao>
 
-            <CartaoProjecao titulo="Chutes esperados">
+            <CartaoProjecao titulo="Chutes esperados" categoria="chutes">
               <LinhaComparativa
                 label="Chutes totais"
                 valorMandante={projecao.chutes.totais_mandante}

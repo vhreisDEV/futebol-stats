@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ChevronDown, Check } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Check,
+  TrendingUp,
+  Users,
+  Shield,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -39,6 +48,37 @@ function CabecalhoCampeonato() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
+  );
+}
+
+type CorNav = "gold" | "rose" | "orange" | "neutral";
+
+const estilosNavChip: Record<CorNav, string> = {
+  gold: "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20",
+  rose: "border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20",
+  orange: "border-orange-500/40 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20",
+  neutral: "border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+};
+
+function NavChip({
+  href,
+  label,
+  icon: Icon,
+  cor,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  cor: CorNav;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${estilosNavChip[cor]}`}
+    >
+      <Icon className="size-3.5" />
+      {label}
+    </Link>
   );
 }
 
@@ -155,19 +195,19 @@ export default function Brasileirao() {
               ))}
             </div>
             <div>
-              <div className="flex items-center justify-center gap-4 sm:gap-6">
-                <Button variant="outline" size="icon-sm" disabled aria-label="Rodada anterior">
-                  <ChevronLeft />
-                </Button>
-                <div className="text-center">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="mx-auto flex w-fit items-stretch overflow-hidden rounded-lg border border-border bg-card">
+                <span className="flex items-center justify-center px-3 text-muted-foreground opacity-30">
+                  <ChevronLeft className="size-4" />
+                </span>
+                <div className="flex flex-col items-center justify-center border-x border-border px-6 py-1.5">
+                  <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
                     Rodada
-                  </p>
-                  <Skeleton className="mx-auto mt-1 h-8 w-20" />
+                  </span>
+                  <Skeleton className="mt-1 h-6 w-16" />
                 </div>
-                <Button variant="outline" size="icon-sm" disabled aria-label="Próxima rodada">
-                  <ChevronRight />
-                </Button>
+                <span className="flex items-center justify-center px-3 text-muted-foreground opacity-30">
+                  <ChevronRight className="size-4" />
+                </span>
               </div>
               <div className="mt-4 grid gap-1.5">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -187,35 +227,10 @@ export default function Brasileirao() {
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <CabecalhoCampeonato />
           <div className="flex w-full shrink-0 flex-wrap gap-2 sm:w-auto">
-            <Link
-              href="/previsao"
-              className={buttonVariants({ variant: "default" })}
-            >
-              Previsão de Jogos
-            </Link>
-            <Link
-              href="/comparar"
-              className={buttonVariants({
-                variant: "outline",
-                className:
-                  "!border-rose-500/40 !text-rose-400 hover:!bg-rose-500/10 hover:!text-rose-300",
-              })}
-            >
-              Comparar Times
-            </Link>
-            <Link
-              href="/times"
-              className={buttonVariants({
-                variant: "outline",
-                className:
-                  "!border-orange-500/40 !text-orange-400 hover:!bg-orange-500/10 hover:!text-orange-300",
-              })}
-            >
-              Times
-            </Link>
-            <Link href="/jogadores" className={buttonVariants({ variant: "outline" })}>
-              Jogadores
-            </Link>
+            <NavChip href="/previsao" label="Previsão de Jogos" icon={TrendingUp} cor="gold" />
+            <NavChip href="/comparar" label="Comparar Times" icon={Users} cor="rose" />
+            <NavChip href="/times" label="Times" icon={Shield} cor="orange" />
+            <NavChip href="/jogadores" label="Jogadores" icon={UserRound} cor="neutral" />
           </div>
         </div>
 
@@ -233,36 +248,36 @@ export default function Brasileirao() {
           </section>
 
           <section>
-            <div className="flex items-center justify-center gap-4 sm:gap-6">
-              <Button
-                variant="outline"
-                size="icon-sm"
+            <div className="mx-auto flex w-fit items-stretch overflow-hidden rounded-lg border border-border bg-card">
+              <button
+                type="button"
                 disabled={rodadaSelecionada <= 1}
                 onClick={() => setRodadaSelecionada((r) => (r ?? 1) - 1)}
                 aria-label="Rodada anterior"
+                className="flex items-center justify-center px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
               >
-                <ChevronLeft />
-              </Button>
+                <ChevronLeft className="size-4" />
+              </button>
 
-              <div className="text-center">
-                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="flex flex-col items-center justify-center border-x border-border px-6 py-1.5">
+                <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
                   Rodada
-                </p>
-                <p className="font-heading text-2xl font-semibold tabular-nums sm:text-3xl">
+                </span>
+                <span className="font-mono text-xl font-bold tabular-nums text-primary sm:text-2xl">
                   {rodadaSelecionada}
-                  <span className="text-sm text-muted-foreground sm:text-base"> / {rodadaMaxima}</span>
-                </p>
+                  <span className="text-xs font-normal text-muted-foreground sm:text-sm"> / {rodadaMaxima}</span>
+                </span>
               </div>
 
-              <Button
-                variant="outline"
-                size="icon-sm"
+              <button
+                type="button"
                 disabled={rodadaSelecionada >= rodadaMaxima}
                 onClick={() => setRodadaSelecionada((r) => (r ?? 1) + 1)}
                 aria-label="Próxima rodada"
+                className="flex items-center justify-center px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
               >
-                <ChevronRight />
-              </Button>
+                <ChevronRight className="size-4" />
+              </button>
             </div>
 
             <div
