@@ -280,6 +280,10 @@ export default function Brasileirao() {
               </button>
             </div>
 
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Toque em uma partida para ver os detalhes.
+            </p>
+
             <div
               className={`mt-3 grid gap-1 transition-opacity duration-200 motion-reduce:transition-none ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
             >
@@ -302,25 +306,29 @@ export default function Brasileirao() {
                         {formatarData(partida.data)}
                       </p>
                       <div className="mt-0.5 flex items-center justify-center gap-2">
-                        <Link
-                          href={`/times/${partida.time_mandante_id}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="min-w-0 flex-1 truncate text-right text-sm font-medium transition-colors hover:text-primary"
-                        >
-                          {partida.time_mandante}
-                        </Link>
+                        <div className="min-w-0 flex-1 text-right">
+                          <Link
+                            href={`/times/${partida.time_mandante_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-block max-w-full truncate text-sm font-medium transition-colors hover:text-primary"
+                          >
+                            {partida.time_mandante}
+                          </Link>
+                        </div>
                         <div className="flex shrink-0 items-center gap-1 font-mono text-sm font-semibold tabular-nums text-primary">
                           <span>{partida.gols_mandante}</span>
                           <span className="text-xs text-muted-foreground">–</span>
                           <span>{partida.gols_visitante}</span>
                         </div>
-                        <Link
-                          href={`/times/${partida.time_visitante_id}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="min-w-0 flex-1 truncate text-sm font-medium transition-colors hover:text-primary"
-                        >
-                          {partida.time_visitante}
-                        </Link>
+                        <div className="min-w-0 flex-1 text-left">
+                          <Link
+                            href={`/times/${partida.time_visitante_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-block max-w-full truncate text-sm font-medium transition-colors hover:text-primary"
+                          >
+                            {partida.time_visitante}
+                          </Link>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
