@@ -15,7 +15,7 @@ interface Time {
 
 interface Jogo {
   id: number;
-  data: string;
+  data: string | null;
   adversario: string;
   casa_ou_fora: string;
   resultado: string;
@@ -57,7 +57,8 @@ const resultadoFaixa: Record<string, string> = {
   derrota: "bg-red-500",
 };
 
-function formatarData(dataStr: string) {
+function formatarData(dataStr: string | null) {
+  if (!dataStr) return "Data a definir";
   const partes = dataStr.split("-");
   if (partes.length === 3) {
     const [ano, mes, dia] = partes;

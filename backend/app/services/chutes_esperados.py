@@ -17,6 +17,12 @@ def _medias_com_fallback(db, time_id, data_referencia, mando):
     return medias
 
 
+def _media_combinada(media_a_favor, media_contra):
+    if media_a_favor is None or media_contra is None:
+        return None
+    return round((media_a_favor + media_contra) / 2, 2)
+
+
 def _extrair_chutes_1t(partida, time_id):
     if partida.time_mandante_id == time_id:
         return partida.chutes_1t_mandante
@@ -80,25 +86,37 @@ def calcular_chutes_esperados(db, time_mandante_id, time_visitante_id, data_refe
             "detalhe_visitante": medias_visitante,
         }
 
-    chutes_totais_mandante = round(
-        (medias_mandante["media_chutes_a_favor"] + medias_visitante["media_chutes_contra"]) / 2, 2
+    # Times com jogos no historico mas sem chutes/chutes ao gol registrados
+    # ainda (ex.: placar que veio so do PDF da CBF, sem estatisticas
+    # granulares) tem media_* = None -- calcula so o que da pra calcular,
+    # em vez de quebrar tentando somar com None.
+    chutes_totais_mandante = _media_combinada(
+        medias_mandante["media_chutes_a_favor"], medias_visitante["media_chutes_contra"]
     )
-    chutes_totais_visitante = round(
-        (medias_visitante["media_chutes_a_favor"] + medias_mandante["media_chutes_contra"]) / 2, 2
-    )
-
-    chutes_gol_mandante = round(
-        (medias_mandante["media_chutes_gol_a_favor"] + medias_visitante["media_chutes_gol_contra"]) / 2, 2
-    )
-    chutes_gol_visitante = round(
-        (medias_visitante["media_chutes_gol_a_favor"] + medias_mandante["media_chutes_gol_contra"]) / 2, 2
+    chutes_totais_visitante = _media_combinada(
+        medias_visitante["media_chutes_a_favor"], medias_mandante["media_chutes_contra"]
     )
 
-    total_geral_esperado = round(chutes_totais_mandante + chutes_totais_visitante, 2)
-    tendencia_geral = "over" if total_geral_esperado > linha_referencia_geral else "under"
+    chutes_gol_mandante = _media_combinada(
+        medias_mandante["media_chutes_gol_a_favor"], medias_visitante["media_chutes_gol_contra"]
+    )
+    chutes_gol_visitante = _media_combinada(
+        medias_visitante["media_chutes_gol_a_favor"], medias_mandante["media_chutes_gol_contra"]
+    )
 
-    total_ao_gol_esperado = round(chutes_gol_mandante + chutes_gol_visitante, 2)
-    tendencia_ao_gol = "over" if total_ao_gol_esperado > linha_referencia_ao_gol else "under"
+    if chutes_totais_mandante is not None and chutes_totais_visitante is not None:
+        total_geral_esperado = round(chutes_totais_mandante + chutes_totais_visitante, 2)
+        tendencia_geral = "over" if total_geral_esperado > linha_referencia_geral else "under"
+    else:
+        total_geral_esperado = None
+        tendencia_geral = None
+
+    if chutes_gol_mandante is not None and chutes_gol_visitante is not None:
+        total_ao_gol_esperado = round(chutes_gol_mandante + chutes_gol_visitante, 2)
+        tendencia_ao_gol = "over" if total_ao_gol_esperado > linha_referencia_ao_gol else "under"
+    else:
+        total_ao_gol_esperado = None
+        tendencia_ao_gol = None
 
     chutes_1t_mandante_info = _media_chutes_1t(db, time_mandante_id, data_referencia, mando="mandante")
     chutes_1t_visitante_info = _media_chutes_1t(db, time_visitante_id, data_referencia, mando="visitante")

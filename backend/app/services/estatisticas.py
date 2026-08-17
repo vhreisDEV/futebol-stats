@@ -127,9 +127,14 @@ def calcular_estatisticas(jogos):
     media_gols = gols_marcados / total_jogos if total_jogos > 0 else 0
 
     def media(chave):
-        if total_jogos == 0:
+        # Partida finalizada sempre tem gols, mas pode nao ter estatisticas
+        # mais granulares ainda (ex.: placar que veio so do PDF da CBF, sem
+        # escanteios/chutes/cartoes da Highlightly) -- ignora os None em vez
+        # de deixar o sum() quebrar, e tira a media so do que existe.
+        valores = [jogo[chave] for jogo in jogos if jogo[chave] is not None]
+        if not valores:
             return 0
-        return round(sum(jogo[chave] for jogo in jogos) / total_jogos, 2)
+        return round(sum(valores) / len(valores), 2)
 
     sequencia = [jogo["resultado"] for jogo in jogos]
 

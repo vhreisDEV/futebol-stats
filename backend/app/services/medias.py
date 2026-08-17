@@ -95,7 +95,14 @@ def calcular_medias(db, time_id, data_referencia, janela=5, mando=None):
     perspectivas = [_extrair_perspectiva(p, time_id) for p in jogos]
 
     def media(campo):
-        return round(sum(p[campo] for p in perspectivas) / n, 2)
+        # Alguns jogos podem ter placar (gols) sem as estatisticas mais
+        # granulares ainda (ex.: placar que veio so do PDF da CBF). Tira a
+        # media so dos jogos que realmente tem o campo, em vez de quebrar
+        # ou fingir que o valor ausente e zero.
+        valores = [p[campo] for p in perspectivas if p[campo] is not None]
+        if not valores:
+            return None
+        return round(sum(valores) / len(valores), 2)
 
     return {
         "jogos_considerados": n,

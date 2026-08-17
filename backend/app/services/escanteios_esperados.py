@@ -4,6 +4,12 @@ JANELA_PADRAO = 10
 LINHA_REFERENCIA_PADRAO = 9.5
 
 
+def _media_combinada(media_a_favor, media_contra):
+    if media_a_favor is None or media_contra is None:
+        return None
+    return round((media_a_favor + media_contra) / 2, 2)
+
+
 def _medias_com_fallback(db, time_id, data_referencia, mando):
     medias = calcular_medias(db, time_id, data_referencia, janela=JANELA_PADRAO, mando=mando)
 
@@ -40,15 +46,22 @@ def calcular_escanteios_esperados(db, time_mandante_id, time_visitante_id, data_
             "detalhe_visitante": medias_visitante,
         }
 
-    escanteios_esperados_mandante = round(
-        (medias_mandante["media_escanteios_a_favor"] + medias_visitante["media_escanteios_contra"]) / 2, 2
+    # Time com jogos no historico mas sem escanteios registrados ainda
+    # (ex.: placar que veio so do PDF da CBF) tem media_* = None -- calcula
+    # o que der pra calcular em vez de quebrar somando com None.
+    escanteios_esperados_mandante = _media_combinada(
+        medias_mandante["media_escanteios_a_favor"], medias_visitante["media_escanteios_contra"]
     )
-    escanteios_esperados_visitante = round(
-        (medias_visitante["media_escanteios_a_favor"] + medias_mandante["media_escanteios_contra"]) / 2, 2
+    escanteios_esperados_visitante = _media_combinada(
+        medias_visitante["media_escanteios_a_favor"], medias_mandante["media_escanteios_contra"]
     )
 
-    total_esperado = round(escanteios_esperados_mandante + escanteios_esperados_visitante, 2)
-    tendencia = "over" if total_esperado > linha_referencia else "under"
+    if escanteios_esperados_mandante is not None and escanteios_esperados_visitante is not None:
+        total_esperado = round(escanteios_esperados_mandante + escanteios_esperados_visitante, 2)
+        tendencia = "over" if total_esperado > linha_referencia else "under"
+    else:
+        total_esperado = None
+        tendencia = None
 
     return {
         "escanteios_esperados_mandante": escanteios_esperados_mandante,

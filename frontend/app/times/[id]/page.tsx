@@ -13,28 +13,28 @@ import { corTime, iniciais } from "@/lib/times-visual";
 
 interface Jogo {
   id: number;
-  data: string;
+  data: string | null;
   adversario: string;
   casa_ou_fora: string;
   resultado: string;
   gols_time: number;
   gols_adversario: number;
-  escanteios_time: number;
-  escanteios_adversario: number;
+  escanteios_time: number | null;
+  escanteios_adversario: number | null;
   escanteios_1t_time: number | null;
   escanteios_1t_adversario: number | null;
   escanteios_2t_time: number | null;
   escanteios_2t_adversario: number | null;
-  chutes_time: number;
-  chutes_adversario: number;
+  chutes_time: number | null;
+  chutes_adversario: number | null;
   chutes_1t_time: number | null;
   chutes_1t_adversario: number | null;
-  chutes_gol_time: number;
-  chutes_gol_adversario: number;
-  cartoes_amarelos_time: number;
-  cartoes_amarelos_adversario: number;
-  cartoes_vermelhos_time: number;
-  cartoes_vermelhos_adversario: number;
+  chutes_gol_time: number | null;
+  chutes_gol_adversario: number | null;
+  cartoes_amarelos_time: number | null;
+  cartoes_amarelos_adversario: number | null;
+  cartoes_vermelhos_time: number | null;
+  cartoes_vermelhos_adversario: number | null;
 }
 
 interface Estatisticas {
@@ -141,7 +141,8 @@ function media(jogos: Jogo[], chave: keyof Jogo) {
 }
 
 // Converte "aaaa-mm-dd" para "dd/mm/aaaa". Se o formato vier diferente, retorna a string original.
-function formatarData(dataStr: string) {
+function formatarData(dataStr: string | null) {
+  if (!dataStr) return "Data a definir";
   const partes = dataStr.split("-");
   if (partes.length === 3) {
     const [ano, mes, dia] = partes;

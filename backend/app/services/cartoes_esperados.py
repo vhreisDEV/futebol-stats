@@ -48,18 +48,24 @@ def calcular_cartoes_esperados(db, time_mandante_id, time_visitante_id, data_ref
             "detalhe_visitante": medias_visitante,
         }
 
+    # Time com jogos no historico mas sem cartoes registrados ainda (ex.:
+    # placar que veio so do PDF da CBF) tem media_* = None.
     cartoes_amarelos_mandante = medias_mandante["media_cartoes_amarelos"]
     cartoes_amarelos_visitante = medias_visitante["media_cartoes_amarelos"]
     cartoes_vermelhos_mandante = medias_mandante["media_cartoes_vermelhos"]
     cartoes_vermelhos_visitante = medias_visitante["media_cartoes_vermelhos"]
 
-    total_cartoes_esperado = round(
-        cartoes_amarelos_mandante + cartoes_amarelos_visitante
-        + cartoes_vermelhos_mandante + cartoes_vermelhos_visitante,
-        2,
-    )
+    valores_cartoes = [
+        cartoes_amarelos_mandante, cartoes_amarelos_visitante,
+        cartoes_vermelhos_mandante, cartoes_vermelhos_visitante,
+    ]
 
-    tendencia = "over" if total_cartoes_esperado > linha_referencia else "under"
+    if all(v is not None for v in valores_cartoes):
+        total_cartoes_esperado = round(sum(valores_cartoes), 2)
+        tendencia = "over" if total_cartoes_esperado > linha_referencia else "under"
+    else:
+        total_cartoes_esperado = None
+        tendencia = None
 
     return {
         "cartoes_amarelos_esperados_mandante": cartoes_amarelos_mandante,
