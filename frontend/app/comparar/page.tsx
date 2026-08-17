@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { PartidaModal } from "@/components/partida-modal";
 
 interface Time {
   id: number;
@@ -12,6 +14,7 @@ interface Time {
 }
 
 interface Jogo {
+  id: number;
   data: string;
   adversario: string;
   casa_ou_fora: string;
@@ -28,19 +31,30 @@ interface Estatisticas {
   gols_marcados: number;
   gols_sofridos: number;
   media_gols: number;
+  media_escanteios: number;
+  media_chutes: number;
+  media_chutes_gol: number;
+  media_cartoes_amarelos: number;
+  media_cartoes_vermelhos: number;
   sequencia_recente: string[];
 }
 
-const resultadoEstilo: Record<string, string> = {
-  vitoria: "border-l-4 border-green-500 bg-green-500/10",
-  empate: "border-l-4 border-border bg-card",
-  derrota: "border-l-4 border-red-500 bg-red-500/10",
+const resultadoBadge: Record<string, string> = {
+  vitoria: "bg-green-500/15 text-green-400",
+  empate: "bg-muted text-muted-foreground",
+  derrota: "bg-red-500/15 text-red-400",
 };
 
-const resultadoLabel: Record<string, string> = {
-  vitoria: "Vitória",
-  empate: "Empate",
-  derrota: "Derrota",
+const resultadoInicial: Record<string, string> = {
+  vitoria: "V",
+  empate: "E",
+  derrota: "D",
+};
+
+const resultadoFaixa: Record<string, string> = {
+  vitoria: "bg-green-500",
+  empate: "bg-border",
+  derrota: "bg-red-500",
 };
 
 function formatarData(dataStr: string) {
@@ -52,26 +66,44 @@ function formatarData(dataStr: string) {
   return dataStr;
 }
 
-function ListaJogos({ jogos }: { jogos: Jogo[] }) {
+function ListaJogos({
+  jogos,
+  onSelecionar,
+}: {
+  jogos: Jogo[];
+  onSelecionar: (id: number) => void;
+}) {
   return (
-    <ul className="grid gap-2">
-      {jogos.map((jogo, index) => (
-        <li
-          key={index}
-          className={`rounded-md px-3 py-2 text-sm ${resultadoEstilo[jogo.resultado] ?? "border-l-4 border-border bg-card"}`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-medium">
-              {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
-            </span>
-            <span className="text-muted-foreground">{formatarData(jogo.data)}</span>
-          </div>
-          <div className="mt-1 flex items-center justify-between text-muted-foreground">
-            <span className="font-mono tabular-nums text-foreground">
-              {jogo.gols_time}x{jogo.gols_adversario}
-            </span>
-            <span>{resultadoLabel[jogo.resultado] ?? jogo.resultado}</span>
-          </div>
+    <ul className="grid gap-1.5">
+      {jogos.map((jogo) => (
+        <li key={jogo.id}>
+          <button
+            type="button"
+            onClick={() => onSelecionar(jogo.id)}
+            className="group flex w-full items-stretch overflow-hidden rounded-md bg-card text-left ring-1 ring-foreground/10 transition-colors hover:ring-primary/40"
+          >
+            <span className={`w-1 shrink-0 ${resultadoFaixa[jogo.resultado] ?? "bg-border"}`} />
+            <div className="min-w-0 flex-1 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${resultadoBadge[jogo.resultado] ?? "bg-muted text-muted-foreground"}`}
+                >
+                  {resultadoInicial[jogo.resultado] ?? "?"}
+                </span>
+                <span className="truncate text-sm font-medium">{jogo.adversario}</span>
+              </div>
+              <p className="mt-0.5 pl-7 text-[11px] text-muted-foreground">
+                {formatarData(jogo.data)} · {jogo.casa_ou_fora === "casa" ? "Casa" : "Fora"}
+              </p>
+            </div>
+            <div className="relative flex w-14 shrink-0 items-center justify-center border-l border-dashed border-border bg-muted/20">
+              <span className="pointer-events-none absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-background" />
+              <span className="font-mono text-base font-bold tabular-nums text-primary">
+                {jogo.gols_time}–{jogo.gols_adversario}
+              </span>
+              <span className="pointer-events-none absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-background" />
+            </div>
+          </button>
         </li>
       ))}
     </ul>
@@ -89,6 +121,7 @@ function CompararTimesConteudo() {
 
   const [timeAId, setTimeAId] = useState<string>(timePreSelecionado);
   const [timeBId, setTimeBId] = useState<string>(timeBPreSelecionado);
+  const [quantidade, setQuantidade] = useState(10);
 
   const [estatisticasA, setEstatisticasA] = useState<Estatisticas | null>(null);
   const [estatisticasB, setEstatisticasB] = useState<Estatisticas | null>(null);
@@ -96,6 +129,7 @@ function CompararTimesConteudo() {
   const [jogosB, setJogosB] = useState<Jogo[]>([]);
   const [carregandoComparacao, setCarregandoComparacao] = useState(false);
   const [erroComparacao, setErroComparacao] = useState<string | null>(null);
+  const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/times/")
@@ -136,19 +170,19 @@ function CompararTimesConteudo() {
     setErroComparacao(null);
 
     Promise.all([
-      fetch(`http://127.0.0.1:8000/times/${timeAId}/estatisticas`).then((r) => {
+      fetch(`http://127.0.0.1:8000/times/${timeAId}/estatisticas?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar estatísticas do Time A");
         return r.json();
       }),
-      fetch(`http://127.0.0.1:8000/times/${timeBId}/estatisticas`).then((r) => {
+      fetch(`http://127.0.0.1:8000/times/${timeBId}/estatisticas?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar estatísticas do Time B");
         return r.json();
       }),
-      fetch(`http://127.0.0.1:8000/times/${timeAId}/jogos`).then((r) => {
+      fetch(`http://127.0.0.1:8000/times/${timeAId}/jogos?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar jogos do Time A");
         return r.json();
       }),
-      fetch(`http://127.0.0.1:8000/times/${timeBId}/jogos`).then((r) => {
+      fetch(`http://127.0.0.1:8000/times/${timeBId}/jogos?quantidade=${quantidade}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar jogos do Time B");
         return r.json();
       }),
@@ -164,7 +198,7 @@ function CompararTimesConteudo() {
         setErroComparacao(err.message);
         setCarregandoComparacao(false);
       });
-  }, [timeAId, timeBId]);
+  }, [timeAId, timeBId, quantidade]);
 
   if (carregando) {
     return (
@@ -200,6 +234,11 @@ function CompararTimesConteudo() {
     { label: "Gols marcados", chave: "gols_marcados" },
     { label: "Gols sofridos", chave: "gols_sofridos" },
     { label: "Média de gols", chave: "media_gols" },
+    { label: "Escanteios (média)", chave: "media_escanteios" },
+    { label: "Chutes (média)", chave: "media_chutes" },
+    { label: "Chutes ao gol (média)", chave: "media_chutes_gol" },
+    { label: "Cartões amarelos (média)", chave: "media_cartoes_amarelos" },
+    { label: "Cartões vermelhos (média)", chave: "media_cartoes_vermelhos" },
   ];
 
   return (
@@ -218,6 +257,11 @@ function CompararTimesConteudo() {
         </h1>
         <p className="mt-2 text-muted-foreground">
           Selecione dois times para comparar suas estatísticas.
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Considera apenas jogos do Brasileirão Série A — os times também disputam outras
+          competições (Copa do Brasil, Libertadores, Sul-Americana etc.), que não entram nesta
+          conta. Os números somam jogos dentro e fora de casa.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -257,6 +301,23 @@ function CompararTimesConteudo() {
             </select>
           </div>
         </div>
+
+        {timeAId && timeBId && timeAId !== timeBId && (
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <span className="text-sm text-muted-foreground">Período de análise</span>
+            <ToggleGroup
+              variant="outline"
+              size="sm"
+              value={[String(quantidade)]}
+              onValueChange={(v: string[]) => v[0] && setQuantidade(Number(v[0]))}
+            >
+              <ToggleGroupItem value="5">Últimos 5</ToggleGroupItem>
+              <ToggleGroupItem value="10">Últimos 10</ToggleGroupItem>
+              <ToggleGroupItem value="20">Últimos 20</ToggleGroupItem>
+              <ToggleGroupItem value="30">Últimos 30</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        )}
 
         {timeAId && timeBId && timeAId === timeBId && (
           <p className="mt-8 text-primary">
@@ -317,19 +378,22 @@ function CompararTimesConteudo() {
             <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Últimos Jogos
             </h2>
+            <p className="mt-1 text-xs text-muted-foreground">Toque em um jogo para ver os detalhes.</p>
             <div className="mt-4 grid gap-6 sm:grid-cols-2">
               <div>
                 <p className="mb-2 text-sm font-medium text-muted-foreground">{timeA.nome}</p>
-                <ListaJogos jogos={jogosA} />
+                <ListaJogos jogos={jogosA} onSelecionar={setPartidaAbertaId} />
               </div>
               <div>
                 <p className="mb-2 text-sm font-medium text-muted-foreground">{timeB.nome}</p>
-                <ListaJogos jogos={jogosB} />
+                <ListaJogos jogos={jogosB} onSelecionar={setPartidaAbertaId} />
               </div>
             </div>
           </div>
         )}
       </div>
+
+      <PartidaModal partidaId={partidaAbertaId} onClose={() => setPartidaAbertaId(null)} />
     </main>
   );
 }

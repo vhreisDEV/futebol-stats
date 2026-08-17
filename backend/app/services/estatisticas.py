@@ -80,6 +80,7 @@ def _montar_jogo(partida, time_id):
         resultado = "derrota"
 
     return {
+        "id": partida.id,
         "data": partida.data,
         "adversario": adversario,
         "casa_ou_fora": "casa" if jogou_em_casa else "fora",
@@ -116,6 +117,11 @@ def calcular_estatisticas(jogos):
     total_jogos = len(jogos)
     media_gols = gols_marcados / total_jogos if total_jogos > 0 else 0
 
+    def media(chave):
+        if total_jogos == 0:
+            return 0
+        return round(sum(jogo[chave] for jogo in jogos) / total_jogos, 2)
+
     sequencia = [jogo["resultado"] for jogo in jogos]
 
     return {
@@ -126,5 +132,10 @@ def calcular_estatisticas(jogos):
         "gols_marcados": gols_marcados,
         "gols_sofridos": gols_sofridos,
         "media_gols": round(media_gols, 2),
+        "media_escanteios": media("escanteios_time"),
+        "media_chutes": media("chutes_time"),
+        "media_chutes_gol": media("chutes_gol_time"),
+        "media_cartoes_amarelos": media("cartoes_amarelos_time"),
+        "media_cartoes_vermelhos": media("cartoes_vermelhos_time"),
         "sequencia_recente": sequencia,
     }

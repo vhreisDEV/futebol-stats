@@ -12,6 +12,7 @@ class TimeBase(BaseModel):
 
 
 class JogoResponse(BaseModel):
+    id: int
     data: date
     adversario: str
     casa_ou_fora: str
@@ -44,4 +45,9 @@ class EstatisticasResponse(BaseModel):
     gols_marcados: int
     gols_sofridos: int
     media_gols: float
+    media_escanteios: float
+    media_chutes: float
+    media_chutes_gol: float
+    media_cartoes_amarelos: float
+    media_cartoes_vermelhos: float
     sequencia_recente: List[str]
