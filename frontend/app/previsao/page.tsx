@@ -70,6 +70,10 @@ function valorOuTraco(valor: number | null) {
   return valor === null || valor === undefined ? "—" : valor;
 }
 
+function percentual(valor: number | null) {
+  return valor === null || valor === undefined ? "—" : valor.toFixed(2);
+}
+
 function arredondado(valor: number | null) {
   return valor === null || valor === undefined ? "—" : Math.round(valor);
 }
@@ -346,7 +350,7 @@ function ProjecaoPreJogoConteudo() {
                   <p
                     className={`font-mono text-2xl font-bold tabular-nums ${corDoFavorito(projecao.resultado.vitoria_mandante, [projecao.resultado.empate, projecao.resultado.vitoria_visitante])}`}
                   >
-                    {valorOuTraco(projecao.resultado.vitoria_mandante)}%
+                    {percentual(projecao.resultado.vitoria_mandante)}%
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">{projecao.time_mandante}</p>
                 </div>
@@ -354,7 +358,7 @@ function ProjecaoPreJogoConteudo() {
                   <p
                     className={`font-mono text-2xl font-bold tabular-nums ${corDoFavorito(projecao.resultado.empate, [projecao.resultado.vitoria_mandante, projecao.resultado.vitoria_visitante])}`}
                   >
-                    {valorOuTraco(projecao.resultado.empate)}%
+                    {percentual(projecao.resultado.empate)}%
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">Empate</p>
                 </div>
@@ -362,7 +366,7 @@ function ProjecaoPreJogoConteudo() {
                   <p
                     className={`font-mono text-2xl font-bold tabular-nums ${corDoFavorito(projecao.resultado.vitoria_visitante, [projecao.resultado.vitoria_mandante, projecao.resultado.empate])}`}
                   >
-                    {valorOuTraco(projecao.resultado.vitoria_visitante)}%
+                    {percentual(projecao.resultado.vitoria_visitante)}%
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">{projecao.time_visitante}</p>
                 </div>

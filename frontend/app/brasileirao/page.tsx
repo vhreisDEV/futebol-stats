@@ -188,7 +188,7 @@ export default function Brasileirao() {
           <CabecalhoCampeonato />
           <div className="flex w-full shrink-0 flex-wrap gap-2 sm:w-auto">
             <Link
-              href="/projecao"
+              href="/previsao"
               className={buttonVariants({ variant: "default" })}
             >
               Previsão de Jogos

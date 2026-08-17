@@ -77,6 +77,10 @@ function valorOuTraco(valor: number | null) {
   return valor === null || valor === undefined ? "—" : valor;
 }
 
+function percentual(valor: number | null) {
+  return valor === null || valor === undefined ? "—" : valor.toFixed(2);
+}
+
 const resultadoEstilo: Record<string, string> = {
   vitoria: "border-l-4 border-green-500 bg-green-500/10",
   empate: "border-l-4 border-border bg-card",
@@ -375,7 +379,7 @@ export default function DetalheTime() {
               Comparar
             </Link>
             <Link
-              href={`/projecao?mandante=${id}`}
+              href={`/previsao?mandante=${id}`}
               className="text-sm text-muted-foreground underline hover:text-primary"
             >
               Projeção
@@ -547,18 +551,18 @@ export default function DetalheTime() {
               </div>
               <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
                 <p className="font-mono font-semibold tabular-nums text-muted-foreground">
-                  {valorOuTraco(projecaoRapida.resultado.vitoria_mandante)}%
+                  {percentual(projecaoRapida.resultado.vitoria_mandante)}%
                 </p>
                 <p className="font-mono font-semibold tabular-nums text-muted-foreground">
-                  {valorOuTraco(projecaoRapida.resultado.empate)}%{" "}
+                  {percentual(projecaoRapida.resultado.empate)}%{" "}
                   <span className="block text-[10px] font-normal">Empate</span>
                 </p>
                 <p className="font-mono font-semibold tabular-nums text-muted-foreground">
-                  {valorOuTraco(projecaoRapida.resultado.vitoria_visitante)}%
+                  {percentual(projecaoRapida.resultado.vitoria_visitante)}%
                 </p>
               </div>
               <Link
-                href={`/projecao?mandante=${id}&visitante=${projecaoVisitanteId}`}
+                href={`/previsao?mandante=${id}&visitante=${projecaoVisitanteId}`}
                 className="mt-3 inline-block text-xs text-muted-foreground underline hover:text-primary"
               >
                 Ver projeção completa →
