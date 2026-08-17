@@ -6,8 +6,10 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { PartidaModal } from "@/components/partida-modal";
 
 interface Jogo {
+  id: number;
   data: string;
   adversario: string;
   casa_ou_fora: string;
@@ -81,16 +83,22 @@ function percentual(valor: number | null) {
   return valor === null || valor === undefined ? "—" : valor.toFixed(2);
 }
 
-const resultadoEstilo: Record<string, string> = {
-  vitoria: "border-l-4 border-green-500 bg-green-500/10",
-  empate: "border-l-4 border-border bg-card",
-  derrota: "border-l-4 border-red-500 bg-red-500/10",
+const resultadoBadge: Record<string, string> = {
+  vitoria: "bg-green-500/15 text-green-400",
+  empate: "bg-muted text-muted-foreground",
+  derrota: "bg-red-500/15 text-red-400",
 };
 
-const resultadoLabel: Record<string, string> = {
-  vitoria: "Vitória",
-  empate: "Empate",
-  derrota: "Derrota",
+const resultadoInicial: Record<string, string> = {
+  vitoria: "V",
+  empate: "E",
+  derrota: "D",
+};
+
+const resultadoFaixa: Record<string, string> = {
+  vitoria: "bg-green-500",
+  empate: "bg-border",
+  derrota: "bg-red-500",
 };
 
 const resultadoCorQuadrado: Record<string, string> = {
@@ -137,6 +145,50 @@ function formatarData(dataStr: string) {
     return `${dia}/${mes}/${ano}`;
   }
   return dataStr;
+}
+
+function ListaJogos({
+  jogos,
+  onSelecionar,
+}: {
+  jogos: Jogo[];
+  onSelecionar: (id: number) => void;
+}) {
+  return (
+    <ul className="grid gap-1.5">
+      {jogos.map((jogo) => (
+        <li key={jogo.id}>
+          <button
+            type="button"
+            onClick={() => onSelecionar(jogo.id)}
+            className="group flex w-full items-stretch overflow-hidden rounded-md bg-card text-left ring-1 ring-foreground/10 transition-colors hover:ring-primary/40"
+          >
+            <span className={`w-1 shrink-0 ${resultadoFaixa[jogo.resultado] ?? "bg-border"}`} />
+            <div className="min-w-0 flex-1 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${resultadoBadge[jogo.resultado] ?? "bg-muted text-muted-foreground"}`}
+                >
+                  {resultadoInicial[jogo.resultado] ?? "?"}
+                </span>
+                <span className="truncate text-sm font-medium">{jogo.adversario}</span>
+              </div>
+              <p className="mt-0.5 pl-7 text-[11px] text-muted-foreground">
+                {formatarData(jogo.data)} · {jogo.casa_ou_fora === "casa" ? "Casa" : "Fora"}
+              </p>
+            </div>
+            <div className="relative flex w-14 shrink-0 items-center justify-center border-l border-dashed border-border bg-muted/20">
+              <span className="pointer-events-none absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-background" />
+              <span className="font-mono text-base font-bold tabular-nums text-primary">
+                {jogo.gols_time}–{jogo.gols_adversario}
+              </span>
+              <span className="pointer-events-none absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-background" />
+            </div>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 function ModalEstatisticas({
@@ -238,6 +290,7 @@ export default function DetalheTime() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [modalAberto, setModalAberto] = useState(false);
+  const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
   const [nomeTime, setNomeTime] = useState("");
   const [quantidade, setQuantidade] = useState(10);
   const [times, setTimes] = useState<Time[]>([]);
@@ -403,6 +456,8 @@ export default function DetalheTime() {
           >
             <ToggleGroupItem value="5">Últimos 5</ToggleGroupItem>
             <ToggleGroupItem value="10">Últimos 10</ToggleGroupItem>
+            <ToggleGroupItem value="20">Últimos 20</ToggleGroupItem>
+            <ToggleGroupItem value="30">Últimos 30</ToggleGroupItem>
           </ToggleGroup>
         </div>
 
@@ -585,28 +640,11 @@ export default function DetalheTime() {
           )}
         </div>
 
-        <ul className="mt-4 grid gap-2">
-          {jogos.map((jogo, index) => (
-            <li
-              key={index}
-              onClick={() => setModalAberto(true)}
-              className={`cursor-pointer rounded-md px-4 py-3 text-sm transition hover:opacity-80 ${resultadoEstilo[jogo.resultado] ?? "border-l-4 border-border bg-card"}`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium">
-                  {jogo.casa_ou_fora === "casa" ? "vs" : "@"} {jogo.adversario}
-                </span>
-                <span className="text-muted-foreground">{formatarData(jogo.data)}</span>
-              </div>
-              <div className="mt-1 flex items-center justify-between text-muted-foreground">
-                <span className="font-mono tabular-nums text-foreground">
-                  {jogo.gols_time}x{jogo.gols_adversario}
-                </span>
-                <span>{resultadoLabel[jogo.resultado] ?? jogo.resultado}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <p className="mt-1 text-xs text-muted-foreground">Toque em um jogo para ver os detalhes.</p>
+
+        <div className="mt-4">
+          <ListaJogos jogos={jogos} onSelecionar={setPartidaAbertaId} />
+        </div>
       </div>
 
       {modalAberto && (
@@ -616,6 +654,8 @@ export default function DetalheTime() {
           onFechar={() => setModalAberto(false)}
         />
       )}
+
+      <PartidaModal partidaId={partidaAbertaId} onClose={() => setPartidaAbertaId(null)} />
     </main>
   );
 }
