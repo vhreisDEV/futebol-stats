@@ -2,12 +2,36 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Time {
   id: number;
   nome: string;
+}
+
+const PALETA_TIME = [
+  "bg-blue-500/15 text-blue-400",
+  "bg-emerald-500/15 text-emerald-400",
+  "bg-amber-500/15 text-amber-400",
+  "bg-rose-500/15 text-rose-400",
+  "bg-violet-500/15 text-violet-400",
+  "bg-sky-500/15 text-sky-400",
+  "bg-orange-500/15 text-orange-400",
+  "bg-teal-500/15 text-teal-400",
+  "bg-fuchsia-500/15 text-fuchsia-400",
+  "bg-lime-500/15 text-lime-400",
+];
+
+function corTime(id: number) {
+  return PALETA_TIME[id % PALETA_TIME.length];
+}
+
+function iniciais(nome: string) {
+  const partes = nome.replace(/-/g, " ").split(" ").filter(Boolean);
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
 }
 
 export default function Times() {
@@ -31,14 +55,6 @@ export default function Times() {
       });
   }, []);
 
-  if (carregando) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        <p>Carregando times...</p>
-      </main>
-    );
-  }
-
   if (erro) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background text-destructive">
@@ -49,31 +65,52 @@ export default function Times() {
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-3xl">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+            <Link
+              href="/brasileirao"
+              className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Brasileirão
+            </Link>
+            <h1 className="mt-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
               Times
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Selecione um time para ver os últimos jogos e estatísticas.
+            <p className="mt-1 text-sm text-muted-foreground">
+              {carregando ? "Carregando…" : `${times.length} times`} · selecione um para ver jogos e estatísticas.
             </p>
           </div>
-          <Link href="/brasileirao" className={buttonVariants({ variant: "outline" })}>
-            ← Rodadas
-          </Link>
         </div>
 
-        <div className="mt-8 grid gap-3">
-          {times.map((time) => (
-            <Link key={time.id} href={`/times/${time.id}`} className="group">
-              <Card className="transition-colors hover:bg-muted/50">
-                <CardContent className="font-medium transition-colors group-hover:text-primary">
-                  {time.nome}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+        <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {carregando
+            ? Array.from({ length: 12 }).map((_, i) => (
+                <Card key={i} size="sm" className="ring-0">
+                  <CardContent className="flex items-center gap-3">
+                    <Skeleton className="size-8 shrink-0 rounded-full" />
+                    <Skeleton className="h-4 flex-1" />
+                  </CardContent>
+                </Card>
+              ))
+            : times.map((time) => (
+                <Link key={time.id} href={`/times/${time.id}`} className="group">
+                  <Card size="sm" className="ring-0 transition-colors hover:bg-muted/50">
+                    <CardContent className="flex items-center gap-3">
+                      <span
+                        className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${corTime(time.id)}`}
+                      >
+                        {iniciais(time.nome)}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate font-medium transition-colors group-hover:text-primary">
+                        {time.nome}
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
         </div>
       </div>
     </main>
