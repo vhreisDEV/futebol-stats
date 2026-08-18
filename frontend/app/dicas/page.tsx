@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Flame } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame, Flag, Target, Crosshair, RectangleVertical, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
+import { corTime, iniciais } from "@/lib/times-visual";
 import { API_URL } from "@/lib/api";
 
 interface Destaque {
@@ -40,6 +41,13 @@ interface RodadaAtualResponse {
   rodada_maxima: number;
 }
 
+const ICONE_STAT: Record<string, { icon: LucideIcon; cor: string }> = {
+  escanteios_a_favor: { icon: Flag, cor: "text-blue-400" },
+  chutes_a_favor: { icon: Target, cor: "text-violet-400" },
+  chutes_gol_a_favor: { icon: Crosshair, cor: "text-rose-400" },
+  cartoes_amarelos: { icon: RectangleVertical, cor: "text-amber-400" },
+};
+
 function formatarData(dataStr: string | null) {
   if (!dataStr) return "Data a definir";
   const partes = dataStr.split("-");
@@ -50,50 +58,78 @@ function formatarData(dataStr: string | null) {
   return dataStr;
 }
 
-function ListaDestaques({ time, destaques }: { time: string; destaques: Destaque[] }) {
-  if (destaques.length === 0) {
-    return (
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">{time}</p>
-        <p className="mt-2 text-xs text-muted-foreground/70">Nada que se destaque.</p>
-      </div>
-    );
-  }
+function BlocoTime({
+  time,
+  mandoLabel,
+  destaques,
+}: {
+  time: string;
+  mandoLabel: "em casa" | "fora de casa";
+  destaques: Destaque[];
+}) {
+  const cores = corTime(time);
 
   return (
     <div className="min-w-0 flex-1">
-      <p className="truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">{time}</p>
-      <ul className="mt-2 grid gap-2">
-        {destaques.map((d) => (
-          <li key={d.stat} className="rounded-md bg-muted/40 px-3 py-2">
-            <p className="text-sm">
-              <span className="font-medium text-foreground">{d.label}</span>{" "}
-              <span className="text-muted-foreground">
-                mais de <span className="font-mono text-primary">{d.linha}</span> em{" "}
-                <span className="font-mono font-semibold text-foreground">
-                  {d.acertos}/{d.total}
-                </span>{" "}
-                jogos ({Math.round(d.taxa * 100)}%)
-              </span>
-            </p>
-            <p className="mt-1.5 flex flex-wrap gap-1">
-              {d.sequencia
-                .slice()
-                .reverse()
-                .map((v, i) => (
-                  <span
-                    key={i}
-                    className={`rounded px-1.5 py-0.5 font-mono text-[11px] tabular-nums ${
-                      v > d.linha ? "bg-primary/15 font-semibold text-primary" : "bg-muted text-muted-foreground/70"
-                    }`}
-                  >
-                    {v}
-                  </span>
-                ))}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <div className="flex items-center gap-2">
+        <span
+          className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold ${
+            cores.textoEscuro ? "text-black" : "text-white"
+          }`}
+          style={{ backgroundColor: cores.fundo, borderColor: cores.borda }}
+        >
+          {iniciais(time)}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{time}</p>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{mandoLabel}</p>
+        </div>
+      </div>
+
+      {destaques.length === 0 ? (
+        <p className="mt-2.5 text-xs text-muted-foreground/70">Nada que se destaque {mandoLabel}.</p>
+      ) : (
+        <ul className="mt-2.5 grid gap-2">
+          {destaques.map((d) => {
+            const { icon: Icon, cor } = ICONE_STAT[d.stat] ?? { icon: Flag, cor: "text-muted-foreground" };
+            const porcentagem = Math.round(d.taxa * 100);
+            return (
+              <li key={d.stat} className="rounded-md bg-muted/40 p-2.5">
+                <div className="flex items-start gap-2">
+                  <Icon className={`mt-0.5 size-3.5 shrink-0 ${cor}`} />
+                  <p className="text-xs leading-relaxed text-foreground">
+                    <span className="font-semibold">{time}</span> costuma passar de{" "}
+                    <span className="font-mono font-semibold text-primary">{d.linha}</span> {d.label.toLowerCase()}{" "}
+                    {mandoLabel} —{" "}
+                    <span className="font-mono font-semibold">
+                      {d.acertos}/{d.total}
+                    </span>{" "}
+                    jogos ({porcentagem}%)
+                  </p>
+                </div>
+                <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-background/60">
+                  <div className={`h-full rounded-full bg-current ${cor}`} style={{ width: `${porcentagem}%` }} />
+                </div>
+                <p className="mt-1.5 flex flex-wrap gap-1 pl-5.5">
+                  {d.sequencia
+                    .slice()
+                    .reverse()
+                    .map((v, i) => (
+                      <span
+                        key={i}
+                        className={`rounded px-1.5 py-0.5 font-mono text-[10px] tabular-nums ${
+                          v > d.linha ? "bg-primary/15 font-semibold text-primary" : "bg-background/60 text-muted-foreground/70"
+                        }`}
+                      >
+                        {v}
+                      </span>
+                    ))}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
@@ -178,8 +214,7 @@ export default function Dicas() {
           </h1>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Sequências recentes de cada time (escanteios, chutes, cartões) que vêm se repetindo, pros confrontos que
-          ainda vão acontecer.
+          Sequências recentes de cada time que vêm se repetindo, pros confrontos que ainda vão acontecer.
         </p>
 
         <div className="mx-auto mt-6 flex w-fit items-stretch overflow-hidden rounded-lg border border-border bg-card">
@@ -221,7 +256,7 @@ export default function Dicas() {
         ) : (
           <div className="mt-6 grid gap-3">
             {jogos.map((jogo) => (
-              <Card key={jogo.partida_id} className="overflow-hidden">
+              <Card key={jogo.partida_id} className="overflow-hidden border-primary/15">
                 <CardContent>
                   <p className="text-center text-xs uppercase tracking-wide text-muted-foreground">
                     {formatarData(jogo.data)}
@@ -232,9 +267,9 @@ export default function Dicas() {
                     {jogo.time_visitante}
                   </p>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
-                    <ListaDestaques time={jogo.time_mandante} destaques={jogo.destaques_mandante} />
+                    <BlocoTime time={jogo.time_mandante} mandoLabel="em casa" destaques={jogo.destaques_mandante} />
                     <div className="sm:pl-4">
-                      <ListaDestaques time={jogo.time_visitante} destaques={jogo.destaques_visitante} />
+                      <BlocoTime time={jogo.time_visitante} mandoLabel="fora de casa" destaques={jogo.destaques_visitante} />
                     </div>
                   </div>
                 </CardContent>
