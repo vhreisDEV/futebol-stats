@@ -81,9 +81,8 @@ def parse_data(data_iso):
 
 
 def mapear_status(estado):
-    # ATENCAO: a redacao exata que a Highlightly usa para "adiada" ainda nao
-    # foi confirmada (cota estava zerada quando isso foi escrito) -- ajustar
-    # esses termos assim que virmos um caso real de partida adiada na API.
+    # Confirmado com dado real (rodada 21, 2026-08-18): a Highlightly usa
+    # exatamente "Postponed" em state.description para partida adiada.
     if "Finished" in estado or "Full-time" in estado or "FT" in estado:
         return "finalizada"
     if "Postponed" in estado or "Adiad" in estado or "Suspended" in estado:
