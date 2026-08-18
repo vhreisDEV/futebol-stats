@@ -83,7 +83,10 @@ def _ranking_top_liga(db, coluna, mando, limit, stat):
     if filtro_mando is not None:
         query = query.join(Partida, Partida.id == EstatisticaJogadorPartida.partida_id).filter(filtro_mando)
 
-    return query.group_by(Jogador.id).order_by(func.sum(coluna).desc()).limit(limit).all()
+    # Postgres exige que toda coluna selecionada esteja no GROUP BY ou seja
+    # agregada (SQLite deixa passar por ser tolerante demais) -- Time.id
+    # precisa entrar aqui porque Time.nome vem de outra tabela via join.
+    return query.group_by(Jogador.id, Time.id).order_by(func.sum(coluna).desc()).limit(limit).all()
 
 
 def _ranking_elenco_completo(db, coluna, mando, time_id, stat):
@@ -118,7 +121,7 @@ def _ranking_elenco_completo(db, coluna, mando, time_id, stat):
         query = query.filter(Jogador.posicao == "Goleiro")
 
     return (
-        query.group_by(Jogador.id)
+        query.group_by(Jogador.id, Time.id)
         .order_by(func.coalesce(expressao_total, 0).desc())
         .all()
     )
