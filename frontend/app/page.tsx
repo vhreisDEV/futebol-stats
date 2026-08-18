@@ -31,15 +31,15 @@ export default function Home() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-8 text-foreground">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-40">
         <LightRays
           raysOrigin="top-center"
           raysColor="#d4af37"
           raysSpeed={1.1}
-          lightSpread={0.9}
-          rayLength={1.4}
-          fadeDistance={1.1}
-          saturation={1}
+          lightSpread={0.6}
+          rayLength={1.0}
+          fadeDistance={0.9}
+          saturation={0.7}
           followMouse
           mouseInfluence={0.08}
           noiseAmount={0.05}
