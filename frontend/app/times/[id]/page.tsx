@@ -567,7 +567,7 @@ export default function DetalheTime() {
           </div>
 
           {carregandoComparacao && (
-            <div className="mt-3 flex min-h-16 items-center justify-center">
+            <div className="mt-3 flex min-h-24 items-center justify-center">
               <VhSpinner />
             </div>
           )}
