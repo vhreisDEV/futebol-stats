@@ -9,12 +9,14 @@ from app.models.time import Time
 from app.schemas.projecao import (
     ProjecaoResponse,
     GolsEsperados,
+    PlacarProvavel,
     ProbabilidadeResultado,
     EscanteiosEsperados,
     CartoesEsperados,
     ChutesEsperados,
 )
 from app.services.gols_esperados import calcular_gols_esperados
+from app.services.placar_mais_provavel import calcular_placares_mais_provaveis
 from app.services.probabilidade_resultado import calcular_probabilidade_resultado
 from app.services.escanteios_esperados import calcular_escanteios_esperados
 from app.services.cartoes_esperados import calcular_cartoes_esperados
@@ -54,6 +56,9 @@ def obter_projecao(
     referencia = data_referencia or date.today()
 
     gols = calcular_gols_esperados(db, mandante_id, visitante_id, referencia)
+    placares_provaveis = calcular_placares_mais_provaveis(
+        gols.get("gols_esperados_mandante"), gols.get("gols_esperados_visitante")
+    )
     resultado = calcular_probabilidade_resultado(db, mandante_id, visitante_id, referencia)
     escanteios = calcular_escanteios_esperados(db, mandante_id, visitante_id, referencia)
     cartoes = calcular_cartoes_esperados(db, mandante_id, visitante_id, referencia)
@@ -66,6 +71,14 @@ def obter_projecao(
         gols=GolsEsperados(
             mandante=gols.get("gols_esperados_mandante"),
             visitante=gols.get("gols_esperados_visitante"),
+            placares_mais_provaveis=[
+                PlacarProvavel(
+                    mandante=p["gols_mandante"],
+                    visitante=p["gols_visitante"],
+                    probabilidade=p["probabilidade"],
+                )
+                for p in placares_provaveis
+            ],
         ),
         resultado=ProbabilidadeResultado(
             vitoria_mandante=resultado.get("probabilidade_vitoria_mandante"),

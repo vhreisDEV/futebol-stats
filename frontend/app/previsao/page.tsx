@@ -28,6 +28,7 @@ interface Projecao {
   gols: {
     mandante: number | null;
     visitante: number | null;
+    placares_mais_provaveis: { mandante: number; visitante: number; probabilidade: number }[];
   };
   resultado: {
     vitoria_mandante: number | null;
@@ -385,27 +386,58 @@ function ProjecaoPreJogoConteudo() {
           <div className="mt-10 grid gap-6">
             <div className="overflow-hidden rounded-lg border border-primary/30 bg-primary/5">
               <p className="pt-4 text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                Placar mais provável
+                Placares mais prováveis
               </p>
-              <div className="mt-3 grid grid-cols-[1fr_auto_1fr] divide-x divide-primary/20">
-                <div className="flex items-center justify-end px-3 py-4">
-                  <span className="truncate font-heading text-sm uppercase tracking-wide sm:text-lg">
-                    {projecao.time_mandante}
-                  </span>
-                </div>
-                <div className="flex items-center justify-center px-4 py-4">
-                  <span className="font-mono text-3xl font-bold tabular-nums text-primary sm:text-4xl">
-                    {arredondado(projecao.gols.mandante)}–{arredondado(projecao.gols.visitante)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-start px-3 py-4">
-                  <span className="truncate font-heading text-sm uppercase tracking-wide sm:text-lg">
-                    {projecao.time_visitante}
-                  </span>
-                </div>
+              <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-x-2 px-4 text-xs text-muted-foreground sm:text-sm">
+                <span className="truncate text-right font-heading uppercase tracking-wide">
+                  {projecao.time_mandante}
+                </span>
+                <span />
+                <span className="truncate text-left font-heading uppercase tracking-wide">
+                  {projecao.time_visitante}
+                </span>
               </div>
+
+              {projecao.gols.placares_mais_provaveis.length === 0 ? (
+                <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  Histórico insuficiente pra estimar um placar.
+                </p>
+              ) : (
+                <ul className="mt-1 divide-y divide-primary/10">
+                  {projecao.gols.placares_mais_provaveis.map((placar, index) => (
+                    <li
+                      key={`${placar.mandante}-${placar.visitante}`}
+                      className={`flex items-center gap-3 px-4 py-2.5 ${index === 0 ? "bg-primary/5" : ""}`}
+                    >
+                      <span className="w-4 shrink-0 text-center font-mono text-[10px] text-muted-foreground">
+                        {index + 1}º
+                      </span>
+                      <span
+                        className={`shrink-0 font-mono tabular-nums text-primary ${index === 0 ? "text-2xl font-bold sm:text-3xl" : "text-base font-semibold"}`}
+                      >
+                        {placar.mandante}–{placar.visitante}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-primary/10">
+                          <div
+                            className="h-full rounded-full bg-primary"
+                            style={{ width: `${Math.min(placar.probabilidade * 100 * 4, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                      <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                        {(placar.probabilidade * 100).toFixed(1)}%
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
               <div className="border-t border-primary/20 px-4 py-3 text-center">
                 <p className="text-xs text-muted-foreground">
+                  Nenhum placar isolado passa de ~20% — são muitos resultados possíveis, isto é só o topo da lista.
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
                   Gols esperados (média): {valorOuTraco(projecao.gols.mandante)} x {valorOuTraco(projecao.gols.visitante)}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">

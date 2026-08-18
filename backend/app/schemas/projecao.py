@@ -1,10 +1,17 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
+
+
+class PlacarProvavel(BaseModel):
+    mandante: int
+    visitante: int
+    probabilidade: float
 
 
 class GolsEsperados(BaseModel):
     mandante: Optional[float]
     visitante: Optional[float]
+    placares_mais_provaveis: List[PlacarProvavel]
 
 
 class ProbabilidadeResultado(BaseModel):

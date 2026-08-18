@@ -222,7 +222,13 @@ export default function Jogadores() {
             )}
 
             {!carregando && ranking.length > 0 && (
-              <ul className="mt-3 grid gap-1.5">
+              <div className="mt-3 flex items-center justify-end gap-6 px-3 text-[10px] uppercase tracking-wide text-muted-foreground/70">
+                <span>Total na temporada / média por jogo</span>
+              </div>
+            )}
+
+            {!carregando && ranking.length > 0 && (
+              <ul className="mt-1.5 grid gap-1.5">
                 {ranking.map((item, index) => {
                   const cores = corTime(item.time_nome ?? "");
                   return (
@@ -249,7 +255,9 @@ export default function Jogadores() {
                         </div>
                         <div className="shrink-0 text-right">
                           <p className="font-mono text-lg font-bold tabular-nums text-primary">{item.total}</p>
-                          <p className="text-[10px] text-muted-foreground">média {item.media}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            <span className="font-mono tabular-nums">{item.media.toFixed(2)}</span> por jogo
+                          </p>
                         </div>
                       </button>
                     </li>
