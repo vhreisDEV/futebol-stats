@@ -11,6 +11,7 @@ import {
   Users,
   Shield,
   UserRound,
+  Flame,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -164,6 +165,7 @@ export default function Brasileirao() {
           <CabecalhoCampeonato />
           <div className="flex w-full shrink-0 flex-wrap gap-2 sm:w-auto">
             <NavChip href="/previsao" label="Previsão de Jogos" icon={TrendingUp} cor="gold" />
+            <NavChip href="/dicas" label="Dicas da Rodada" icon={Flame} cor="emerald" />
             <NavChip href="/comparar" label="Comparar Times" icon={Users} cor="rose" />
             <NavChip href="/times" label="Times" icon={Shield} cor="orange" />
             <NavChip href="/jogadores" label="Jogadores" icon={UserRound} cor="neutral" />
