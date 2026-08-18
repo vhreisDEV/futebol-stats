@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class Destaque(BaseModel):
     stat: str
     label: str
+    tipo: str  # "quantidade" ou "booleano"
     linha: float
     acertos: int
     total: int

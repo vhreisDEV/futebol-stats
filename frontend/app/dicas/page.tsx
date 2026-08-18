@@ -2,7 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Flame, Flag, Target, Crosshair, RectangleVertical, type LucideIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  Flame,
+  Flag,
+  Target,
+  Crosshair,
+  RectangleVertical,
+  CircleDot,
+  ArrowLeftRight,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
@@ -11,6 +22,7 @@ import { API_URL } from "@/lib/api";
 interface Destaque {
   stat: string;
   label: string;
+  tipo: "quantidade" | "booleano";
   linha: number;
   acertos: number;
   total: number;
@@ -42,10 +54,13 @@ interface RodadaAtualResponse {
 }
 
 const ICONE_STAT: Record<string, { icon: LucideIcon; cor: string }> = {
+  gols_marcados: { icon: CircleDot, cor: "text-emerald-400" },
   escanteios_a_favor: { icon: Flag, cor: "text-blue-400" },
   chutes_a_favor: { icon: Target, cor: "text-violet-400" },
   chutes_gol_a_favor: { icon: Crosshair, cor: "text-rose-400" },
   cartoes_amarelos: { icon: RectangleVertical, cor: "text-amber-400" },
+  ambas_marcam: { icon: ArrowLeftRight, cor: "text-cyan-400" },
+  sem_perder: { icon: ShieldCheck, cor: "text-lime-400" },
 };
 
 function formatarData(dataStr: string | null) {
@@ -93,19 +108,41 @@ function BlocoTime({
           {destaques.map((d) => {
             const { icon: Icon, cor } = ICONE_STAT[d.stat] ?? { icon: Flag, cor: "text-muted-foreground" };
             const porcentagem = Math.round(d.taxa * 100);
+            const frase =
+              d.stat === "ambas_marcam" ? (
+                <>
+                  Nos jogos de <span className="font-semibold">{time}</span> {mandoLabel}, ambas equipes costumam
+                  marcar —{" "}
+                  <span className="font-mono font-semibold">
+                    {d.acertos}/{d.total}
+                  </span>{" "}
+                  jogos ({porcentagem}%)
+                </>
+              ) : d.stat === "sem_perder" ? (
+                <>
+                  <span className="font-semibold">{time}</span> costuma não perder {mandoLabel} —{" "}
+                  <span className="font-mono font-semibold">
+                    {d.acertos}/{d.total}
+                  </span>{" "}
+                  jogos ({porcentagem}%)
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold">{time}</span> costuma passar de{" "}
+                  <span className="font-mono font-semibold text-primary">{d.linha}</span> {d.label.toLowerCase()}{" "}
+                  {mandoLabel} —{" "}
+                  <span className="font-mono font-semibold">
+                    {d.acertos}/{d.total}
+                  </span>{" "}
+                  jogos ({porcentagem}%)
+                </>
+              );
+
             return (
               <li key={d.stat} className="rounded-md bg-muted/40 p-2.5">
                 <div className="flex items-start gap-2">
                   <Icon className={`mt-0.5 size-3.5 shrink-0 ${cor}`} />
-                  <p className="text-xs leading-relaxed text-foreground">
-                    <span className="font-semibold">{time}</span> costuma passar de{" "}
-                    <span className="font-mono font-semibold text-primary">{d.linha}</span> {d.label.toLowerCase()}{" "}
-                    {mandoLabel} —{" "}
-                    <span className="font-mono font-semibold">
-                      {d.acertos}/{d.total}
-                    </span>{" "}
-                    jogos ({porcentagem}%)
-                  </p>
+                  <p className="text-xs leading-relaxed text-foreground">{frase}</p>
                 </div>
                 <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-background/60">
                   <div className={`h-full rounded-full bg-current ${cor}`} style={{ width: `${porcentagem}%` }} />
@@ -121,7 +158,7 @@ function BlocoTime({
                           v > d.linha ? "bg-primary/15 font-semibold text-primary" : "bg-background/60 text-muted-foreground/70"
                         }`}
                       >
-                        {v}
+                        {d.tipo === "booleano" ? (v > d.linha ? "✓" : "✗") : v}
                       </span>
                     ))}
                 </p>
