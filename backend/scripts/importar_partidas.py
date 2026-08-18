@@ -53,10 +53,16 @@ def buscar_temporada_completa():
     return partidas
 
 
+class CotaExcedidaError(Exception):
+    pass
+
+
 def buscar_estatisticas(match_id):
     resp = requests.get(f"{BASE_URL}/statistics/{match_id}", headers=HEADERS)
     if resp.status_code == 404:
         return None
+    if resp.status_code == 429:
+        raise CotaExcedidaError()
     resp.raise_for_status()
     return resp.json()
 
@@ -111,6 +117,13 @@ def mapear_estatisticas_time(lista_stats):
     }
 
 
+def tem_estatisticas_completas(partida):
+    # Uma partida "finalizada" pode ter vindo so do PDF (goals only, via
+    # preencher_placares_pdf.py) -- so tem gol de verdade quando tambem tem
+    # escanteios, o resto das estatisticas vem junto na mesma chamada da API.
+    return partida.escanteios_mandante is not None
+
+
 def buscar_partida_existente(db, id_externo, rodada, time_mandante_id, time_visitante_id):
     # Primeiro tenta pelo id externo (partida ja importada de verdade antes).
     partida = db.query(Partida).filter(Partida.id_externo == id_externo).first()
@@ -140,6 +153,7 @@ def importar():
 
     db = SessionLocal()
     importadas = 0
+    enriquecidas = 0
     placeholders = 0
     ja_existiam = 0
     ignoradas_sem_time = 0
@@ -149,7 +163,7 @@ def importar():
         print(f"{len(partidas_temporada)} partidas na temporada (todas as rodadas).\n")
 
         for p in partidas_temporada:
-            if importadas >= MAX_IMPORTACOES_POR_EXECUCAO:
+            if importadas + enriquecidas >= MAX_IMPORTACOES_POR_EXECUCAO:
                 print(f"\nLimite de {MAX_IMPORTACOES_POR_EXECUCAO} importações por execução atingido. Rode de novo depois.")
                 break
 
@@ -173,7 +187,11 @@ def importar():
                 db, id_externo, rodada, time_mandante.id, time_visitante.id
             )
 
-            if partida_existente and partida_existente.status == "finalizada":
+            if (
+                partida_existente
+                and partida_existente.status == "finalizada"
+                and tem_estatisticas_completas(partida_existente)
+            ):
                 # Ja importamos essa partida com placar e estatisticas antes.
                 ja_existiam += 1
                 continue
@@ -208,7 +226,28 @@ def importar():
 
             gols_mandante, gols_visitante = parse_placar(score_atual)
 
-            stats = buscar_estatisticas(id_externo)
+            enriquecendo = bool(
+                partida_existente
+                and partida_existente.status == "finalizada"
+                and not tem_estatisticas_completas(partida_existente)
+            )
+            if enriquecendo and (partida_existente.gols_mandante, partida_existente.gols_visitante) != (
+                gols_mandante,
+                gols_visitante,
+            ):
+                print(
+                    f"  Pulando partida {id_externo}: placar da API ({gols_mandante} x {gols_visitante}) "
+                    f"diverge do ja salvo ({partida_existente.gols_mandante} x {partida_existente.gols_visitante}) "
+                    f"-- checar manualmente, rodada {rodada}"
+                )
+                continue
+
+            try:
+                stats = buscar_estatisticas(id_externo)
+            except CotaExcedidaError:
+                print(f"\nCota da API excedida. Progresso salvo (cada partida ja foi commitada "
+                      f"individualmente ate aqui). Rode de novo amanha pra continuar.")
+                break
             if not stats:
                 print(f"  Pulando partida {id_externo}: sem estatísticas disponíveis")
                 continue
@@ -223,15 +262,7 @@ def importar():
             m = mapear_estatisticas_time(stats_mandante["statistics"])
             v = mapear_estatisticas_time(stats_visitante["statistics"])
 
-            dados_finalizada = dict(
-                id_externo=id_externo,
-                time_mandante_id=time_mandante.id,
-                time_visitante_id=time_visitante.id,
-                status="finalizada",
-                gols_mandante=gols_mandante,
-                gols_visitante=gols_visitante,
-                data=data_partida,
-                rodada=rodada,
+            dados_estatisticas = dict(
                 escanteios_mandante=m["escanteios"],
                 escanteios_visitante=v["escanteios"],
                 escanteios_1t_mandante=None,
@@ -250,19 +281,44 @@ def importar():
                 cartoes_vermelhos_visitante=v["cartoes_vermelhos"],
             )
 
-            if partida_existente:
-                for campo, valor in dados_finalizada.items():
+            if enriquecendo:
+                # So completa as estatisticas que faltavam -- gols, data,
+                # rodada e status ja estao corretos (inclusive datas
+                # corrigidas manualmente pro fuso BRT), nao mexe neles.
+                partida_existente.id_externo = id_externo
+                for campo, valor in dados_estatisticas.items():
                     setattr(partida_existente, campo, valor)
             else:
-                db.add(Partida(**dados_finalizada))
+                dados_finalizada = dict(
+                    id_externo=id_externo,
+                    time_mandante_id=time_mandante.id,
+                    time_visitante_id=time_visitante.id,
+                    status="finalizada",
+                    gols_mandante=gols_mandante,
+                    gols_visitante=gols_visitante,
+                    data=data_partida,
+                    rodada=rodada,
+                    **dados_estatisticas,
+                )
+                if partida_existente:
+                    for campo, valor in dados_finalizada.items():
+                        setattr(partida_existente, campo, valor)
+                else:
+                    db.add(Partida(**dados_finalizada))
             db.commit()
 
-            print(f"  Importada: rodada {rodada} — {p['homeTeam']['name']} {gols_mandante} x {gols_visitante} "
-                  f"{p['awayTeam']['name']} ({data_partida})")
-            importadas += 1
+            if enriquecendo:
+                print(f"  Enriquecida: rodada {rodada} — {p['homeTeam']['name']} {gols_mandante} x {gols_visitante} "
+                      f"{p['awayTeam']['name']} (estatisticas completas adicionadas)")
+                enriquecidas += 1
+            else:
+                print(f"  Importada: rodada {rodada} — {p['homeTeam']['name']} {gols_mandante} x {gols_visitante} "
+                      f"{p['awayTeam']['name']} ({data_partida})")
+                importadas += 1
 
         print(f"\nImportação concluída. {importadas} partidas finalizadas importadas, "
-              f"{placeholders} agendadas/adiadas registradas, {ja_existiam} já existiam, "
+              f"{enriquecidas} enriquecidas com estatisticas completas, "
+              f"{placeholders} agendadas/adiadas registradas, {ja_existiam} já existiam completas, "
               f"{ignoradas_sem_time} ignoradas por time não cadastrado.")
 
     finally:
