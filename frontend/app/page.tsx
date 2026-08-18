@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { LightRays } from "@/components/light-rays";
 import { SpotlightCard } from "@/components/spotlight-card";
 import { API_URL } from "@/lib/api";
@@ -72,7 +71,7 @@ export default function Home() {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">Brasileirão Série A 2026</p>
                   {carregando ? (
-                    <Skeleton className="mt-1 h-3 w-32" />
+                    <span className="mt-1 block h-3 w-28 shimmer-bar-gold" />
                   ) : rodada || totalTimes !== null ? (
                     <p className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
                       {rodada && `Rodada ${rodada.rodada_atual}/${rodada.rodada_maxima}`}

@@ -162,3 +162,25 @@
     color: var(--primary);
   }
 }
+
+/* Faixa curta dourada "vai e volta" -- indicador de carregamento pra
+   trechos de texto pequenos, mais rapida que o shimmer do titulo
+   porque aqui precisa comunicar "carregando agora", nao ambiente. */
+.shimmer-bar-gold {
+  border-radius: 9999px;
+  background-image: linear-gradient(
+    100deg,
+    rgba(212, 175, 55, 0.15) 30%,
+    rgba(212, 175, 55, 0.9) 50%,
+    rgba(212, 175, 55, 0.15) 70%
+  );
+  background-size: 250% auto;
+  animation: shimmer-gold 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-bar-gold {
+    animation: none;
+    background: rgba(212, 175, 55, 0.3);
+  }
+}
