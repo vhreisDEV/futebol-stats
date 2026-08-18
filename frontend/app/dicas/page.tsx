@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Flame, Flag, Target, Crosshair, RectangleVertical, type LucideIcon } from "lucide-react";
+import { ChevronLeft, Flame, Flag, Target, Crosshair, RectangleVertical, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
@@ -217,32 +217,14 @@ export default function Dicas() {
           Sequências recentes de cada time que vêm se repetindo, pros confrontos que ainda vão acontecer.
         </p>
 
-        <div className="mx-auto mt-6 flex w-fit items-stretch overflow-hidden rounded-lg border border-border bg-card">
-          <button
-            type="button"
-            disabled={rodadaSelecionada <= 1}
-            onClick={() => setRodadaSelecionada((r) => (r ?? 1) - 1)}
-            aria-label="Rodada anterior"
-            className="flex items-center justify-center px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-          <div className="flex flex-col items-center justify-center border-x border-border px-6 py-1.5">
-            <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Rodada</span>
-            <span className="font-mono text-xl font-bold tabular-nums text-primary sm:text-2xl">
-              {rodadaSelecionada}
-              <span className="text-xs font-normal text-muted-foreground sm:text-sm"> / {rodadaMaxima}</span>
-            </span>
-          </div>
-          <button
-            type="button"
-            disabled={rodadaSelecionada >= rodadaMaxima}
-            onClick={() => setRodadaSelecionada((r) => (r ?? 1) + 1)}
-            aria-label="Próxima rodada"
-            className="flex items-center justify-center px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-          >
-            <ChevronRight className="size-4" />
-          </button>
+        <div className="mx-auto mt-6 flex w-fit flex-col items-center justify-center rounded-lg border border-border bg-card px-6 py-1.5">
+          <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Próxima rodada
+          </span>
+          <span className="font-mono text-xl font-bold tabular-nums text-primary sm:text-2xl">
+            {rodadaSelecionada}
+            <span className="text-xs font-normal text-muted-foreground sm:text-sm"> / {rodadaMaxima}</span>
+          </span>
         </div>
 
         {carregandoRodada ? (
