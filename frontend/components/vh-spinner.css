@@ -32,14 +32,34 @@
   color: var(--primary);
 }
 
+.vh-spinner-cursor {
+  margin-left: 1px;
+  animation: vh-cursor-blink 0.8s step-end infinite;
+}
+
 @keyframes vh-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
+@keyframes vh-cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vh-spinner::before {
+    animation: none;
+  }
+
+  .vh-spinner-cursor {
     animation: none;
   }
 }
