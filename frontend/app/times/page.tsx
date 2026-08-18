@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { API_URL } from "@/lib/api";
 
@@ -63,19 +63,15 @@ export default function Times() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {carregando
-            ? Array.from({ length: 12 }).map((_, i) => (
-                <Card key={i} size="sm" className="ring-0">
-                  <CardContent className="flex items-center gap-3">
-                    <Skeleton className="size-8 shrink-0 rounded-full" />
-                    <Skeleton className="h-4 flex-1" />
-                  </CardContent>
-                </Card>
-              ))
-            : times.map((time) => {
-                const cores = corTime(time.nome);
-                return (
+        {carregando ? (
+          <div className="mt-6 flex min-h-64 items-center justify-center">
+            <VhSpinner />
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {times.map((time) => {
+              const cores = corTime(time.nome);
+              return (
                 <Link key={time.id} href={`/times/${time.id}`} className="group">
                   <Card size="sm" className="ring-0 transition-colors hover:bg-muted/50">
                     <CardContent className="flex items-center gap-3">
@@ -92,9 +88,10 @@ export default function Times() {
                     </CardContent>
                   </Card>
                 </Link>
-                );
-              })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </main>
   );

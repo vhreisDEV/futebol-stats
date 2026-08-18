@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
 
 interface PartidaDetalhe {
@@ -119,9 +119,8 @@ export function PartidaModal({
         <DialogHeader>
           <DialogTitle className="sr-only">Detalhes da partida</DialogTitle>
           {carregando && (
-            <div className="grid gap-3 py-2">
-              <Skeleton className="mx-auto h-3 w-32" />
-              <Skeleton className="h-10 w-full" />
+            <div className="flex min-h-32 items-center justify-center py-2">
+              <VhSpinner />
             </div>
           )}
           {erro && <p className="text-sm text-destructive">Erro: {erro}</p>}

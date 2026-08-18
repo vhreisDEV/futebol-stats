@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
 
 interface Time {
@@ -271,15 +271,8 @@ function ProjecaoPreJogoConteudo() {
 
   if (carregando) {
     return (
-      <main className="min-h-screen bg-background px-6 py-10 text-foreground">
-        <div className="mx-auto max-w-3xl">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="mt-4 h-8 w-64" />
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-10 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-lg" />
-          </div>
-        </div>
+      <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <VhSpinner />
       </main>
     );
   }
@@ -373,10 +366,8 @@ function ProjecaoPreJogoConteudo() {
         )}
 
         {carregandoProjecao && (
-          <div className="mt-10 grid gap-6">
-            <Skeleton className="h-32 w-full rounded-lg" />
-            <Skeleton className="h-24 w-full rounded-lg" />
-            <Skeleton className="h-24 w-full rounded-lg" />
+          <div className="mt-10 flex min-h-40 items-center justify-center">
+            <VhSpinner />
           </div>
         )}
 

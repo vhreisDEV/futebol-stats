@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
 
 interface LinhaClassificacao {
@@ -85,10 +85,8 @@ export function Classificacao() {
 
   if (carregando) {
     return (
-      <div className="grid gap-1">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-6 w-full" />
-        ))}
+      <div className="flex min-h-64 items-center justify-center">
+        <VhSpinner />
       </div>
     );
   }

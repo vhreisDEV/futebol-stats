@@ -4,11 +4,11 @@ import { Fragment, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, TrendingUp, Users } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
+import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { API_URL } from "@/lib/api";
 
@@ -402,18 +402,8 @@ export default function DetalheTime() {
 
   if (carregando) {
     return (
-      <main className="min-h-screen bg-background px-6 py-10 text-foreground">
-        <div className="mx-auto max-w-2xl">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="mt-4 h-8 w-56" />
-          <Skeleton className="mt-6 h-32 w-full rounded-lg" />
-          <Skeleton className="mt-8 h-4 w-32" />
-          <div className="mt-4 grid gap-2">
-            <Skeleton className="h-14 w-full rounded-md" />
-            <Skeleton className="h-14 w-full rounded-md" />
-            <Skeleton className="h-14 w-full rounded-md" />
-          </div>
-        </div>
+      <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <VhSpinner />
       </main>
     );
   }
@@ -577,9 +567,8 @@ export default function DetalheTime() {
           </div>
 
           {carregandoComparacao && (
-            <div className="mt-3 grid gap-1.5">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
+            <div className="mt-3 flex min-h-16 items-center justify-center">
+              <VhSpinner />
             </div>
           )}
 
@@ -655,7 +644,11 @@ export default function DetalheTime() {
             </select>
           </div>
 
-          {carregandoProjecaoRapida && <Skeleton className="mt-3 h-28 w-full rounded-lg" />}
+          {carregandoProjecaoRapida && (
+            <div className="mt-3 flex min-h-28 items-center justify-center rounded-lg border border-border">
+              <VhSpinner />
+            </div>
+          )}
 
           {projecaoRapida && !carregandoProjecaoRapida && (
             <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-center">

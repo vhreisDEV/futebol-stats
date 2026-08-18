@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { API_URL } from "@/lib/api";
 
@@ -183,13 +184,19 @@ export function JogadorModal({
 
         {erro && <p className="text-destructive">Erro: {erro}</p>}
 
+        {carregando && (
+          <div className="flex min-h-32 items-center justify-center py-2">
+            <VhSpinner />
+          </div>
+        )}
+
         {!carregando && !erro && jogos.length === 0 && (
           <p className="py-6 text-center text-sm text-muted-foreground">
             Nenhum jogo encontrado nesse período.
           </p>
         )}
 
-        {jogos.length > 0 && (
+        {!carregando && jogos.length > 0 && (
           <div style={{ minWidth: larguraGrade }}>
             <div
               className="flex items-center gap-2 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"

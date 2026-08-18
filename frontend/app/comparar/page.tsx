@@ -4,9 +4,9 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { PartidaModal } from "@/components/partida-modal";
+import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
 
 interface Time {
@@ -204,15 +204,8 @@ function CompararTimesConteudo() {
 
   if (carregando) {
     return (
-      <main className="min-h-screen bg-background px-6 py-10 text-foreground">
-        <div className="mx-auto max-w-3xl">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="mt-4 h-8 w-64" />
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-10 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-lg" />
-          </div>
-        </div>
+      <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <VhSpinner />
       </main>
     );
   }
@@ -328,10 +321,8 @@ function CompararTimesConteudo() {
         )}
 
         {carregandoComparacao && (
-          <div className="mt-8 grid gap-2">
-            <Skeleton className="h-10 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-lg" />
-            <Skeleton className="h-10 w-full rounded-lg" />
+          <div className="mt-8 flex min-h-24 items-center justify-center">
+            <VhSpinner />
           </div>
         )}
 

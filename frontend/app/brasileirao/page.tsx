@@ -13,10 +13,10 @@ import {
   UserRound,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
@@ -42,11 +42,13 @@ function CabecalhoCampeonato() {
           <ChevronDown className="size-5 text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuLabel>Campeonatos</DropdownMenuLabel>
-          <DropdownMenuItem className="justify-between gap-4">
-            Brasileirão Série A 2026
-            <Check className="size-4 text-primary" />
-          </DropdownMenuItem>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Campeonatos</DropdownMenuLabel>
+            <DropdownMenuItem className="justify-between gap-4">
+              Brasileirão Série A 2026
+              <Check className="size-4 text-primary" />
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -73,30 +75,6 @@ interface RodadaResponse {
 interface RodadaAtualResponse {
   rodada_atual: number;
   rodada_maxima: number;
-}
-
-function TicketSkeleton() {
-  // Mesma estrutura e altura de linha do card real (data text-[9px], nomes
-  // text-sm/20px, placar text-sm/20px) -- sem isso o esqueleto "pula" de
-  // tamanho quando o conteudo de verdade entra no lugar.
-  return (
-    <Card size="sm" className="overflow-hidden ring-0">
-      <CardContent className="py-0.5">
-        <div className="flex justify-center">
-          <Skeleton className="h-[11px] w-14" />
-        </div>
-        <div className="mt-0.5 flex items-center justify-center gap-2">
-          <div className="flex min-w-0 flex-1 justify-end">
-            <Skeleton className="h-5 w-20" />
-          </div>
-          <Skeleton className="h-5 w-8 shrink-0" />
-          <div className="flex min-w-0 flex-1 justify-start">
-            <Skeleton className="h-5 w-20" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
 
 function formatarData(dataStr: string | null) {
@@ -171,33 +149,8 @@ export default function Brasileirao() {
         <div className="mx-auto max-w-5xl">
           <CabecalhoCampeonato />
 
-          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="grid gap-1.5">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-8 w-full" />
-              ))}
-            </div>
-            <div>
-              <div className="mx-auto flex w-fit items-stretch overflow-hidden rounded-lg border border-border bg-card">
-                <span className="flex items-center justify-center px-3 text-muted-foreground opacity-30">
-                  <ChevronLeft className="size-4" />
-                </span>
-                <div className="flex flex-col items-center justify-center border-x border-border px-6 py-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                    Rodada
-                  </span>
-                  <Skeleton className="mt-1 h-6 w-16" />
-                </div>
-                <span className="flex items-center justify-center px-3 text-muted-foreground opacity-30">
-                  <ChevronRight className="size-4" />
-                </span>
-              </div>
-              <div className="mt-4 grid gap-1.5">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <TicketSkeleton key={i} />
-                ))}
-              </div>
-            </div>
+          <div className="flex min-h-[50vh] items-center justify-center">
+            <VhSpinner />
           </div>
         </div>
       </main>

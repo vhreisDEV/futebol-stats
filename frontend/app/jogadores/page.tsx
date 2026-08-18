@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Crown } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { JogadorModal } from "@/components/jogador-modal";
+import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
 
 interface RankingItem {
@@ -206,10 +206,8 @@ export default function Jogadores() {
             )}
 
             {carregando && (
-              <div className="mt-3 grid gap-1.5">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-14 w-full rounded-md" />
-                ))}
+              <div className="mt-3 flex min-h-64 items-center justify-center">
+                <VhSpinner />
               </div>
             )}
 
