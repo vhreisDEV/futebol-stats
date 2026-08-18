@@ -129,3 +129,36 @@
     @apply font-sans;
   }
 }
+
+/* Brilho dourado animado, tipo placa de troféu -- usado no titulo VEAGA. */
+@keyframes shimmer-gold {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.text-shimmer-gold {
+  background-image: linear-gradient(
+    100deg,
+    var(--primary) 30%,
+    var(--foreground) 50%,
+    var(--primary) 70%
+  );
+  background-size: 250% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer-gold 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-shimmer-gold {
+    animation: none;
+    background: none;
+    color: var(--primary);
+  }
+}

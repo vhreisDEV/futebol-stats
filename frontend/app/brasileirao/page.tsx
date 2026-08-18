@@ -24,6 +24,7 @@ import {
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
+import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
 
 function CabecalhoCampeonato() {
@@ -75,14 +76,23 @@ interface RodadaAtualResponse {
 }
 
 function TicketSkeleton() {
+  // Mesma estrutura e altura de linha do card real (data text-[9px], nomes
+  // text-sm/20px, placar text-sm/20px) -- sem isso o esqueleto "pula" de
+  // tamanho quando o conteudo de verdade entra no lugar.
   return (
     <Card size="sm" className="overflow-hidden ring-0">
       <CardContent className="py-0.5">
-        <Skeleton className="mx-auto h-2 w-14" />
-        <div className="mt-1 flex items-center justify-center gap-2">
-          <Skeleton className="h-3 flex-1" />
-          <Skeleton className="h-4 w-10 shrink-0" />
-          <Skeleton className="h-3 flex-1" />
+        <div className="flex justify-center">
+          <Skeleton className="h-[11px] w-14" />
+        </div>
+        <div className="mt-0.5 flex items-center justify-center gap-2">
+          <div className="flex min-w-0 flex-1 justify-end">
+            <Skeleton className="h-5 w-20" />
+          </div>
+          <Skeleton className="h-5 w-8 shrink-0" />
+          <div className="flex min-w-0 flex-1 justify-start">
+            <Skeleton className="h-5 w-20" />
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -227,6 +237,7 @@ export default function Brasileirao() {
                 disabled={rodadaSelecionada <= 1}
                 onClick={() => {
                   setDirecao("prev");
+                  setCarregandoRodada(true);
                   setRodadaSelecionada((r) => (r ?? 1) - 1);
                 }}
                 aria-label="Rodada anterior"
@@ -250,6 +261,7 @@ export default function Brasileirao() {
                 disabled={rodadaSelecionada >= rodadaMaxima}
                 onClick={() => {
                   setDirecao("next");
+                  setCarregandoRodada(true);
                   setRodadaSelecionada((r) => (r ?? 1) + 1);
                 }}
                 aria-label="Próxima rodada"
@@ -263,18 +275,23 @@ export default function Brasileirao() {
               Toque em uma partida para ver os detalhes.
             </p>
 
-            <div
-              key={rodadaSelecionada}
-              className={`animate-in fade-in mt-3 grid gap-1 duration-300 transition-opacity motion-reduce:animate-none motion-reduce:transition-none ${direcao === "next" ? "slide-in-from-right-4" : "slide-in-from-left-4"} ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
-            >
-              {carregandoRodada ? (
-                Array.from({ length: 4 }).map((_, i) => <TicketSkeleton key={i} />)
-              ) : partidas.length === 0 ? (
-                <p className="py-8 text-center text-muted-foreground">
-                  Nenhuma partida cadastrada para essa rodada ainda.
-                </p>
-              ) : (
-                partidas.map((partida) => (
+            {carregandoRodada ? (
+              <div
+                key={`spinner-${rodadaSelecionada}`}
+                className={`animate-in fade-in mt-3 flex min-h-40 items-center justify-center duration-300 motion-reduce:animate-none ${direcao === "next" ? "slide-in-from-right-4" : "slide-in-from-left-4"}`}
+              >
+                <VhSpinner />
+              </div>
+            ) : partidas.length === 0 ? (
+              <p className="py-8 text-center text-muted-foreground">
+                Nenhuma partida cadastrada para essa rodada ainda.
+              </p>
+            ) : (
+              <div
+                key={`conteudo-${rodadaSelecionada}`}
+                className="animate-in fade-in mt-3 grid gap-1 duration-300 motion-reduce:animate-none"
+              >
+                {partidas.map((partida) => (
                   <Card
                     key={partida.id}
                     size="sm"
@@ -322,9 +339,9 @@ export default function Brasileirao() {
                       </div>
                     </CardContent>
                   </Card>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </div>
