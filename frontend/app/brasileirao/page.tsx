@@ -107,6 +107,7 @@ export default function Brasileirao() {
   const [carregandoRodada, setCarregandoRodada] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
+  const [direcao, setDirecao] = useState<"next" | "prev">("next");
 
   useEffect(() => {
     fetch(`${API_URL}/rodadas/atual`)
@@ -224,7 +225,10 @@ export default function Brasileirao() {
               <button
                 type="button"
                 disabled={rodadaSelecionada <= 1}
-                onClick={() => setRodadaSelecionada((r) => (r ?? 1) - 1)}
+                onClick={() => {
+                  setDirecao("prev");
+                  setRodadaSelecionada((r) => (r ?? 1) - 1);
+                }}
                 aria-label="Rodada anterior"
                 className="flex items-center justify-center px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
               >
@@ -244,7 +248,10 @@ export default function Brasileirao() {
               <button
                 type="button"
                 disabled={rodadaSelecionada >= rodadaMaxima}
-                onClick={() => setRodadaSelecionada((r) => (r ?? 1) + 1)}
+                onClick={() => {
+                  setDirecao("next");
+                  setRodadaSelecionada((r) => (r ?? 1) + 1);
+                }}
                 aria-label="Próxima rodada"
                 className="flex items-center justify-center px-3 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
               >
@@ -257,7 +264,8 @@ export default function Brasileirao() {
             </p>
 
             <div
-              className={`mt-3 grid gap-1 transition-opacity duration-200 motion-reduce:transition-none ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
+              key={rodadaSelecionada}
+              className={`animate-in fade-in mt-3 grid gap-1 duration-300 transition-opacity motion-reduce:animate-none motion-reduce:transition-none ${direcao === "next" ? "slide-in-from-right-4" : "slide-in-from-left-4"} ${carregandoRodada ? "opacity-40" : "opacity-100"}`}
             >
               {carregandoRodada ? (
                 Array.from({ length: 4 }).map((_, i) => <TicketSkeleton key={i} />)
