@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LightRays } from "@/components/light-rays";
 import { SpotlightCard } from "@/components/spotlight-card";
 import { API_URL } from "@/lib/api";
@@ -16,17 +17,19 @@ interface RodadaAtualResponse {
 export default function Home() {
   const [rodada, setRodada] = useState<RodadaAtualResponse | null>(null);
   const [totalTimes, setTotalTimes] = useState<number | null>(null);
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/rodadas/atual`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((dados) => setRodada(dados))
-      .catch(() => {});
-
-    fetch(`${API_URL}/times/`)
-      .then((r) => (r.ok ? r.json() : []))
-      .then((dados) => setTotalTimes(Array.isArray(dados) ? dados.length : null))
-      .catch(() => {});
+    Promise.allSettled([
+      fetch(`${API_URL}/rodadas/atual`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`${API_URL}/times/`).then((r) => (r.ok ? r.json() : [])),
+    ]).then(([resultadoRodada, resultadoTimes]) => {
+      if (resultadoRodada.status === "fulfilled") setRodada(resultadoRodada.value);
+      if (resultadoTimes.status === "fulfilled" && Array.isArray(resultadoTimes.value)) {
+        setTotalTimes(resultadoTimes.value.length);
+      }
+      setCarregando(false);
+    });
   }, []);
 
   return (
@@ -68,10 +71,15 @@ export default function Home() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">Brasileirão Série A 2026</p>
-                  <p className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
-                    {rodada ? `Rodada ${rodada.rodada_atual}/${rodada.rodada_maxima}` : "—"}
-                    {totalTimes !== null && ` · ${totalTimes} times`}
-                  </p>
+                  {carregando ? (
+                    <Skeleton className="mt-1 h-3 w-32" />
+                  ) : rodada || totalTimes !== null ? (
+                    <p className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
+                      {rodada && `Rodada ${rodada.rodada_atual}/${rodada.rodada_maxima}`}
+                      {rodada && totalTimes !== null && " · "}
+                      {totalTimes !== null && `${totalTimes} times`}
+                    </p>
+                  ) : null}
                 </div>
                 <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
               </CardContent>
