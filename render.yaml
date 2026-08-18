@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: veaga-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # Cole aqui a "Connection string" do Supabase (Project Settings ->
+      # Database -> Connection string -> URI, modo "Session pooler").
+      - key: DATABASE_URL
+        sync: false
+      - key: HIGHLIGHTLY_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

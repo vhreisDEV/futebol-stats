@@ -1,17 +1,25 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import times, projecoes, rodadas, classificacao, partidas, jogadores
 
 app = FastAPI(title="VEAGA")
 
+# FRONTEND_URL: dominio final da Vercel (ou dominio proprio), setado como
+# env var em producao. Sem isso, so localhost e os regex abaixo funcionam.
+origins = ["http://localhost:3000"]
+if frontend_url := os.getenv("FRONTEND_URL"):
+    origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    # Tuneis rapidos do Cloudflare (cloudflared) usam um subdominio
-    # aleatorio *.trycloudflare.com a cada execucao -- liberado so pra
-    # teste temporario via link publico, API e toda leitura (sem rota
-    # de escrita), risco baixo.
-    allow_origin_regex=r"https://.*\.trycloudflare\.com",
+    allow_origins=origins,
+    # Tuneis rapidos do Cloudflare (*.trycloudflare.com) e previews da
+    # Vercel (*.vercel.app, um subdominio novo por branch/PR) usam
+    # dominio aleatorio -- API e toda leitura (sem rota de escrita),
+    # risco baixo em liberar por regex.
+    allow_origin_regex=r"https://.*\.(trycloudflare\.com|vercel\.app)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
