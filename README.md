@@ -1,164 +1,115 @@
-# ⚽ Football Analytics Platform
+# ⚽ VEAGA — Football Data & Analytics
 
-Plataforma de análise estatística de futebol utilizando dados, Python e Inteligência Artificial.
+Plataforma de análise estatística do Brasileirão Série A 2026, com dados reais, projeções estatísticas e tendências pensadas pra quem acompanha o campeonato de perto — de torcedor a apostador.
+
+**🔗 No ar:** [veaga-psi.vercel.app](https://veaga-psi.vercel.app)
+
+> Rodando no plano gratuito do Render — a primeira visita depois de um tempo sem uso pode levar alguns segundos pra "acordar" o backend. Isso é esperado, não é bug.
 
 ## 🎯 Objetivo
 
-O objetivo deste projeto é desenvolver uma plataforma capaz de analisar o desempenho de times e jogadores de futebol com base em dados históricos, jogos recentes e diferentes indicadores estatísticos.
+O VEAGA nasceu como um projeto de estudo e evoluiu pra uma plataforma pública de verdade: analisa o desempenho de times e jogadores do Brasileirão com base em dados históricos e recentes, compara equipes, projeta estatisticamente os próximos confrontos e aponta tendências que se repetem — tudo com dado real, importado da temporada em andamento.
 
-A plataforma busca evoluir de uma aplicação de análise de dados para uma solução capaz de interpretar o histórico das equipes, comparar desempenhos e gerar análises e projeções estatísticas para próximos jogos.
-
-O projeto terá inicialmente o Brasileirão Série A 2026 como principal foco de análise, utilizando os dados disponíveis da temporada para construir uma base histórica e, posteriormente, realizar projeções para os próximos confrontos.
-
-Além do desenvolvimento da plataforma, o projeto também será utilizado como forma de estudo e evolução profissional, permitindo aplicar na prática conceitos de desenvolvimento de software, Python, análise de dados, APIs, banco de dados, desenvolvimento assistido por Inteligência Artificial e Inteligência Artificial.
+O projeto também segue sendo usado como forma de estudo e evolução profissional: desenvolvimento de software, Python, análise de dados, APIs, banco de dados e desenvolvimento assistido por Inteligência Artificial na prática, do primeiro commit até o deploy em produção.
 
 ## 🚀 Funcionalidades
 
-### Análise de Times
+### Classificação e Rodadas
 
-* Análise de desempenho das equipes
-* Histórico de jogos
-* Vitórias, empates e derrotas
-* Gols marcados e sofridos
-* Média de gols
+* Tabela de classificação atualizada (considera jogos atrasados)
+* Navegação pelas 38 rodadas do campeonato, com jogos adiados sinalizados
+* Zonas de classificação (Libertadores, Pré-Libertadores, Sul-Americana, Rebaixamento)
+
+### Times
+
+* Histórico de jogos, forma recente e sequência de resultados
+* Vitórias, empates, derrotas, gols marcados e sofridos
 * Desempenho como mandante e visitante
-* Tendências dos últimos jogos
-* Estatísticas detalhadas das partidas
+* Estatísticas detalhadas por partida (escanteios, chutes, chutes ao gol, cartões)
 
 ### Comparação entre Times
 
-* Comparação de desempenho
-* Comparação de médias
-* Histórico recente
-* Desempenho como mandante e visitante
-* Indicadores estatísticos dos confrontos
+* Comparação lado a lado de médias e indicadores
+* Histórico recente de cada equipe
+* Filtro por período (últimos 5/10/20/30 jogos) e mando de campo
 
-### Análise Pré-Jogo
+### Previsão de Jogos
 
-A evolução da plataforma terá como objetivo utilizar o histórico disponível das equipes para analisar os próximos confrontos.
+* Gols esperados, probabilidade de resultado (vitória/empate/derrota)
+* **Placar mais provável** calculado com distribuição de Poisson (não é só arredondar a média) — mostra os 4 placares mais prováveis com a probabilidade de cada um, não uma resposta seca
+* Escanteios, cartões e chutes esperados, com linha de referência e tendência (mais/menos)
 
-Entre os possíveis indicadores:
+### Dicas da Rodada
 
-* Forma recente
-* Desempenho na temporada
-* Gols marcados e sofridos
-* Desempenho em casa e fora
-* Médias estatísticas
-* Tendências dos últimos jogos
-* Estatísticas de partidas anteriores
-* Projeções estatísticas
+* Pra cada confronto da próxima rodada, sequências recentes de cada time que chamam atenção — ex.: *"Cruzeiro costuma passar de 4.5 escanteios em casa — bateu em 7/10 jogos (70%)"*
+* Cobre escanteios, chutes, chutes ao gol, cartões amarelos, gols marcados, ambas equipes marcam e "não perde"
+* Testa contra linhas fixas realistas (as mesmas que uma casa de aposta ofereceria), não contra a própria média do time — evita inflar artificialmente a taxa de acerto
 
-As projeções serão desenvolvidas com base nos dados disponíveis antes de cada partida, evitando utilizar informações futuras na análise.
+### Jogadores
 
-### Análise de Jogadores
-
-Em uma etapa posterior, a plataforma também terá estatísticas individuais dos jogadores, permitindo relacionar o desempenho dos atletas com o desempenho das equipes.
-
-Possíveis indicadores:
-
-* Participações em partidas
-* Gols
-* Assistências
-* Chutes
-* Escanteios
-* Cartões
-* Outras estatísticas individuais disponíveis
+* Ranking de estatísticas individuais (gols, assistências, cartões — dado real da Highlightly)
+* Ficha por jogador com filtro de período e mando de campo
+* Campos sem dado disponível na fonte (chutes, desarmes, faltas por jogador) aparecem em branco, nunca como zero forjado
 
 ## 🛠️ Tecnologias
 
 ### Backend
 
-* Python
-* FastAPI
+* Python + FastAPI
+* SQLAlchemy (SQLite em desenvolvimento local, PostgreSQL em produção)
+* [Highlightly](https://highlightly.net) como fonte de dados reais do Brasileirão
 
 ### Frontend
 
-* React
-* Next.js
+* Next.js 16 (App Router, Turbopack) + React 19
+* Tailwind CSS v4 + shadcn/ui — identidade visual própria ("Súmula": preto de campeonato + dourado de troféu)
 
-### Dados
+### Infraestrutura
 
-* APIs de dados esportivos
-* Processamento e análise de dados
-* Banco de dados
+* **Vercel** — frontend
+* **Render** — backend (FastAPI)
+* **Supabase** — banco Postgres de produção
 
 ### Ferramentas de Desenvolvimento
 
-* Git
-* GitHub
-* Claude
-* Desenvolvimento assistido por Inteligência Artificial
-
-### Futuramente
-
-* Docker
-* Cloud
-* Inteligência Artificial
-* Machine Learning
-* Pipelines de dados
-* Automação de atualização dos dados
+* Git + GitHub (planejamento via Issues/Milestones)
+* Claude Code — desenvolvimento assistido por IA, do planejamento à implementação e ao deploy
 
 ## 📈 Roadmap
 
-### v0.1.0 — Estrutura Inicial
+### ✅ v0.1.0 — Estrutura Inicial
+Repositório, ambiente de desenvolvimento, backend com FastAPI e frontend inicial com Next.js.
 
-* Criar projeto
-* Configurar repositório
-* Definir objetivo
-* Criar estrutura inicial
-* Configurar backend
-* Criar API
-* Desenvolver interface inicial
+### ✅ v0.2.0 — MVP
+Análise de times, histórico de jogos, integração frontend/backend com dado real.
 
-### v0.2.0 — MVP
+### ✅ v0.3.0 — Comparação e Análise
+Comparação entre times, médias de desempenho, melhorias de interface.
 
-* Implementar análise de times
-* Adicionar histórico de jogos
-* Criar estatísticas básicas
-* Integrar frontend e backend
-* Exibir dados das equipes
+### ✅ v0.4.0 — Estatísticas Detalhadas de Partida
+Escanteios, chutes, cartões por partida — modelo de dados expandido.
 
-### v0.3.0 — Comparação
+### ✅ v0.5.0 — Projeções Estatísticas
+Gols esperados, probabilidade de resultado, escanteios/cartões/chutes esperados, com metodologia validada retroativamente contra dado real.
 
-* Comparação entre times
-* Comparação de estatísticas
-* Análise de desempenho recente
-* Melhorias na interface
+### ✅ v0.6.0 — Navegação por Rodadas
+Tela de rodadas, jogos adiados, endpoints de estatística por rodada.
 
-### v0.4.0 — Estatísticas Detalhadas
-
-* Estatísticas detalhadas das partidas
-* Médias de desempenho
-* Indicadores adicionais
-* Evolução da análise dos times
-
-### v0.5.0 — Projeções Estatísticas
-
-* Estruturar análise estatística pré-jogo
-* Utilizar dados reais do Brasileirão Série A 2026
-* Trabalhar com histórico acumulado da temporada
-* Analisar desempenho recente e geral das equipes
-* Criar indicadores para os próximos confrontos
-* Desenvolver metodologia para projeções estatísticas
-* Apresentar análises de forma clara na interface
+### ✅ v0.7.0 — Deploy Público, Dados Reais e Dicas da Rodada
+Site permanentemente no ar (Vercel + Render + Supabase), estatística real de jogador (gols/assistências/cartões), tendências por time (Dicas da Rodada), placar mais provável via Poisson, e uma leva de correções de dado descobertas ao publicar (SQLite vs Postgres, fuso horário, partidas adiadas).
 
 ### Próximas versões
 
-* Análise de jogadores
-* Estatísticas individuais
+* Completar o backfill histórico de estatística de jogador (em andamento — limitado pela cota diária da API)
+* Estender Dicas da Rodada pra estatística individual de jogador
 * Expansão para outros campeonatos
-* Integração com Inteligência Artificial
-* Interpretação dos dados utilizando IA
-* Melhorias na experiência da plataforma
-* Deploy em Cloud
-* Criar versão pública da plataforma
+* Integração com Inteligência Artificial (análises/insights gerados automaticamente)
+* Melhorias contínuas de experiência da plataforma
 
 ## 🧠 Visão do Projeto
 
-A evolução da plataforma seguirá uma estrutura progressiva:
-
 ```text
-Dados
+Dados reais (Highlightly)
   ↓
 Histórico das partidas
   ↓
@@ -166,42 +117,32 @@ Estatísticas dos times
   ↓
 Comparação entre equipes
   ↓
-Análise pré-jogo
-  ↓
-Projeções estatísticas
+Projeções e Dicas da Rodada
   ↓
 Estatísticas de jogadores
+  ↓
+Deploy público (Vercel + Render + Supabase)
   ↓
 Inteligência Artificial
   ↓
 Plataforma completa
 ```
 
-O objetivo é construir cada etapa utilizando como base o que foi desenvolvido anteriormente, evitando criar funcionalidades isoladas e mantendo uma evolução consistente da plataforma.
+Cada etapa foi construída em cima do que já existia, evitando funcionalidades isoladas — a projeção pré-jogo usa a mesma base de médias que a comparação de times, as Dicas da Rodada reaproveitam a mesma lógica de janela de jogos, e por aí vai.
 
 ## 📚 Objetivo de Aprendizado
 
-Este projeto está sendo desenvolvido de forma gradual, utilizando a construção da aplicação como uma forma prática de aprender e aplicar novas tecnologias.
+O VEAGA segue sendo, antes de tudo, um projeto de estudo — construído de forma gradual, aplicando na prática:
 
-A ideia é evoluir desde uma aplicação local de análise estatística até uma plataforma completa utilizando:
+* Python, FastAPI, APIs REST
+* React, Next.js, Tailwind CSS
+* Modelagem de banco de dados (SQLite → PostgreSQL)
+* Análise de dados e estatística aplicada (distribuições, taxas de acerto, metodologia)
+* Deploy em Cloud (Vercel, Render, Supabase)
+* Desenvolvimento assistido por Inteligência Artificial, do planejamento à execução
 
-* Python
-* APIs
-* FastAPI
-* React
-* Next.js
-* Banco de dados
-* Análise de dados
-* Estatística
-* Machine Learning
-* Inteligência Artificial
-* Docker
-* Cloud
-
-Durante o desenvolvimento, o Claude é utilizado como ferramenta de apoio para pesquisa, planejamento, implementação, revisão e evolução do código.
-
-O projeto também busca desenvolver conhecimentos relacionados à arquitetura de software, organização de código, versionamento, integração de dados e construção de produtos de software.
+O projeto também serve como portfólio: demonstra, com dado real e no ar, arquitetura de software, organização de código, versionamento e construção de um produto completo do zero até o deploy público.
 
 ---
 
-🚧 Projeto em desenvolvimento.
+🟢 Em produção — [veaga-psi.vercel.app](https://veaga-psi.vercel.app)
