@@ -14,6 +14,13 @@ class Destaque(BaseModel):
     media: float
 
 
+class DestaqueJogador(BaseModel):
+    jogador_id: int
+    nome: str
+    posicao: str | None
+    destaques: List[Destaque]
+
+
 class JogoComDestaques(BaseModel):
     partida_id: int
     data: str | None
@@ -24,6 +31,8 @@ class JogoComDestaques(BaseModel):
     time_visitante: str
     destaques_mandante: List[Destaque]
     destaques_visitante: List[Destaque]
+    destaques_jogadores_mandante: List[DestaqueJogador] = []
+    destaques_jogadores_visitante: List[DestaqueJogador] = []
 
 
 class DestaquesRodadaResponse(BaseModel):

@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
 from app.models.partida import Partida
-from app.schemas.destaque import Destaque, JogoComDestaques, DestaquesRodadaResponse
-from app.services.destaques import calcular_destaques_time
+from app.schemas.destaque import Destaque, DestaqueJogador, JogoComDestaques, DestaquesRodadaResponse
+from app.services.destaques import calcular_destaques_time, calcular_destaques_jogadores_time
 
 router = APIRouter(prefix="/destaques", tags=["Destaques"])
 
@@ -45,8 +45,12 @@ def obter_destaques_rodada(numero: int, db: Session = Depends(get_db)):
 
         destaques_mandante = calcular_destaques_time(db, p.time_mandante_id, "mandante", data_referencia)
         destaques_visitante = calcular_destaques_time(db, p.time_visitante_id, "visitante", data_referencia)
+        destaques_jogadores_mandante = calcular_destaques_jogadores_time(db, p.time_mandante_id)
+        destaques_jogadores_visitante = calcular_destaques_jogadores_time(db, p.time_visitante_id)
 
-        if not destaques_mandante and not destaques_visitante:
+        if not any(
+            [destaques_mandante, destaques_visitante, destaques_jogadores_mandante, destaques_jogadores_visitante]
+        ):
             continue
 
         jogos.append(
@@ -60,6 +64,8 @@ def obter_destaques_rodada(numero: int, db: Session = Depends(get_db)):
                 time_visitante=p.time_visitante.nome,
                 destaques_mandante=[Destaque(**d) for d in destaques_mandante],
                 destaques_visitante=[Destaque(**d) for d in destaques_visitante],
+                destaques_jogadores_mandante=[DestaqueJogador(**j) for j in destaques_jogadores_mandante],
+                destaques_jogadores_visitante=[DestaqueJogador(**j) for j in destaques_jogadores_visitante],
             )
         )
 

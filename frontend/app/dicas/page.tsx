@@ -12,6 +12,7 @@ import {
   CircleDot,
   ArrowLeftRight,
   ShieldCheck,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,6 +32,13 @@ interface Destaque {
   media: number;
 }
 
+interface DestaqueJogador {
+  jogador_id: number;
+  nome: string;
+  posicao: string | null;
+  destaques: Destaque[];
+}
+
 interface JogoComDestaques {
   partida_id: number;
   data: string | null;
@@ -41,6 +49,8 @@ interface JogoComDestaques {
   time_visitante: string;
   destaques_mandante: Destaque[];
   destaques_visitante: Destaque[];
+  destaques_jogadores_mandante: DestaqueJogador[];
+  destaques_jogadores_visitante: DestaqueJogador[];
 }
 
 interface DestaquesRodadaResponse {
@@ -61,6 +71,8 @@ const ICONE_STAT: Record<string, { icon: LucideIcon; cor: string }> = {
   cartoes_amarelos: { icon: RectangleVertical, cor: "text-amber-400" },
   ambas_marcam: { icon: ArrowLeftRight, cor: "text-cyan-400" },
   sem_perder: { icon: ShieldCheck, cor: "text-lime-400" },
+  gols: { icon: CircleDot, cor: "text-emerald-400" },
+  assistencias: { icon: Sparkles, cor: "text-fuchsia-400" },
 };
 
 function formatarData(dataStr: string | null) {
@@ -73,14 +85,51 @@ function formatarData(dataStr: string | null) {
   return dataStr;
 }
 
+function BlocoJogadores({ destaquesJogadores }: { destaquesJogadores: DestaqueJogador[] }) {
+  if (destaquesJogadores.length === 0) return null;
+
+  return (
+    <div className="mt-3 border-t border-border/60 pt-3">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        Jogadores em destaque
+      </p>
+      <ul className="mt-2 grid gap-1.5">
+        {destaquesJogadores.map((j) => {
+          const melhor = j.destaques[0];
+          const { icon: Icon, cor } = ICONE_STAT[melhor.stat] ?? { icon: Flag, cor: "text-muted-foreground" };
+          const porcentagem = Math.round(melhor.taxa * 100);
+
+          return (
+            <li key={j.jogador_id} className="flex items-start gap-2 rounded-md bg-muted/40 p-2">
+              <Icon className={`mt-0.5 size-3.5 shrink-0 ${cor}`} />
+              <p className="text-xs leading-relaxed text-foreground">
+                <span className="font-semibold">{j.nome}</span>
+                {j.posicao ? <span className="text-muted-foreground"> ({j.posicao})</span> : null} costuma passar de{" "}
+                <span className="font-mono font-semibold text-primary">{melhor.linha}</span>{" "}
+                {melhor.label.toLowerCase()} —{" "}
+                <span className="font-mono font-semibold">
+                  {melhor.acertos}/{melhor.total}
+                </span>{" "}
+                jogos ({porcentagem}%)
+              </p>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 function BlocoTime({
   time,
   mandoLabel,
   destaques,
+  destaquesJogadores,
 }: {
   time: string;
   mandoLabel: "em casa" | "fora de casa";
   destaques: Destaque[];
+  destaquesJogadores: DestaqueJogador[];
 }) {
   const cores = corTime(time);
 
@@ -167,6 +216,8 @@ function BlocoTime({
           })}
         </ul>
       )}
+
+      <BlocoJogadores destaquesJogadores={destaquesJogadores} />
     </div>
   );
 }
@@ -286,9 +337,19 @@ export default function Dicas() {
                     {jogo.time_visitante}
                   </p>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
-                    <BlocoTime time={jogo.time_mandante} mandoLabel="em casa" destaques={jogo.destaques_mandante} />
+                    <BlocoTime
+                      time={jogo.time_mandante}
+                      mandoLabel="em casa"
+                      destaques={jogo.destaques_mandante}
+                      destaquesJogadores={jogo.destaques_jogadores_mandante}
+                    />
                     <div className="sm:pl-4">
-                      <BlocoTime time={jogo.time_visitante} mandoLabel="fora de casa" destaques={jogo.destaques_visitante} />
+                      <BlocoTime
+                        time={jogo.time_visitante}
+                        mandoLabel="fora de casa"
+                        destaques={jogo.destaques_visitante}
+                        destaquesJogadores={jogo.destaques_jogadores_visitante}
+                      />
                     </div>
                   </div>
                 </CardContent>

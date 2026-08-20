@@ -1,4 +1,6 @@
+from app.models.jogador import Jogador
 from app.services.medias import _buscar_jogos_anteriores, _extrair_perspectiva
+from app.services.jogadores import obter_ultimos_jogos_jogador
 
 JANELA_PADRAO = 10
 MINIMO_JOGOS = 5  # amostra menor que isso nao da pra chamar de "destaque"
@@ -30,11 +32,49 @@ def _serie_sem_perder(perspectivas):
     ]
 
 
+def _encontrar_destaques(valores_de_entrada, definicoes_stats):
+    """
+    Nucleo comum entre destaque de time e de jogador: pra cada stat
+    definido, extrai a serie e acha a linha mais alta que ainda bate em
+    pelo menos TAXA_MINIMA_DESTAQUE dos jogos (>= MINIMO_JOGOS na
+    amostra). Ver docstring de calcular_destaques_time pra por que a
+    linha e fixa (nao derivada da propria media).
+    """
+    destaques = []
+    for stat in definicoes_stats:
+        valores = stat["extrator"](valores_de_entrada)
+        if len(valores) < MINIMO_JOGOS:
+            continue
+
+        melhor = None
+        for linha in stat["linhas"]:
+            acertos = sum(1 for v in valores if v > linha)
+            taxa = acertos / len(valores)
+            if taxa >= TAXA_MINIMA_DESTAQUE and (melhor is None or linha > melhor["linha"]):
+                melhor = {
+                    "stat": stat["chave"],
+                    "label": stat["label"],
+                    "tipo": stat["tipo"],
+                    "linha": linha,
+                    "acertos": acertos,
+                    "total": len(valores),
+                    "taxa": round(taxa, 4),
+                    "sequencia": valores,
+                    "media": round(sum(valores) / len(valores), 2),
+                }
+
+        if melhor:
+            destaques.append(melhor)
+
+    destaques.sort(key=lambda d: d["taxa"], reverse=True)
+    return destaques
+
+
 # "quantidade": linha e um valor real (escanteios, chutes, gols...).
 # "booleano": a serie e so 0/1 (aconteceu ou nao no jogo) -- so existe uma
 # linha candidata (0.5, i.e. "aconteceu"), o front mostra Sim/Nao em vez
 # do numero bruto.
-STATS_DESTAQUE = [
+STATS_DESTAQUE_TIME = [
     {
         "chave": "gols_marcados",
         "label": "Gols marcados",
@@ -111,32 +151,82 @@ def calcular_destaques_time(db, time_id, mando, data_referencia, janela=JANELA_P
         return []
 
     perspectivas = [_extrair_perspectiva(p, time_id) for p in jogos]
+    return _encontrar_destaques(perspectivas, STATS_DESTAQUE_TIME)
 
-    destaques = []
-    for stat in STATS_DESTAQUE:
-        valores = stat["extrator"](perspectivas)
-        if len(valores) < MINIMO_JOGOS:
-            continue
 
-        melhor = None
-        for linha in stat["linhas"]:
-            acertos = sum(1 for v in valores if v > linha)
-            taxa = acertos / len(valores)
-            if taxa >= TAXA_MINIMA_DESTAQUE and (melhor is None or linha > melhor["linha"]):
-                melhor = {
-                    "stat": stat["chave"],
-                    "label": stat["label"],
-                    "tipo": stat["tipo"],
-                    "linha": linha,
-                    "acertos": acertos,
-                    "total": len(valores),
-                    "taxa": round(taxa, 4),
-                    "sequencia": valores,
-                    "media": round(sum(valores) / len(valores), 2),
+def _serie_campo_jogo(campo):
+    def extrator(jogos):
+        return [j[campo] for j in jogos if j[campo] is not None]
+
+    return extrator
+
+
+# So gols/assistencias/cartoes -- a Highlightly nao da chutes/desarmes/
+# faltas por jogador (confirmado 2026-08-19), entao nao tem serie pra
+# testar nesses campos.
+STATS_DESTAQUE_JOGADOR = [
+    {
+        "chave": "gols",
+        "label": "Gols",
+        "tipo": "quantidade",
+        "linhas": [0.5, 1.5, 2.5],
+        "extrator": _serie_campo_jogo("gols"),
+    },
+    {
+        "chave": "assistencias",
+        "label": "Assistências",
+        "tipo": "quantidade",
+        "linhas": [0.5, 1.5],
+        "extrator": _serie_campo_jogo("assistencias"),
+    },
+    {
+        "chave": "cartoes_amarelos",
+        "label": "Cartões amarelos",
+        "tipo": "quantidade",
+        "linhas": [0.5, 1.5],
+        "extrator": _serie_campo_jogo("cartoes_amarelos"),
+    },
+]
+
+
+def calcular_destaques_jogador(db, jogador_id, janela=JANELA_PADRAO):
+    """
+    Mesma logica de calcular_destaques_time, mas pra um jogador --
+    gols/assistencias/cartoes (o unico dado por jogador que a Highlightly
+    da, ver [[project_veaga_player_stats_idea]]).
+
+    Nao separa por mando de campo (diferente do time): com o backfill de
+    jogador ainda parcial, dividir por casa/fora corta a amostra praticamente
+    pela metade e a maioria dos jogadores nem bate o minimo de 5 jogos
+    ainda. Revisitar quando o historico completo estiver importado.
+    """
+    jogos = obter_ultimos_jogos_jogador(db, jogador_id, quantidade=janela, mando=None)
+    if len(jogos) < MINIMO_JOGOS:
+        return []
+
+    return _encontrar_destaques(jogos, STATS_DESTAQUE_JOGADOR)
+
+
+def calcular_destaques_jogadores_time(db, time_id, janela=JANELA_PADRAO, limite=3):
+    """Pra cada jogador do elenco atual do time, roda calcular_destaques_jogador
+    e so devolve quem realmente tem algum destaque (evita listar o elenco
+    inteiro so pra maioria vir vazia). Corta pros `limite` jogadores com a
+    maior taxa de acerto, pra nao afogar o card do confronto com o elenco
+    inteiro."""
+    jogadores = db.query(Jogador).filter(Jogador.time_id == time_id).all()
+
+    resultado = []
+    for jogador in jogadores:
+        destaques = calcular_destaques_jogador(db, jogador.id, janela)
+        if destaques:
+            resultado.append(
+                {
+                    "jogador_id": jogador.id,
+                    "nome": jogador.nome,
+                    "posicao": jogador.posicao,
+                    "destaques": destaques,
                 }
+            )
 
-        if melhor:
-            destaques.append(melhor)
-
-    destaques.sort(key=lambda d: d["taxa"], reverse=True)
-    return destaques
+    resultado.sort(key=lambda j: max(d["taxa"] for d in j["destaques"]), reverse=True)
+    return resultado[:limite]
