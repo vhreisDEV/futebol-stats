@@ -44,6 +44,7 @@ O projeto também segue sendo usado como forma de estudo e evolução profission
 * Pra cada confronto da próxima rodada, sequências recentes de cada time que chamam atenção — ex.: *"Cruzeiro costuma passar de 4.5 escanteios em casa — bateu em 7/10 jogos (70%)"*
 * Cobre escanteios, chutes, chutes ao gol, cartões amarelos, gols marcados, ambas equipes marcam e "não perde"
 * Testa contra linhas fixas realistas (as mesmas que uma casa de aposta ofereceria), não contra a própria média do time — evita inflar artificialmente a taxa de acerto
+* Mesma lógica estendida pra estatística individual de jogador (gols, assistências, cartões) — os destaques com maior taxa de acerto do elenco de cada time aparecem junto com os do time
 
 ### Jogadores
 
@@ -101,7 +102,6 @@ Site permanentemente no ar (Vercel + Render + Supabase), estatística real de jo
 ### Próximas versões
 
 * Completar o backfill histórico de estatística de jogador (em andamento — limitado pela cota diária da API)
-* Estender Dicas da Rodada pra estatística individual de jogador
 * Expansão para outros campeonatos
 * Integração com Inteligência Artificial (análises/insights gerados automaticamente)
 * Melhorias contínuas de experiência da plataforma
