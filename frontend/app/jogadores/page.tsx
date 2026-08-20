@@ -63,6 +63,19 @@ const GRUPOS_CATEGORIAS: { titulo: string; itens: Categoria[] }[] = [
   },
 ];
 
+// A Highlightly (fonte dos dados) so fornece gols/assistencias/cartoes
+// por jogador -- chutes, chutes ao gol, desarmes, faltas e defesas so
+// existem por time. Essas categorias nunca vao preencher com dado real,
+// entao merecem um aviso diferente de "ainda nao importado".
+const CATEGORIAS_SEM_DADO_POR_JOGADOR = new Set([
+  "chutes",
+  "chutes_gol",
+  "desarmes",
+  "faltas_cometidas",
+  "faltas_sofridas",
+  "defesas",
+]);
+
 const TODAS_CATEGORIAS = GRUPOS_CATEGORIAS.flatMap((g) => g.itens);
 
 function BadgePosicao({ index }: { index: number }) {
@@ -148,20 +161,26 @@ export default function Jogadores() {
                 <span className="hidden px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70 lg:block">
                   {grupo.titulo}
                 </span>
-                {grupo.itens.map((cat) => (
-                  <button
-                    key={cat.chave}
-                    type="button"
-                    onClick={() => setStatSelecionado(cat.chave)}
-                    className={`shrink-0 rounded-md px-3 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors ${
-                      statSelecionado === cat.chave
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
+                {grupo.itens.map((cat) => {
+                  const semDado = CATEGORIAS_SEM_DADO_POR_JOGADOR.has(cat.chave);
+                  return (
+                    <button
+                      key={cat.chave}
+                      type="button"
+                      onClick={() => setStatSelecionado(cat.chave)}
+                      className={`shrink-0 rounded-md px-3 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors ${
+                        statSelecionado === cat.chave
+                          ? "bg-primary/10 text-primary"
+                          : semDado
+                            ? "text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      {cat.label}
+                      {semDado && <span className="ml-1 text-[10px]">· sem dado</span>}
+                    </button>
+                  );
+                })}
               </div>
             ))}
           </nav>
@@ -215,7 +234,14 @@ export default function Jogadores() {
 
             {!carregando && !erro && ranking.length === 0 && (
               <div className="mt-3 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                Ainda não há dados individuais de jogadores importados. Em breve.
+                {CATEGORIAS_SEM_DADO_POR_JOGADOR.has(statSelecionado) ? (
+                  <>
+                    A fonte de dados não fornece {categoriaAtual.label.toLowerCase()} por jogador, apenas por
+                    time — essa categoria não deve preencher.
+                  </>
+                ) : (
+                  "Ainda não há dados suficientes de jogadores importados para essa categoria. Em breve."
+                )}
               </div>
             )}
 
