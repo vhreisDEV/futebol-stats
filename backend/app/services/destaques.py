@@ -1,4 +1,6 @@
 from app.models.jogador import Jogador
+from app.models.partida import Partida
+from app.models.estatistica_jogador_partida import EstatisticaJogadorPartida
 from app.services.medias import _buscar_jogos_anteriores, _extrair_perspectiva
 from app.services.jogadores import obter_ultimos_jogos_jogador
 
@@ -208,16 +210,48 @@ def calcular_destaques_jogador(db, jogador_id, janela=JANELA_PADRAO):
 
 
 def calcular_destaques_jogadores_time(db, time_id, janela=JANELA_PADRAO, limite=3):
-    """Pra cada jogador do elenco atual do time, roda calcular_destaques_jogador
-    e so devolve quem realmente tem algum destaque (evita listar o elenco
-    inteiro so pra maioria vir vazia). Corta pros `limite` jogadores com a
-    maior taxa de acerto, pra nao afogar o card do confronto com o elenco
-    inteiro."""
+    """Mesma ideia de calcular_destaques_jogador, mas pro elenco inteiro de
+    um time de uma vez -- so devolve quem realmente tem algum destaque, e
+    corta pros `limite` jogadores com maior taxa de acerto (pra nao afogar
+    o card do confronto com o elenco inteiro).
+
+    Busca os jogos de TODOS os jogadores do time numa unica query (em vez
+    de uma query por jogador via calcular_destaques_jogador/
+    obter_ultimos_jogos_jogador) -- usado em /destaques/rodada, que roda
+    isso pra ambos os times de cada jogo da rodada; uma query por jogador
+    vira facilmente umas 500 queries pro Supabase numa rodada de 10 jogos
+    e estoura o tempo de resposta (timeout real ja visto em producao).
+    """
     jogadores = db.query(Jogador).filter(Jogador.time_id == time_id).all()
+    if not jogadores:
+        return []
+
+    jogador_ids = [j.id for j in jogadores]
+    linhas = (
+        db.query(
+            EstatisticaJogadorPartida.jogador_id,
+            EstatisticaJogadorPartida.gols,
+            EstatisticaJogadorPartida.assistencias,
+            EstatisticaJogadorPartida.cartoes_amarelos,
+        )
+        .join(Partida, Partida.id == EstatisticaJogadorPartida.partida_id)
+        .filter(EstatisticaJogadorPartida.jogador_id.in_(jogador_ids))
+        .order_by(EstatisticaJogadorPartida.jogador_id, Partida.data.desc())
+        .all()
+    )
+
+    jogos_por_jogador = {}
+    for linha in linhas:
+        jogos_por_jogador.setdefault(linha.jogador_id, []).append(
+            {"gols": linha.gols, "assistencias": linha.assistencias, "cartoes_amarelos": linha.cartoes_amarelos}
+        )
 
     resultado = []
     for jogador in jogadores:
-        destaques = calcular_destaques_jogador(db, jogador.id, janela)
+        jogos = jogos_por_jogador.get(jogador.id, [])[:janela]
+        if len(jogos) < MINIMO_JOGOS:
+            continue
+        destaques = _encontrar_destaques(jogos, STATS_DESTAQUE_JOGADOR)
         if destaques:
             resultado.append(
                 {
