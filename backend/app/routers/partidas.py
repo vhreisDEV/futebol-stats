@@ -25,6 +25,7 @@ def obter_partida(partida_id: int, db: Session = Depends(get_db)):
     return PartidaDetalheResponse(
         id=partida.id,
         data=partida.data,
+        hora=partida.hora,
         status=partida.status,
         rodada=partida.rodada,
         time_mandante_id=partida.time_mandante_id,

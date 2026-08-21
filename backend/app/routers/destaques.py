@@ -57,6 +57,7 @@ def obter_destaques_rodada(numero: int, db: Session = Depends(get_db)):
             JogoComDestaques(
                 partida_id=p.id,
                 data=str(p.data) if p.data else None,
+                hora=p.hora.strftime("%H:%M") if p.hora else None,
                 rodada=numero,
                 time_mandante_id=p.time_mandante_id,
                 time_mandante=p.time_mandante.nome,

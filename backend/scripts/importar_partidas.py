@@ -1,6 +1,6 @@
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from dotenv import load_dotenv
 
@@ -81,9 +81,18 @@ def parse_rodada(round_str):
     return int(match.group(1)) if match else None
 
 
-def parse_data(data_iso):
-    # formato esperado: "2026-07-16T22:30:00.000Z"
-    return datetime.fromisoformat(data_iso.replace("Z", "+00:00")).date()
+FUSO_BRT = timedelta(hours=-3)  # Brasil nao usa horario de verao desde 2019 -- BRT = UTC-3 sempre
+
+
+def parse_data_hora(data_iso):
+    # formato esperado: "2026-07-16T22:30:00.000Z" (sempre em UTC). Converte
+    # pra BRT antes de separar data/hora -- jogos que rolam tarde da noite
+    # (20:30-21:30 BRT) viram madrugada em UTC e cairiam no dia seguinte se
+    # a gente so truncasse o UTC direto (bug historico, antes remendado a
+    # mao partida por partida -- essa conversao resolve na raiz).
+    dt_utc = datetime.fromisoformat(data_iso.replace("Z", "+00:00"))
+    dt_brt = dt_utc + FUSO_BRT
+    return dt_brt.date(), dt_brt.time()
 
 
 def mapear_status(estado):
@@ -181,7 +190,7 @@ def importar():
             estado = p.get("state", {}).get("description", "")
             status = mapear_status(estado)
             rodada = parse_rodada(p.get("round"))
-            data_partida = parse_data(p["date"])
+            data_partida, hora_partida = parse_data_hora(p["date"])
 
             partida_existente = buscar_partida_existente(
                 db, id_externo, rodada, time_mandante.id, time_visitante.id
@@ -204,6 +213,7 @@ def importar():
                     partida_existente.id_externo = id_externo
                     partida_existente.status = status
                     partida_existente.data = data_partida
+                    partida_existente.hora = hora_partida
                 else:
                     db.add(Partida(
                         id_externo=id_externo,
@@ -211,6 +221,7 @@ def importar():
                         time_visitante_id=time_visitante.id,
                         status=status,
                         data=data_partida,
+                        hora=hora_partida,
                         rodada=rodada,
                     ))
                 db.commit()
@@ -284,8 +295,13 @@ def importar():
             if enriquecendo:
                 # So completa as estatisticas que faltavam -- gols, data,
                 # rodada e status ja estao corretos (inclusive datas
-                # corrigidas manualmente pro fuso BRT), nao mexe neles.
+                # corrigidas manualmente pro fuso BRT), nao mexe neles. Hora
+                # e excecao: partidas antigas nunca tiveram esse campo, entao
+                # preencher se ainda estiver vazio e' seguro (nao sobrescreve
+                # nada que ja existia).
                 partida_existente.id_externo = id_externo
+                if partida_existente.hora is None:
+                    partida_existente.hora = hora_partida
                 for campo, valor in dados_estatisticas.items():
                     setattr(partida_existente, campo, valor)
             else:
@@ -297,6 +313,7 @@ def importar():
                     gols_mandante=gols_mandante,
                     gols_visitante=gols_visitante,
                     data=data_partida,
+                    hora=hora_partida,
                     rodada=rodada,
                     **dados_estatisticas,
                 )

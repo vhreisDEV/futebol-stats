@@ -27,6 +27,7 @@ import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
 import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
+import { formatarDataHora } from "@/lib/formatar-data";
 
 function CabecalhoCampeonato() {
   return (
@@ -59,6 +60,7 @@ function CabecalhoCampeonato() {
 interface PartidaRodada {
   id: number;
   data: string | null;
+  hora: string | null;
   status: string;
   time_mandante_id: number;
   time_mandante: string;
@@ -76,16 +78,6 @@ interface RodadaResponse {
 interface RodadaAtualResponse {
   rodada_atual: number;
   rodada_maxima: number;
-}
-
-function formatarData(dataStr: string | null) {
-  if (!dataStr) return "Data a definir";
-  const partes = dataStr.split("-");
-  if (partes.length === 3) {
-    const [ano, mes, dia] = partes;
-    return `${dia}/${mes}/${ano}`;
-  }
-  return dataStr;
 }
 
 export default function Brasileirao() {
@@ -255,7 +247,7 @@ export default function Brasileirao() {
                   >
                     <CardContent className="py-0.5">
                       <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground">
-                        {formatarData(partida.data)}
+                        {formatarDataHora(partida.data, partida.hora)}
                       </p>
                       <div className="mt-0.5 flex items-center justify-center gap-2">
                         <div className="min-w-0 flex-1 text-right">

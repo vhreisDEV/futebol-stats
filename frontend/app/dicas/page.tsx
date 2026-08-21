@@ -19,6 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { API_URL } from "@/lib/api";
+import { formatarDataHora } from "@/lib/formatar-data";
 
 interface Destaque {
   stat: string;
@@ -42,6 +43,7 @@ interface DestaqueJogador {
 interface JogoComDestaques {
   partida_id: number;
   data: string | null;
+  hora: string | null;
   rodada: number;
   time_mandante_id: number;
   time_mandante: string;
@@ -74,16 +76,6 @@ const ICONE_STAT: Record<string, { icon: LucideIcon; cor: string }> = {
   gols: { icon: CircleDot, cor: "text-emerald-400" },
   assistencias: { icon: Sparkles, cor: "text-fuchsia-400" },
 };
-
-function formatarData(dataStr: string | null) {
-  if (!dataStr) return "Data a definir";
-  const partes = dataStr.split("-");
-  if (partes.length === 3) {
-    const [ano, mes, dia] = partes;
-    return `${dia}/${mes}/${ano}`;
-  }
-  return dataStr;
-}
 
 function BlocoJogadores({ destaquesJogadores }: { destaquesJogadores: DestaqueJogador[] }) {
   if (destaquesJogadores.length === 0) return null;
@@ -329,7 +321,7 @@ export default function Dicas() {
               <Card key={jogo.partida_id} className="overflow-hidden border-primary/15">
                 <CardContent>
                   <p className="text-center text-xs uppercase tracking-wide text-muted-foreground">
-                    {formatarData(jogo.data)}
+                    {formatarDataHora(jogo.data, jogo.hora)}
                   </p>
                   <p className="mt-1 text-center font-heading text-base font-semibold uppercase tracking-wide">
                     {jogo.time_mandante}

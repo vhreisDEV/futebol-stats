@@ -39,7 +39,7 @@ def obter_rodada(numero: int, db: Session = Depends(get_db)):
     partidas = (
         db.query(Partida)
         .filter(Partida.rodada == numero)
-        .order_by(Partida.data.is_(None), Partida.data)
+        .order_by(Partida.data.is_(None), Partida.data, Partida.hora.is_(None), Partida.hora)
         .all()
     )
 
@@ -52,6 +52,7 @@ def obter_rodada(numero: int, db: Session = Depends(get_db)):
             PartidaRodadaResponse(
                 id=p.id,
                 data=p.data,
+                hora=p.hora,
                 status=p.status,
                 time_mandante_id=p.time_mandante_id,
                 time_mandante=p.time_mandante.nome,

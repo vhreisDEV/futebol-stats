@@ -24,6 +24,7 @@ class DestaqueJogador(BaseModel):
 class JogoComDestaques(BaseModel):
     partida_id: int
     data: str | None
+    hora: str | None
     rodada: int
     time_mandante_id: int
     time_mandante: str

@@ -10,10 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
+import { formatarDataHora } from "@/lib/formatar-data";
 
 interface PartidaDetalhe {
   id: number;
   data: string | null;
+  hora: string | null;
   status: string;
   rodada: number | null;
   time_mandante_id: number;
@@ -38,16 +40,6 @@ const STATUS_LABEL: Record<string, string> = {
   adiada: "Adiada",
   agendada: "Ainda não realizada",
 };
-
-function formatarData(dataStr: string | null) {
-  if (!dataStr) return "Data a definir";
-  const partes = dataStr.split("-");
-  if (partes.length === 3) {
-    const [ano, mes, dia] = partes;
-    return `${dia}/${mes}/${ano}`;
-  }
-  return dataStr;
-}
 
 function LinhaEstatistica({
   label,
@@ -127,7 +119,7 @@ export function PartidaModal({
           {partida && (
             <>
               <p className="text-center text-xs text-muted-foreground">
-                {formatarData(partida.data)}
+                {formatarDataHora(partida.data, partida.hora)}
                 {partida.rodada !== null && ` · Rodada ${partida.rodada}`}
               </p>
               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">

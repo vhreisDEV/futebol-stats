@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
+from sqlalchemy import Time as HoraSQL  # alias pra nao colidir com o model Time (time de futebol)
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -17,8 +18,11 @@ class Partida(Base):
     time_visitante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
     status = Column(String, nullable=False, default=STATUS_PARTIDA_PADRAO)
     # Nula quando so temos o confronto da rodada (mandante x visitante) mas
-    # ainda nao a data/hora oficial da CBF para esse jogo.
+    # ainda nao a data/hora oficial da CBF para esse jogo. Sempre em
+    # horario de Brasilia (BRT, UTC-3 fixo -- Brasil nao usa horario de
+    # verao desde 2019), convertido a partir do UTC que a Highlightly manda.
     data = Column(Date, nullable=True)
+    hora = Column(HoraSQL, nullable=True)
     rodada = Column(Integer, nullable=True)
 
     # Nulos ate a partida ser finalizada (agendada/adiada nao tem placar

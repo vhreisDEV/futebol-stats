@@ -1,11 +1,12 @@
 from pydantic import BaseModel
-from datetime import date
+from datetime import date, time
 from typing import Optional
 
 
 class PartidaDetalheResponse(BaseModel):
     id: int
     data: Optional[date]
+    hora: Optional[time]
     status: str
     rodada: Optional[int]
     time_mandante_id: int
