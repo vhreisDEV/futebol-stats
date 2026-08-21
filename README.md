@@ -6,6 +6,15 @@ Plataforma de análise estatística do Brasileirão Série A 2026, com dados rea
 
 > Rodando no plano gratuito do Render — a primeira visita depois de um tempo sem uso pode levar alguns segundos pra "acordar" o backend. Isso é esperado, não é bug.
 
+## 📸 Screenshots
+
+| | |
+|---|---|
+| ![Home](docs/screenshots/home.png) | ![Brasileirão — classificação e rodadas](docs/screenshots/brasileirao.png) |
+| Home | Brasileirão — classificação e rodadas |
+| ![Dicas da Rodada](docs/screenshots/dicas-da-rodada.png) | ![Previsão de Jogos](docs/screenshots/previsao.png) |
+| Dicas da Rodada | Previsão de Jogos |
+
 ## 🎯 Objetivo
 
 O VEAGA nasceu como um projeto de estudo e evoluiu pra uma plataforma pública de verdade: analisa o desempenho de times e jogadores do Brasileirão com base em dados históricos e recentes, compara equipes, projeta estatisticamente os próximos confrontos e aponta tendências que se repetem — tudo com dado real, importado da temporada em andamento.
