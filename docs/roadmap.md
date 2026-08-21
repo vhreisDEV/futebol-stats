@@ -36,7 +36,7 @@ Este documento acompanha a evolução real do projeto, desde a primeira versão 
 - [x] Criar endpoints de partidas
 - [x] Criar endpoints de estatísticas
 - [x] Implementar validações
-- [ ] Criar testes automatizados (validação segue sendo manual + scripts de verificação ad-hoc em `backend/scripts/test_*.py`)
+- [ ] Criar testes automatizados (começou em `backend/tests/` com pytest, cobrindo a lógica de linha/taxa de acerto da Dicas da Rodada; resto do backend segue com validação manual + scripts ad-hoc em `backend/scripts/test_*.py`)
 
 ---
 
