@@ -110,7 +110,6 @@ Site permanentemente no ar (Vercel + Render + Supabase), estatística real de jo
 
 ### Próximas versões
 
-* Completar o backfill histórico de estatística de jogador (em andamento — limitado pela cota diária da API)
 * Expansão para outros campeonatos
 * Integração com Inteligência Artificial (análises/insights gerados automaticamente)
 * Melhorias contínuas de experiência da plataforma

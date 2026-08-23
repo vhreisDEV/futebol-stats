@@ -88,7 +88,7 @@ Este documento acompanha a evolução real do projeto, desde a primeira versão 
 
 ## 🔴 Fase 8 — Expansão
 
-- [x] Adicionar análise de jogadores (gols/assistências/cartões reais já no ar, Dicas da Rodada estendida pro nível de jogador; backfill histórico completo ainda rodando aos poucos por causa da cota diária da API)
+- [x] Adicionar análise de jogadores (gols/assistências/cartões reais, Dicas da Rodada estendida pro nível de jogador, backfill histórico completo — todas as 225 partidas já finalizadas)
 - [ ] Adicionar mais campeonatos
 - [ ] Criar dashboard completo
 - [ ] Criar sistema de usuários
