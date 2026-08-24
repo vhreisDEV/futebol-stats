@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LightRays } from "@/components/light-rays";
 import { SpotlightCard } from "@/components/spotlight-card";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
-import { bandeiraPais } from "@/lib/paises";
+import { flagSrcQuadrada } from "@/lib/paises";
 
 interface Campeonato {
   id: number;
@@ -82,8 +82,9 @@ export default function Home() {
                 <SpotlightCard spotlightColor="rgba(212, 175, 55, 0.35)">
                   <Card className="overflow-hidden border-primary/20 text-left transition-colors hover:border-primary/50">
                     <CardContent className="flex items-center gap-3">
-                      <span className="emoji-flag flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg">
-                        {bandeiraPais(c.pais_codigo)}
+                      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo, sem necessidade de otimizacao do Next/Image */}
+                        <img src={flagSrcQuadrada(c.pais_codigo)} alt="" className="size-full object-cover" />
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">
