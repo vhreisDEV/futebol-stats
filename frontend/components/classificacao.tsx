@@ -40,18 +40,37 @@ interface Zona {
   corLegenda: string;
 }
 
-// Faixas de classificacao do Brasileirao Serie A (regulamento CBF).
-// Cores escolhidas para ficarem bem distintas entre si (evitar tons
-// de azul proximos um do outro).
-const ZONAS: Zona[] = [
-  { min: 1, max: 4, label: "Libertadores", corBorda: "!border-l-blue-500", corLegenda: "bg-blue-500" },
-  { min: 5, max: 6, label: "Pré-Libertadores", corBorda: "!border-l-green-500", corLegenda: "bg-green-500" },
-  { min: 7, max: 12, label: "Sul-Americana", corBorda: "!border-l-violet-500", corLegenda: "bg-violet-500" },
-  { min: 17, max: 20, label: "Rebaixamento", corBorda: "!border-l-red-500", corLegenda: "bg-red-500" },
-];
+// Faixas de classificacao por campeonato -- cada liga tem suas proprias
+// vagas continentais/rebaixamento, entao isso e' por campeonato_id, nao
+// um unico array global. Campeonato sem entrada aqui (Bundesliga/Serie
+// A/Ligue 1, ainda nao mapeadas) simplesmente nao mostra zona nenhuma.
+const ZONAS_POR_CAMPEONATO: Record<number, Zona[]> = {
+  // Brasileirao Serie A (regulamento CBF).
+  1: [
+    { min: 1, max: 4, label: "Libertadores", corBorda: "!border-l-blue-500", corLegenda: "bg-blue-500" },
+    { min: 5, max: 6, label: "Pré-Libertadores", corBorda: "!border-l-green-500", corLegenda: "bg-green-500" },
+    { min: 7, max: 12, label: "Sul-Americana", corBorda: "!border-l-violet-500", corLegenda: "bg-violet-500" },
+    { min: 17, max: 20, label: "Rebaixamento", corBorda: "!border-l-red-500", corLegenda: "bg-red-500" },
+  ],
+  // Premier League.
+  2: [
+    { min: 1, max: 4, label: "Fase de grupos da Liga dos Campeões", corBorda: "!border-l-blue-500", corLegenda: "bg-blue-500" },
+    { min: 5, max: 5, label: "Fase de grupos da Liga Europa", corBorda: "!border-l-green-500", corLegenda: "bg-green-500" },
+    { min: 18, max: 20, label: "Rebaixamento", corBorda: "!border-l-red-500", corLegenda: "bg-red-500" },
+  ],
+  // La Liga.
+  3: [
+    { min: 1, max: 4, label: "Fase de grupos da Liga dos Campeões", corBorda: "!border-l-blue-500", corLegenda: "bg-blue-500" },
+    { min: 5, max: 5, label: "Fase de grupos da Liga Europa", corBorda: "!border-l-green-500", corLegenda: "bg-green-500" },
+    { min: 6, max: 6, label: "Qualificatórias da Liga Conferência", corBorda: "!border-l-violet-500", corLegenda: "bg-violet-500" },
+    { min: 18, max: 20, label: "Rebaixamento", corBorda: "!border-l-red-500", corLegenda: "bg-red-500" },
+  ],
+};
 
-function zonaDaPosicao(posicao: number) {
-  return ZONAS.find((z) => posicao >= z.min && posicao <= z.max) ?? null;
+function zonaDaPosicao(campeonatoId: number, posicao: number) {
+  const zonas = ZONAS_POR_CAMPEONATO[campeonatoId];
+  if (!zonas) return null;
+  return zonas.find((z) => posicao >= z.min && posicao <= z.max) ?? null;
 }
 
 export function Classificacao({ campeonatoId = CAMPEONATO_BRASILEIRAO_ID }: { campeonatoId?: number }) {
@@ -92,10 +111,7 @@ export function Classificacao({ campeonatoId = CAMPEONATO_BRASILEIRAO_ID }: { ca
     );
   }
 
-  // Zonas (Libertadores/Rebaixamento etc.) sao do regulamento da CBF --
-  // so fazem sentido pro Brasileirao. Outras ligas tem suas proprias
-  // regras de classificacao europeia/rebaixamento, ainda nao mapeadas.
-  const mostrarZonas = campeonatoId === CAMPEONATO_BRASILEIRAO_ID;
+  const zonas = ZONAS_POR_CAMPEONATO[campeonatoId] ?? [];
 
   return (
     <div>
@@ -116,7 +132,7 @@ export function Classificacao({ campeonatoId = CAMPEONATO_BRASILEIRAO_ID }: { ca
         </TableHeader>
         <TableBody>
           {tabela.map((linha) => {
-            const zona = mostrarZonas ? zonaDaPosicao(linha.posicao) : null;
+            const zona = zonaDaPosicao(campeonatoId, linha.posicao);
             const lider = linha.posicao === 1;
             return (
               <TableRow
@@ -165,9 +181,9 @@ export function Classificacao({ campeonatoId = CAMPEONATO_BRASILEIRAO_ID }: { ca
         </TableBody>
       </Table>
 
-      {mostrarZonas && (
+      {zonas.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-          {ZONAS.map((zona) => (
+          {zonas.map((zona) => (
             <div key={zona.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <span className={`size-2 rounded-sm ${zona.corLegenda}`} />
               {zona.label}

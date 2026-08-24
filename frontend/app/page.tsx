@@ -14,7 +14,7 @@ interface Campeonato {
   nome: string;
   pais_nome: string;
   pais_codigo: string;
-  temporada: number;
+  temporada_label: string;
   rodadas_total: number | null;
   rodada_atual: number | null;
   total_times: number;
@@ -88,7 +88,7 @@ export default function Home() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">
-                          {c.nome} {c.temporada}
+                          {c.nome} {c.temporada_label}
                         </p>
                         <p className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
                           {c.rodada_atual && `Rodada ${c.rodada_atual}/${c.rodadas_total ?? "?"}`}

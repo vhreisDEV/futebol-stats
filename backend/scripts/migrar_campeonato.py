@@ -63,6 +63,7 @@ def migrar():
                 pais_nome="Brasil",
                 pais_codigo="BR",
                 temporada=2026,
+                temporada_label="2026",
                 id_externo_liga=LEAGUE_ID_BRASILEIRAO,
                 rodadas_total=38,
                 ativo=True,

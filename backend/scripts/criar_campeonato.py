@@ -16,13 +16,23 @@ from app.models.campeonato import Campeonato
 # 26/27 para as ligas europeias). rodadas_total assume 38 (20 times,
 # turno+returno) -- ligas com numero diferente de times precisam de outro
 # valor (ex.: Bundesliga com 18 times tem 34 rodadas).
+#
+# temporada_dupla=True: rotulo vira "2026-27" (temporada europeia,
+# atravessa dois anos civis). False: rotulo e' so o ano ("2026", caso do
+# Brasileirao e outras ligas de calendario unico).
 CAMPEONATOS_CONHECIDOS = {
-    33973: dict(nome="Premier League", pais_nome="Inglaterra", pais_codigo="GB-ENG", rodadas_total=38),
-    119924: dict(nome="La Liga", pais_nome="Espanha", pais_codigo="ES", rodadas_total=38),
-    67162: dict(nome="Bundesliga", pais_nome="Alemanha", pais_codigo="DE", rodadas_total=34),
-    115669: dict(nome="Serie A", pais_nome="Itália", pais_codigo="IT", rodadas_total=38),
-    52695: dict(nome="Ligue 1", pais_nome="França", pais_codigo="FR", rodadas_total=34),
+    33973: dict(nome="Premier League", pais_nome="Inglaterra", pais_codigo="GB-ENG", rodadas_total=38, temporada_dupla=True),
+    119924: dict(nome="La Liga", pais_nome="Espanha", pais_codigo="ES", rodadas_total=38, temporada_dupla=True),
+    67162: dict(nome="Bundesliga", pais_nome="Alemanha", pais_codigo="DE", rodadas_total=34, temporada_dupla=True),
+    115669: dict(nome="Serie A", pais_nome="Itália", pais_codigo="IT", rodadas_total=38, temporada_dupla=True),
+    52695: dict(nome="Ligue 1", pais_nome="França", pais_codigo="FR", rodadas_total=34, temporada_dupla=True),
 }
+
+
+def montar_temporada_label(temporada, temporada_dupla):
+    if temporada_dupla:
+        return f"{temporada}-{str(temporada + 1)[-2:]}"
+    return str(temporada)
 
 
 def criar_campeonato(db, id_externo_liga, temporada=2026):
@@ -42,6 +52,7 @@ def criar_campeonato(db, id_externo_liga, temporada=2026):
         pais_nome=info["pais_nome"],
         pais_codigo=info["pais_codigo"],
         temporada=temporada,
+        temporada_label=montar_temporada_label(temporada, info["temporada_dupla"]),
         id_externo_liga=id_externo_liga,
         rodadas_total=info["rodadas_total"],
         ativo=True,

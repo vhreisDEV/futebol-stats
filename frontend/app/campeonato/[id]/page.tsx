@@ -17,7 +17,7 @@ interface Campeonato {
   nome: string;
   pais_nome: string;
   pais_codigo: string;
-  temporada: number;
+  temporada_label: string;
 }
 
 interface PartidaRodada {
@@ -136,7 +136,7 @@ export default function CampeonatoPage() {
           <h1 className="mt-2 flex items-center gap-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
             {/* eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo, sem necessidade de otimizacao do Next/Image */}
             <img src={flagSrc(campeonato.pais_codigo)} alt="" className="h-[0.75em] w-auto rounded-sm" />
-            {campeonato.nome} {campeonato.temporada}
+            {campeonato.nome} {campeonato.temporada_label}
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
             Backfill histórico ainda em andamento pra essa liga — algumas seções do VEAGA (Previsão de

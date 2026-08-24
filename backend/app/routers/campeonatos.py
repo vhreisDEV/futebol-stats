@@ -33,6 +33,7 @@ def _montar_response(db, c):
         pais_nome=c.pais_nome,
         pais_codigo=c.pais_codigo,
         temporada=c.temporada,
+        temporada_label=c.temporada_label,
         rodadas_total=c.rodadas_total,
         ativo=c.ativo,
         rodada_atual=rodada_atual,

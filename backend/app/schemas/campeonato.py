@@ -8,6 +8,7 @@ class CampeonatoResponse(BaseModel):
     pais_nome: str
     pais_codigo: str
     temporada: int
+    temporada_label: str
     rodadas_total: Optional[int]
     ativo: bool
     rodada_atual: Optional[int] = None

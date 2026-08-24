@@ -17,7 +17,7 @@ interface Campeonato {
   nome: string;
   pais_nome: string;
   pais_codigo: string;
-  temporada: number;
+  temporada_label: string;
 }
 
 function CabecalhoCampeonato() {
@@ -30,7 +30,7 @@ function CabecalhoCampeonato() {
       .catch(() => {});
   }, []);
 
-  const titulo = campeonato ? `${campeonato.nome} ${campeonato.temporada}` : "Brasileirão Série A 2026";
+  const titulo = campeonato ? `${campeonato.nome} ${campeonato.temporada_label}` : "Brasileirão Série A 2026";
 
   return (
     <div>
