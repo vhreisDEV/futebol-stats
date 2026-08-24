@@ -54,7 +54,7 @@ function zonaDaPosicao(posicao: number) {
   return ZONAS.find((z) => posicao >= z.min && posicao <= z.max) ?? null;
 }
 
-export function Classificacao() {
+export function Classificacao({ campeonatoId = CAMPEONATO_BRASILEIRAO_ID }: { campeonatoId?: number }) {
   const [tabela, setTabela] = useState<LinhaClassificacao[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -64,7 +64,8 @@ export function Classificacao() {
   // tem jogos atrasados, entao "classificacao ate a rodada X" nao bate
   // com a tabela real numa boa parte do campeonato.
   useEffect(() => {
-    fetch(`${API_URL}/classificacao/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
+    setCarregando(true);
+    fetch(`${API_URL}/classificacao/?campeonato_id=${campeonatoId}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar classificação");
         return r.json();
@@ -77,7 +78,7 @@ export function Classificacao() {
         setErro(err.message);
         setCarregando(false);
       });
-  }, []);
+  }, [campeonatoId]);
 
   if (erro) {
     return <p className="text-sm text-destructive">Erro: {erro}</p>;
@@ -90,6 +91,11 @@ export function Classificacao() {
       </div>
     );
   }
+
+  // Zonas (Libertadores/Rebaixamento etc.) sao do regulamento da CBF --
+  // so fazem sentido pro Brasileirao. Outras ligas tem suas proprias
+  // regras de classificacao europeia/rebaixamento, ainda nao mapeadas.
+  const mostrarZonas = campeonatoId === CAMPEONATO_BRASILEIRAO_ID;
 
   return (
     <div>
@@ -110,7 +116,7 @@ export function Classificacao() {
         </TableHeader>
         <TableBody>
           {tabela.map((linha) => {
-            const zona = zonaDaPosicao(linha.posicao);
+            const zona = mostrarZonas ? zonaDaPosicao(linha.posicao) : null;
             const lider = linha.posicao === 1;
             return (
               <TableRow
@@ -159,14 +165,16 @@ export function Classificacao() {
         </TableBody>
       </Table>
 
-      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-        {ZONAS.map((zona) => (
-          <div key={zona.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <span className={`size-2 rounded-sm ${zona.corLegenda}`} />
-            {zona.label}
-          </div>
-        ))}
-      </div>
+      {mostrarZonas && (
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+          {ZONAS.map((zona) => (
+            <div key={zona.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className={`size-2 rounded-sm ${zona.corLegenda}`} />
+              {zona.label}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

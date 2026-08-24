@@ -10,6 +10,8 @@ class CampeonatoResponse(BaseModel):
     temporada: int
     rodadas_total: Optional[int]
     ativo: bool
+    rodada_atual: Optional[int] = None
+    total_times: int = 0
 
 
 class ListaCampeonatosResponse(BaseModel):
