@@ -4,8 +4,11 @@ from app.models.partida import Partida
 from app.models.time import Time
 
 
-def calcular_classificacao(db, ate_rodada=None):
-    times = db.query(Time).all()
+def calcular_classificacao(db, ate_rodada=None, campeonato_id=None):
+    query_times = db.query(Time)
+    if campeonato_id is not None:
+        query_times = query_times.filter(Time.campeonato_id == campeonato_id)
+    times = query_times.all()
     tabela = []
 
     for time in times:

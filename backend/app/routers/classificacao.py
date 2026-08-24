@@ -23,7 +23,8 @@ def obter_classificacao(
     ate_rodada: Optional[int] = Query(
         None, description="Considera apenas jogos ate esta rodada. Padrao: todos os jogos ja importados."
     ),
+    campeonato_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-    tabela = calcular_classificacao(db, ate_rodada)
+    tabela = calcular_classificacao(db, ate_rodada, campeonato_id)
     return ClassificacaoResponse(classificacao=[LinhaClassificacao(**linha) for linha in tabela])

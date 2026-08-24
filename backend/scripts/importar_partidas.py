@@ -5,6 +5,7 @@ import requests
 from dotenv import load_dotenv
 
 from app.database import SessionLocal
+from app.models.campeonato import Campeonato
 from app.models.time import Time
 from app.models.partida import Partida
 
@@ -161,6 +162,11 @@ def importar():
         return
 
     db = SessionLocal()
+    campeonato = db.query(Campeonato).filter(Campeonato.id_externo_liga == LEAGUE_ID_BRASILEIRAO).first()
+    if not campeonato:
+        print("ERRO: Campeonato do Brasileirao nao encontrado (rode a migracao/seed do Campeonato primeiro).")
+        return
+
     importadas = 0
     enriquecidas = 0
     placeholders = 0
@@ -217,6 +223,7 @@ def importar():
                 else:
                     db.add(Partida(
                         id_externo=id_externo,
+                        campeonato_id=campeonato.id,
                         time_mandante_id=time_mandante.id,
                         time_visitante_id=time_visitante.id,
                         status=status,
@@ -307,6 +314,7 @@ def importar():
             else:
                 dados_finalizada = dict(
                     id_externo=id_externo,
+                    campeonato_id=campeonato.id,
                     time_mandante_id=time_mandante.id,
                     time_visitante_id=time_visitante.id,
                     status="finalizada",

@@ -29,7 +29,32 @@ import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 
+interface Campeonato {
+  id: number;
+  nome: string;
+  pais_nome: string;
+  pais_codigo: string;
+  temporada: number;
+  rodadas_total: number | null;
+  ativo: boolean;
+}
+
 function CabecalhoCampeonato() {
+  const [campeonatos, setCampeonatos] = useState<Campeonato[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/campeonatos/`)
+      .then((r) => (r.ok ? r.json() : { campeonatos: [] }))
+      .then((dados: { campeonatos: Campeonato[] }) => setCampeonatos(dados.campeonatos))
+      .catch(() => {});
+  }, []);
+
+  // So o Brasileirao esta de fato navegavel por enquanto -- outros
+  // campeonatos aparecem listados (prova que o backend ja suporta
+  // multiplas ligas) mas ainda nao tem rota propria no front.
+  const atual = campeonatos[0];
+  const titulo = atual ? `${atual.nome} ${atual.temporada}` : "Brasileirão Série A 2026";
+
   return (
     <div>
       <Link
@@ -40,16 +65,18 @@ function CabecalhoCampeonato() {
       </Link>
       <DropdownMenu>
         <DropdownMenuTrigger className="mt-2 flex items-center gap-1.5 font-heading text-2xl font-semibold uppercase tracking-wide transition-colors hover:text-primary sm:text-3xl">
-          Brasileirão Série A 2026
+          {titulo}
           <ChevronDown className="size-5 text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuGroup>
             <DropdownMenuLabel>Campeonatos</DropdownMenuLabel>
-            <DropdownMenuItem className="justify-between gap-4">
-              Brasileirão Série A 2026
-              <Check className="size-4 text-primary" />
-            </DropdownMenuItem>
+            {campeonatos.map((c) => (
+              <DropdownMenuItem key={c.id} className="justify-between gap-4">
+                {c.nome} {c.temporada}
+                {c.id === atual?.id && <Check className="size-4 text-primary" />}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>

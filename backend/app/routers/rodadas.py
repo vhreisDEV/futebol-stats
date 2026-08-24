@@ -1,13 +1,18 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
+from app.models.campeonato import Campeonato
 from app.models.partida import Partida
 from app.schemas.rodada import RodadaResponse, PartidaRodadaResponse, RodadaAtualResponse
 
 router = APIRouter(prefix="/rodadas", tags=["Rodadas"])
 
+# Usado quando campeonato_id nao e' informado (compatibilidade com quem
+# ainda chama sem esse parametro -- hoje so existe o Brasileirao mesmo).
 TOTAL_RODADAS_BRASILEIRAO = 38
 
 
@@ -20,28 +25,35 @@ def get_db():
 
 
 @router.get("/atual", response_model=RodadaAtualResponse)
-def obter_rodada_atual(db: Session = Depends(get_db)):
+def obter_rodada_atual(campeonato_id: Optional[int] = None, db: Session = Depends(get_db)):
     # So considera rodadas com pelo menos uma partida ja finalizada -- senao,
     # pre-cadastrar o calendario completo (agendada/adiada) adiantaria a
     # "rodada atual" para rodadas que ainda nem comecaram.
-    maior_rodada = (
-        db.query(func.max(Partida.rodada)).filter(Partida.status == "finalizada").scalar()
-    )
+    query = db.query(func.max(Partida.rodada)).filter(Partida.status == "finalizada")
+    if campeonato_id is not None:
+        query = query.filter(Partida.campeonato_id == campeonato_id)
+    maior_rodada = query.scalar()
 
     if maior_rodada is None:
         raise HTTPException(status_code=404, detail="Nenhuma partida com rodada cadastrada")
 
-    return RodadaAtualResponse(rodada_atual=maior_rodada, rodada_maxima=TOTAL_RODADAS_BRASILEIRAO)
+    rodada_maxima = TOTAL_RODADAS_BRASILEIRAO
+    if campeonato_id is not None:
+        campeonato = db.query(Campeonato).filter(Campeonato.id == campeonato_id).first()
+        if campeonato and campeonato.rodadas_total:
+            rodada_maxima = campeonato.rodadas_total
+
+    return RodadaAtualResponse(rodada_atual=maior_rodada, rodada_maxima=rodada_maxima)
 
 
 @router.get("/{numero}", response_model=RodadaResponse)
-def obter_rodada(numero: int, db: Session = Depends(get_db)):
-    partidas = (
-        db.query(Partida)
-        .filter(Partida.rodada == numero)
-        .order_by(Partida.data.is_(None), Partida.data, Partida.hora.is_(None), Partida.hora)
-        .all()
-    )
+def obter_rodada(numero: int, campeonato_id: Optional[int] = None, db: Session = Depends(get_db)):
+    query = db.query(Partida).filter(Partida.rodada == numero)
+    if campeonato_id is not None:
+        query = query.filter(Partida.campeonato_id == campeonato_id)
+    partidas = query.order_by(
+        Partida.data.is_(None), Partida.data, Partida.hora.is_(None), Partida.hora
+    ).all()
 
     if not partidas:
         raise HTTPException(status_code=404, detail="Nenhuma partida encontrada para essa rodada")

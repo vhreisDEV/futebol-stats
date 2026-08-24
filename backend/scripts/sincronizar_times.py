@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 
 from app.database import SessionLocal
+from app.models.campeonato import Campeonato
 from app.models.time import Time
 
 load_dotenv()
@@ -56,6 +57,11 @@ def sincronizar():
     db = SessionLocal()
 
     try:
+        campeonato = db.query(Campeonato).filter(Campeonato.id_externo_liga == LEAGUE_ID_BRASILEIRAO).first()
+        if not campeonato:
+            print("ERRO: Campeonato do Brasileirao nao encontrado (rode a migracao/seed do Campeonato primeiro).")
+            return
+
         standings = buscar_standings(LEAGUE_ID_BRASILEIRAO, SEASON)
         times_api = extrair_times_do_standings(standings)
 
@@ -75,7 +81,7 @@ def sincronizar():
                 ja_existiam += 1
                 continue
 
-            novo_time = Time(nome=nome, id_externo=id_externo)
+            novo_time = Time(nome=nome, id_externo=id_externo, campeonato_id=campeonato.id)
             db.add(novo_time)
             db.commit()
             db.refresh(novo_time)

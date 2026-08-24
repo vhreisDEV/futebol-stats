@@ -14,6 +14,10 @@ class Partida(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     id_externo = Column(Integer, unique=True, nullable=True, index=True)
+    # Denormalizado (repete o campeonato dos dois times) pra filtrar sem
+    # precisar de join -- toda partida real e' sempre intra-campeonato, os
+    # dois times sempre tem o mesmo campeonato_id por construcao.
+    campeonato_id = Column(Integer, ForeignKey("campeonatos.id"), nullable=True, index=True)
     time_mandante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
     time_visitante_id = Column(Integer, ForeignKey("times.id"), nullable=False)
     status = Column(String, nullable=False, default=STATUS_PARTIDA_PADRAO)

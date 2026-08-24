@@ -17,8 +17,11 @@ def get_db():
         db.close()
 
 @router.get("/", response_model=List[TimeBase])
-def listar_times(db: Session = Depends(get_db)):
-    return db.query(Time).order_by(Time.nome).all()
+def listar_times(campeonato_id: Optional[int] = None, db: Session = Depends(get_db)):
+    query = db.query(Time)
+    if campeonato_id is not None:
+        query = query.filter(Time.campeonato_id == campeonato_id)
+    return query.order_by(Time.nome).all()
 
 @router.get("/{time_id}/jogos", response_model=List[JogoResponse])
 def listar_ultimos_jogos(
