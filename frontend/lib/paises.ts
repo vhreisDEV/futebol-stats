@@ -6,9 +6,10 @@
  * etiqueta em vez da bandeira de verdade (confirmado em producao, nao
  * renderiza mesmo forcando a fonte via CSS). SVG tambem nao tem risco
  * de marca registrada (bandeira nacional e simbolo publico, diferente
- * de escudo/logo de time ou liga). GB-ENG (subdivisao, nao pais) usa a
- * bandeira do Reino Unido (gb) -- nao ha bandeira separada da Inglaterra
- * nas fontes usadas aqui.
+ * de escudo/logo de time ou liga). GB-ENG usa a bandeira de Sao Jorge
+ * (gb-eng), a bandeira regional da Inglaterra -- o flag-icons tambem
+ * tem as das outras subdivisoes do Reino Unido (gb-sct, gb-wls, gb-nir)
+ * se algum campeonato de la for adicionado no futuro.
  *
  * Os SVGs vem do pacote flag-icons (MIT, github.com/lipis/flag-icons),
  * copiados direto pra public/flags/ em vez de importados via npm -- ver
@@ -16,7 +17,7 @@
  */
 const CODIGOS_FLAG: Record<string, string> = {
   BR: "br",
-  "GB-ENG": "gb",
+  "GB-ENG": "gb-eng",
   ES: "es",
   DE: "de",
   IT: "it",

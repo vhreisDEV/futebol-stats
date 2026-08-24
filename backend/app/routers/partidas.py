@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -14,6 +16,27 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@router.get("/proxima")
+def obter_proxima_partida(campeonato_id: Optional[int] = None, db: Session = Depends(get_db)):
+    """
+    Acha a proxima partida agendada (a de data mais proxima), pra linkar
+    direto a Analise IA dela sem precisar de uma pagina de listagem por
+    rodada. So devolve o id -- quem chama busca o resto via /partidas/{id}.
+    """
+    query = db.query(Partida).filter(Partida.status == "agendada")
+    if campeonato_id is not None:
+        query = query.filter(Partida.campeonato_id == campeonato_id)
+
+    partida = query.order_by(
+        Partida.data.is_(None), Partida.data, Partida.hora.is_(None), Partida.hora
+    ).first()
+
+    if not partida:
+        raise HTTPException(status_code=404, detail="Nenhuma partida agendada encontrada")
+
+    return {"id": partida.id}
 
 
 @router.get("/{partida_id}", response_model=PartidaDetalheResponse)

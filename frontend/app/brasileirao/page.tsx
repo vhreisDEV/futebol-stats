@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, TrendingUp, Users, Shield, UserRound, Flame } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, Users, Shield, UserRound, Flame, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
@@ -49,6 +49,21 @@ function CabecalhoCampeonato() {
       </h1>
     </div>
   );
+}
+
+function ChipAnaliseIA() {
+  const [partidaId, setPartidaId] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_URL}/partidas/proxima?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setPartidaId(d?.id ?? null))
+      .catch(() => {});
+  }, []);
+
+  if (!partidaId) return null;
+
+  return <NavChip href={`/analise/${partidaId}`} label="Análise IA" icon={Sparkles} cor="violet" />;
 }
 
 interface PartidaRodada {
@@ -152,6 +167,7 @@ export default function Brasileirao() {
           <div className="flex flex-wrap gap-2">
             <NavChip href="/previsao" label="Previsão de Jogos" icon={TrendingUp} cor="gold" />
             <NavChip href="/dicas" label="Dicas da Rodada" icon={Flame} cor="emerald" />
+            <ChipAnaliseIA />
             <NavChip href="/comparar" label="Comparar Times" icon={Users} cor="rose" />
             <NavChip href="/times" label="Times" icon={Shield} cor="orange" />
             <NavChip href="/jogadores" label="Jogadores" icon={UserRound} cor="neutral" />
