@@ -7,7 +7,7 @@ export interface Perna {
   destaque: Destaque;
 }
 
-function fraseCurta(p: Perna) {
+export function fraseCurta(p: Perna) {
   const mando = p.time === "mandante" ? "em casa" : "fora";
   const d = p.destaque;
   if (d.tipo === "booleano") {

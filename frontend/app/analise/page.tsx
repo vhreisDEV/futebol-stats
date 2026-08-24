@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Sparkles, ChevronDown, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, ChevronDown, ExternalLink, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
 import { ListaDestaques, type Destaque } from "@/components/lista-destaques";
-import { BilheteSimplesCard, BilheteMultiplaCard, type Perna } from "@/components/bilhete-card";
+import { BilheteSimplesCard, BilheteMultiplaCard, fraseCurta, type Perna } from "@/components/bilhete-card";
 import { SeletorCampeonato } from "@/components/seletor-campeonato";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
@@ -53,6 +53,55 @@ interface AnaliseResponse {
 interface JogoComAnalise {
   partida: PartidaRodada;
   analise: AnaliseResponse;
+}
+
+const MAX_MELHORES_PALPITES = 5;
+
+function CartaoMelhoresPalpites({ jogos }: { jogos: JogoComAnalise[] }) {
+  const top = jogos
+    .filter((j) => j.analise.bilhete_simples)
+    .sort((a, b) => b.analise.bilhete_simples!.confianca - a.analise.bilhete_simples!.confianca)
+    .slice(0, MAX_MELHORES_PALPITES);
+
+  if (top.length < 2) return null;
+
+  return (
+    <Card className="overflow-hidden border-primary/30 bg-primary/5">
+      <CardContent>
+        <div className="flex items-center gap-2">
+          <Trophy className="size-5 text-primary" />
+          <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-foreground">
+            Melhores palpites da rodada
+          </h2>
+        </div>
+        <ol className="mt-3 grid gap-1.5">
+          {top.map(({ partida, analise }, i) => (
+            <li key={partida.id}>
+              <Link
+                href={`/analise/${partida.id}`}
+                className="flex items-center gap-2.5 rounded-md bg-card px-3 py-2 ring-1 ring-foreground/10 transition-colors hover:ring-primary/40"
+              >
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-[10px] font-bold text-primary">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[10px] uppercase tracking-wide text-muted-foreground">
+                    {partida.time_mandante} x {partida.time_visitante}
+                  </p>
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {fraseCurta(analise.bilhete_simples!.perna)}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-primary">
+                  {analise.bilhete_simples!.confianca.toFixed(1)}/10
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </CardContent>
+    </Card>
+  );
 }
 
 function CardPartida({ partida, analise }: JogoComAnalise) {
@@ -284,6 +333,7 @@ export default function AnaliseIA() {
           </div>
         ) : (
           <div className="mt-6 grid gap-3">
+            <CartaoMelhoresPalpites jogos={jogos} />
             {jogos.map((jogo) => (
               <CardPartida key={jogo.partida.id} {...jogo} />
             ))}
