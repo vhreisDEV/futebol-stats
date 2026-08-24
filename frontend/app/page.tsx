@@ -6,7 +6,7 @@ import { ChevronRight, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { LightRays } from "@/components/light-rays";
 import { SpotlightCard } from "@/components/spotlight-card";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
 interface RodadaAtualResponse {
   rodada_atual: number;
@@ -20,8 +20,8 @@ export default function Home() {
 
   useEffect(() => {
     Promise.allSettled([
-      fetch(`${API_URL}/rodadas/atual`).then((r) => (r.ok ? r.json() : null)),
-      fetch(`${API_URL}/times/`).then((r) => (r.ok ? r.json() : [])),
+      fetch(`${API_URL}/rodadas/atual?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`).then((r) => (r.ok ? r.json() : [])),
     ]).then(([resultadoRodada, resultadoTimes]) => {
       if (resultadoRodada.status === "fulfilled") setRodada(resultadoRodada.value);
       if (resultadoTimes.status === "fulfilled" && Array.isArray(resultadoTimes.value)) {

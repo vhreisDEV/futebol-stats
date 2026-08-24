@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { VhSpinner } from "@/components/vh-spinner";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
 interface LinhaClassificacao {
   posicao: number;
@@ -64,7 +64,7 @@ export function Classificacao() {
   // tem jogos atrasados, entao "classificacao ate a rodada X" nao bate
   // com a tabela real numa boa parte do campeonato.
   useEffect(() => {
-    fetch(`${API_URL}/classificacao/`)
+    fetch(`${API_URL}/classificacao/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar classificação");
         return r.json();

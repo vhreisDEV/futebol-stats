@@ -24,9 +24,10 @@ def ranking_por_stat(
     limit: int = 20,
     mando: Optional[str] = None,
     time_id: Optional[int] = None,
+    campeonato_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-    ranking = calcular_ranking(db, stat, limit, mando, time_id)
+    ranking = calcular_ranking(db, stat, limit, mando, time_id, campeonato_id)
     if ranking is None:
         raise HTTPException(status_code=404, detail="Estatistica invalida")
     return {"stat": stat, "ranking": ranking}

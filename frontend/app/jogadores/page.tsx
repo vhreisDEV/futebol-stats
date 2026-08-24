@@ -7,7 +7,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { JogadorModal } from "@/components/jogador-modal";
 import { VhSpinner } from "@/components/vh-spinner";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
 interface RankingItem {
   jogador_id: number;
@@ -106,7 +106,7 @@ export default function Jogadores() {
   const [jogadorAbertoId, setJogadorAbertoId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/times/`)
+    fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((r) => r.json())
       .then((dados: Time[]) => setTimes(dados))
       .catch(() => {});
@@ -119,7 +119,9 @@ export default function Jogadores() {
     const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
     const timeParam = timeSelecionado ? `&time_id=${timeSelecionado}` : "";
 
-    fetch(`${API_URL}/jogadores/ranking/${statSelecionado}?limit=20${mandoParam}${timeParam}`)
+    fetch(
+      `${API_URL}/jogadores/ranking/${statSelecionado}?limit=20&campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}${mandoParam}${timeParam}`
+    )
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar ranking");
         return r.json();

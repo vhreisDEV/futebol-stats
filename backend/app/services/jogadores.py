@@ -31,7 +31,7 @@ def _filtro_mando_stat(mando):
     return None
 
 
-def calcular_ranking(db, stat, limit=20, mando=None, time_id=None):
+def calcular_ranking(db, stat, limit=20, mando=None, time_id=None, campeonato_id=None):
     coluna = STATS_VALIDAS.get(stat)
     if coluna is None:
         return None
@@ -39,7 +39,7 @@ def calcular_ranking(db, stat, limit=20, mando=None, time_id=None):
     if time_id is not None:
         linhas = _ranking_elenco_completo(db, coluna, mando, time_id, stat)
     else:
-        linhas = _ranking_top_liga(db, coluna, mando, limit, stat)
+        linhas = _ranking_top_liga(db, coluna, mando, limit, stat, campeonato_id)
 
     resultado = []
     for linha in linhas:
@@ -60,7 +60,7 @@ def calcular_ranking(db, stat, limit=20, mando=None, time_id=None):
     return resultado
 
 
-def _ranking_top_liga(db, coluna, mando, limit, stat):
+def _ranking_top_liga(db, coluna, mando, limit, stat, campeonato_id=None):
     query = (
         db.query(
             Jogador.id.label("jogador_id"),
@@ -75,6 +75,9 @@ def _ranking_top_liga(db, coluna, mando, limit, stat):
         .outerjoin(Time, Time.id == Jogador.time_id)
         .filter(coluna.isnot(None))
     )
+
+    if campeonato_id is not None:
+        query = query.filter(Time.campeonato_id == campeonato_id)
 
     if stat in STATS_SO_GOLEIRO:
         query = query.filter(Jogador.posicao == "Goleiro")

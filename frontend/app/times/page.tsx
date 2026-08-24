@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
 interface Time {
   id: number;
@@ -19,7 +19,7 @@ export default function Times() {
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/times/`)
+    fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar times");
         return r.json();

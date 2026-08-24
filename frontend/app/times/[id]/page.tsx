@@ -10,7 +10,7 @@ import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
 import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
 interface Jogo {
   id: number;
@@ -344,7 +344,7 @@ export default function DetalheTime() {
         return r.json();
       }),
 
-      fetch(`${API_URL}/times/`).then((r) => r.json()),
+      fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`).then((r) => r.json()),
     ])
       .then(([dadosJogos, dadosEstatisticas, dadosTimes]) => {
         setJogos(dadosJogos);

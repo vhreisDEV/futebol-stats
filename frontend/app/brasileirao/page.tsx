@@ -26,7 +26,7 @@ import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
 import { VhSpinner } from "@/components/vh-spinner";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 
 interface Campeonato {
@@ -118,7 +118,7 @@ export default function Brasileirao() {
   const [direcao, setDirecao] = useState<"next" | "prev">("next");
 
   useEffect(() => {
-    fetch(`${API_URL}/rodadas/atual`)
+    fetch(`${API_URL}/rodadas/atual?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar a rodada atual");
         return r.json();
@@ -139,7 +139,7 @@ export default function Brasileirao() {
 
     setCarregandoRodada(true);
 
-    fetch(`${API_URL}/rodadas/${rodadaSelecionada}`)
+    fetch(`${API_URL}/rodadas/${rodadaSelecionada}?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((r) => {
         if (r.status === 404) return { rodada: rodadaSelecionada, partidas: [] };
         if (!r.ok) throw new Error("Erro ao buscar a rodada");

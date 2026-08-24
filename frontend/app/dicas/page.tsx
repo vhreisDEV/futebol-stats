@@ -18,7 +18,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 
 interface Destaque {
@@ -223,7 +223,7 @@ export default function Dicas() {
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/rodadas/atual`)
+    fetch(`${API_URL}/rodadas/atual?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar a rodada atual");
         return r.json();
@@ -244,7 +244,7 @@ export default function Dicas() {
 
     setCarregandoRodada(true);
 
-    fetch(`${API_URL}/destaques/rodada/${rodadaSelecionada}`)
+    fetch(`${API_URL}/destaques/rodada/${rodadaSelecionada}?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((r) => {
         if (r.status === 404) return { rodada: rodadaSelecionada, jogos: [] };
         if (!r.ok) throw new Error("Erro ao buscar destaques da rodada");

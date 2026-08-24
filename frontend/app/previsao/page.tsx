@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
 interface Time {
   id: number;
@@ -226,7 +226,7 @@ function ProjecaoPreJogoConteudo() {
   const [erroProjecao, setErroProjecao] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/times/`)
+    fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((resposta) => {
         if (!resposta.ok) {
           throw new Error("Erro ao buscar times");

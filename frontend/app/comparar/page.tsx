@@ -7,7 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { PartidaModal } from "@/components/partida-modal";
 import { VhSpinner } from "@/components/vh-spinner";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
 interface Time {
   id: number;
@@ -134,7 +134,7 @@ function CompararTimesConteudo() {
   const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/times/`)
+    fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
       .then((resposta) => {
         if (!resposta.ok) {
           throw new Error("Erro ao buscar times");

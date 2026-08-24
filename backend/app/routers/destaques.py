@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -20,19 +21,17 @@ def get_db():
 
 
 @router.get("/rodada/{numero}", response_model=DestaquesRodadaResponse)
-def obter_destaques_rodada(numero: int, db: Session = Depends(get_db)):
+def obter_destaques_rodada(numero: int, campeonato_id: Optional[int] = None, db: Session = Depends(get_db)):
     """
     Pra cada confronto ainda nao jogado da rodada, acha sequencias que
     chamam atencao no historico recente de cada time (no mando de campo
     que ele vai ter nesse jogo). So retorna jogos com pelo menos um
     destaque -- rodada sem nada notavel vem com "jogos": [].
     """
-    partidas = (
-        db.query(Partida)
-        .filter(Partida.rodada == numero, Partida.status == "agendada")
-        .order_by(Partida.data.is_(None), Partida.data)
-        .all()
-    )
+    query = db.query(Partida).filter(Partida.rodada == numero, Partida.status == "agendada")
+    if campeonato_id is not None:
+        query = query.filter(Partida.campeonato_id == campeonato_id)
+    partidas = query.order_by(Partida.data.is_(None), Partida.data).all()
 
     if not partidas:
         raise HTTPException(
