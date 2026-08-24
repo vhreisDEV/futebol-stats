@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Sparkles, Eye } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
-import { ListaDestaques, type Destaque } from "@/components/lista-destaques";
+import { ListaDestaques, SequenciaBadges, type Destaque } from "@/components/lista-destaques";
 import { BilheteSimplesCard, BilheteMultiplaCard, type Perna } from "@/components/bilhete-card";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
@@ -56,18 +56,12 @@ function fraseJogador(nomeTime: string, j: DestaqueJogador) {
   const porcentagem = Math.round(melhor.taxa * 100);
   const acao =
     melhor.tipo === "booleano" ? melhor.label.toLowerCase() : `mais de ${melhor.linha} ${melhor.label.toLowerCase()}`;
-  const sequencia = melhor.sequencia
-    .slice()
-    .reverse()
-    .map((v) => (melhor.tipo === "booleano" ? (v > melhor.linha ? "✓" : "✗") : v))
-    .join("-");
 
   return (
     <>
       <span className="font-semibold">{j.nome}</span>
       {j.posicao && <span className="text-muted-foreground"> ({j.posicao})</span>} · {nomeTime} — {acao} em{" "}
       <span className="font-mono font-semibold">{porcentagem}%</span> dos últimos {melhor.total} jogos
-      <span className="ml-1 font-mono text-[10px] text-muted-foreground/70">({sequencia})</span>
     </>
   );
 }
@@ -197,8 +191,11 @@ export default function AnalisePartida() {
                 </div>
                 <ul className="mt-2.5 grid gap-2">
                   {jogadoresCombinados.map(({ j, nomeTime }) => (
-                    <li key={j.jogador_id} className="rounded-md bg-muted/40 p-2.5 text-xs leading-relaxed">
-                      {fraseJogador(nomeTime, j)}
+                    <li key={j.jogador_id} className="rounded-md bg-muted/40 p-2.5">
+                      <p className="text-xs leading-relaxed">{fraseJogador(nomeTime, j)}</p>
+                      <div className="mt-1.5">
+                        <SequenciaBadges destaque={j.destaques[0]} />
+                      </div>
                     </li>
                   ))}
                 </ul>

@@ -68,6 +68,26 @@ export function fraseDestaque(time: string, mandoLabel: "em casa" | "fora de cas
   );
 }
 
+export function SequenciaBadges({ destaque }: { destaque: Destaque }) {
+  return (
+    <p className="flex flex-wrap gap-1">
+      {destaque.sequencia
+        .slice()
+        .reverse()
+        .map((v, i) => (
+          <span
+            key={i}
+            className={`rounded px-1.5 py-0.5 font-mono text-[10px] tabular-nums ${
+              v > destaque.linha ? "bg-primary/15 font-semibold text-primary" : "bg-background/60 text-muted-foreground/70"
+            }`}
+          >
+            {destaque.tipo === "booleano" ? (v > destaque.linha ? "✓" : "✗") : v}
+          </span>
+        ))}
+    </p>
+  );
+}
+
 export function ListaDestaques({
   time,
   mandoLabel,
@@ -99,14 +119,9 @@ export function ListaDestaques({
               <div className={`h-full rounded-full bg-current ${cor}`} style={{ width: `${porcentagem}%` }} />
             </div>
             {mostrarSequencia && (
-              <p className="mt-1.5 pl-5.5 font-mono text-[10px] tabular-nums text-muted-foreground/70">
-                {d.sequencia
-                  .slice()
-                  .reverse()
-                  .map((v) => (d.tipo === "booleano" ? (v > d.linha ? "✓" : "✗") : v))
-                  .join("-")}
-                <span className="ml-1 text-muted-foreground/50">(mais recente → mais antigo)</span>
-              </p>
+              <div className="mt-1.5 pl-5.5">
+                <SequenciaBadges destaque={d} />
+              </div>
             )}
           </li>
         );
