@@ -1,6 +1,7 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
@@ -37,6 +38,22 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
     # ja disputado.
     if partida.status == "finalizada":
         return AnaliseIAResponse(partida_id=partida_id, disponivel=False)
+
+    # Feature nova (rollout controlado): so libera pra rodada atual ou a
+    # proxima -- rodadas mais distantes ainda nao mostram nada, mesmo que
+    # ja estejam com data marcada. Sem partida finalizada ainda nesse
+    # campeonato (rodada_atual None), libera geral (caso raro, inicio de
+    # temporada).
+    rodada_atual = (
+        db.query(func.max(Partida.rodada))
+        .filter(Partida.status == "finalizada", Partida.campeonato_id == partida.campeonato_id)
+        .scalar()
+    )
+    dentro_da_janela = (
+        rodada_atual is None or partida.rodada is None or partida.rodada <= rodada_atual + 1
+    )
+    if not dentro_da_janela:
+        return AnaliseIAResponse(partida_id=partida_id, disponivel=False, dentro_da_janela=False)
 
     referencia = partida.data or date.today()
     destaques_mandante = calcular_destaques_time(db, partida.time_mandante_id, "mandante", referencia)

@@ -11,9 +11,18 @@ export function fraseCurta(p: Perna) {
   const mando = p.time === "mandante" ? "em casa" : "fora";
   const d = p.destaque;
   if (d.tipo === "booleano") {
-    return `${p.nome_time} (${mando}): ${d.label.toLowerCase()}`;
+    return (
+      <>
+        {p.nome_time} ({mando}): {d.label.toLowerCase()}
+      </>
+    );
   }
-  return `${p.nome_time} (${mando}): mais de ${d.linha} ${d.label.toLowerCase()}`;
+  return (
+    <>
+      {p.nome_time} ({mando}): mais de <span className="font-mono font-bold text-primary">{d.linha}</span>{" "}
+      {d.label.toLowerCase()}
+    </>
+  );
 }
 
 // Mercados de "totais do jogo" somam os dois times -- "Athletico-PR
@@ -23,7 +32,13 @@ export function fraseTotal(p: Perna) {
   const mando = p.time === "mandante" ? "em casa" : "fora";
   const d = p.destaque;
   const stat = d.label.replace(/ totais no jogo/i, "").toLowerCase();
-  return `Jogos com ${p.nome_time} ${mando} costumam ter mais de ${d.linha} ${stat} no total (somando os dois times)`;
+  return (
+    <>
+      Jogos com {p.nome_time} {mando} costumam ter mais de{" "}
+      <span className="font-mono font-bold text-primary">{d.linha}</span> {stat} no total (somando os dois
+      times)
+    </>
+  );
 }
 
 export function BilheteSimplesCard({ perna, confianca }: { perna: Perna; confianca: number }) {
@@ -38,7 +53,8 @@ export function BilheteSimplesCard({ perna, confianca }: { perna: Perna; confian
       </div>
       <p className="mt-1.5 text-sm font-medium text-foreground">{fraseCurta(perna)}</p>
       <p className="text-xs text-muted-foreground">
-        {Math.round(perna.destaque.taxa * 100)}% dos últimos {perna.destaque.total} jogos
+        <span className="font-mono font-semibold text-primary">{Math.round(perna.destaque.taxa * 100)}%</span> dos
+        últimos {perna.destaque.total} jogos
       </p>
     </div>
   );
@@ -67,7 +83,7 @@ export function BilheteMultiplaCard({
           <li key={i} className="flex items-baseline gap-1.5 text-sm">
             <span className="font-mono text-xs text-muted-foreground">{i + 1}.</span>
             <span className="min-w-0 flex-1 text-foreground">{fraseCurta(p)}</span>
-            <span className="shrink-0 font-mono text-xs text-muted-foreground">
+            <span className="shrink-0 font-mono text-xs font-semibold text-primary">
               {Math.round(p.destaque.taxa * 100)}%
             </span>
           </li>

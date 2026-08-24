@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_URL } from "@/lib/api";
+import { API_URL, TROCA_CAMPEONATO_HABILITADA } from "@/lib/api";
 import { flagSrc } from "@/lib/paises";
 
 interface Campeonato {
@@ -35,6 +35,18 @@ export function SeletorCampeonato({
   }, []);
 
   const atual = campeonatos.find((c) => c.id === value);
+
+  if (!TROCA_CAMPEONATO_HABILITADA) {
+    return (
+      <div className="inline-flex items-center gap-1.5 rounded-lg border border-input bg-card py-1.5 pr-3 pl-2.5 text-sm text-foreground">
+        {atual && (
+          // eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo
+          <img src={flagSrc(atual.pais_codigo)} alt="" className="h-3 w-auto rounded-[1px]" />
+        )}
+        <span>{atual ? `${atual.nome} ${atual.temporada_label}` : "Brasileirão Série A 2026"}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="relative inline-flex items-center">

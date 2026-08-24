@@ -63,7 +63,7 @@ function ChipAnaliseIA() {
 
   if (!partidaId) return null;
 
-  return <NavChip href={`/analise/${partidaId}`} label="Análise IA" icon={Sparkles} cor="violet" />;
+  return <NavChip href={`/analise/${partidaId}`} label="Análise IA" icon={Sparkles} cor="violet" novo />;
 }
 
 interface PartidaRodada {

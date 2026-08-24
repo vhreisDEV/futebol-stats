@@ -42,6 +42,7 @@ interface DestaqueJogador {
 interface AnaliseResponse {
   partida_id: number;
   disponivel: boolean;
+  dentro_da_janela: boolean;
   resumo: string | null;
   destaques_mandante: Destaque[];
   destaques_visitante: Destaque[];
@@ -56,15 +57,37 @@ interface AnaliseResponse {
 function fraseJogador(nomeTime: string, j: DestaqueJogador) {
   const melhor = j.destaques[0];
   const porcentagem = Math.round(melhor.taxa * 100);
-  const acao =
-    melhor.tipo === "booleano" ? melhor.label.toLowerCase() : `mais de ${melhor.linha} ${melhor.label.toLowerCase()}`;
 
   return (
     <>
       <span className="font-semibold">{j.nome}</span>
-      {j.posicao && <span className="text-muted-foreground"> ({j.posicao})</span>} · {nomeTime} — {acao} em{" "}
-      <span className="font-mono font-semibold">{porcentagem}%</span> dos últimos {melhor.total} jogos
+      {j.posicao && <span className="text-muted-foreground"> ({j.posicao})</span>} · {nomeTime} — costuma{" "}
+      {melhor.tipo === "booleano" ? (
+        melhor.label.toLowerCase()
+      ) : (
+        <>
+          passar de <span className="font-mono font-bold text-primary">{melhor.linha}</span>{" "}
+          {melhor.label.toLowerCase()}
+        </>
+      )}{" "}
+      em <span className="font-mono font-semibold text-primary">{porcentagem}%</span> dos últimos {melhor.total}{" "}
+      jogos
     </>
+  );
+}
+
+// Realca qualquer numero (inteiro ou decimal) dentro de um texto livre
+// gerado pela IA -- deixa as linhas/porcentagens saltando aos olhos em
+// vez de se perderem no meio da frase corrida.
+function destacarNumeros(texto: string) {
+  return texto.split(/(\d+[.,]\d+|\d+%?)/g).map((parte, i) =>
+    /^\d/.test(parte) ? (
+      <span key={i} className="font-mono font-bold text-primary">
+        {parte}
+      </span>
+    ) : (
+      <span key={i}>{parte}</span>
+    )
   );
 }
 
@@ -127,6 +150,11 @@ export default function AnalisePartida() {
             Análise da IA
           </h1>
         </div>
+        <p className="mt-1 text-center text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground">Bilhete simples</span> = melhor palpite isolado ·{" "}
+          <span className="font-semibold text-foreground">Múltipla</span> = combinação de palpites ·{" "}
+          <span className="font-semibold text-foreground">Dicas da IA</span> = tendências do jogo todo
+        </p>
 
         {carregando && (
           <div className="mt-10 flex min-h-64 items-center justify-center">
@@ -165,7 +193,9 @@ export default function AnalisePartida() {
 
             {analise?.disponivel && analise.resumo && (
               <div className="mt-3 flex items-start justify-center gap-1.5 text-center">
-                <p className="text-xs italic leading-relaxed text-muted-foreground">“{analise.resumo}”</p>
+                <p className="text-xs italic leading-relaxed text-muted-foreground">
+                  “{destacarNumeros(analise.resumo)}”
+                </p>
                 <span className="mt-0.5 shrink-0 rounded-full bg-violet-500/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-violet-400">
                   PRO
                 </span>
@@ -176,7 +206,9 @@ export default function AnalisePartida() {
               <div className="mt-6 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                 {partida.status === "finalizada"
                   ? "A análise da IA é gerada apenas para partidas que ainda vão acontecer."
-                  : "Ainda não há mercados suficientes se destacando pra essa partida."}
+                  : analise?.dentro_da_janela === false
+                    ? "Essa análise ainda não foi liberada — fica disponível a partir da rodada atual."
+                    : "Ainda não há mercados suficientes se destacando pra essa partida."}
               </div>
             )}
 
@@ -216,13 +248,15 @@ export default function AnalisePartida() {
                   </span>
                 </div>
                 {analise.dicas && (
-                  <p className="mt-2 text-xs italic leading-relaxed text-muted-foreground">{analise.dicas}</p>
+                  <p className="mt-2 text-xs italic leading-relaxed text-muted-foreground">
+                    {destacarNumeros(analise.dicas)}
+                  </p>
                 )}
                 <ul className="mt-2.5 grid gap-1.5">
                   {analise.destaques_totais.map((p, i) => (
                     <li key={i} className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-xs">
                       <span className="min-w-0 flex-1">{fraseTotal(p)}</span>
-                      <span className="shrink-0 font-mono text-muted-foreground">
+                      <span className="shrink-0 font-mono font-semibold text-primary">
                         {Math.round(p.destaque.taxa * 100)}%
                       </span>
                     </li>

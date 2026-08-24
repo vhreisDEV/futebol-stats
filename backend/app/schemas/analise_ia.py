@@ -23,6 +23,7 @@ class BilheteMultipla(BaseModel):
 class AnaliseIAResponse(BaseModel):
     partida_id: int
     disponivel: bool
+    dentro_da_janela: bool = True
     resumo: Optional[str] = None
     gerado_em: Optional[str] = None
     destaques_mandante: List[Destaque] = []

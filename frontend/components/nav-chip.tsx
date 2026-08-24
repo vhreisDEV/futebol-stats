@@ -17,11 +17,13 @@ export function NavChip({
   label,
   icon: Icon,
   cor,
+  novo = false,
 }: {
   href: string;
   label: string;
   icon: LucideIcon;
   cor: CorNavChip;
+  novo?: boolean;
 }) {
   return (
     <Link
@@ -30,6 +32,11 @@ export function NavChip({
     >
       <Icon className="size-3.5" />
       {label}
+      {novo && (
+        <span className="rounded-full bg-current px-1.5 py-0.5 text-[9px] font-bold text-background">
+          novo
+        </span>
+      )}
     </Link>
   );
 }
