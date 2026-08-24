@@ -11,7 +11,7 @@ from app.services.cartoes_esperados import calcular_cartoes_esperados
 # -- como a analise e' gerada uma vez so por partida e cacheada (ver
 # AnaliseIAPartida), o volume real (poucas dezenas de partidas por rodada,
 # uma chamada cada, pra sempre) fica bem abaixo do limite gratuito.
-MODELO_PADRAO = "gemini-2.5-flash"
+MODELO_PADRAO = "gemini-3.6-flash"
 
 
 class IANaoConfiguradaError(Exception):
