@@ -129,6 +129,64 @@ STATS_DESTAQUE_TIME = [
 ]
 
 
+def _serie_total_jogo(campo_mandante, campo_visitante):
+    """Soma o campo dos dois times na mesma partida (ex.: chutes totais do
+    jogo, nao so os do time filtrado) -- usado pro mercado "totais"."""
+
+    def extrator(jogos):
+        valores = []
+        for j in jogos:
+            a, b = getattr(j, campo_mandante), getattr(j, campo_visitante)
+            if a is not None and b is not None:
+                valores.append(a + b)
+        return valores
+
+    return extrator
+
+
+STATS_DESTAQUE_TOTAL_JOGO = [
+    {
+        "chave": "chutes_totais",
+        "label": "Chutes totais no jogo",
+        "tipo": "quantidade",
+        "linhas": [18.5, 20.5, 22.5, 25.5, 28.5],
+        "extrator": _serie_total_jogo("chutes_mandante", "chutes_visitante"),
+    },
+    {
+        "chave": "escanteios_totais",
+        "label": "Escanteios totais no jogo",
+        "tipo": "quantidade",
+        "linhas": [6.5, 7.5, 8.5, 9.5, 10.5, 11.5],
+        "extrator": _serie_total_jogo("escanteios_mandante", "escanteios_visitante"),
+    },
+    {
+        "chave": "cartoes_totais",
+        "label": "Cartões amarelos totais no jogo",
+        "tipo": "quantidade",
+        "linhas": [2.5, 3.5, 4.5, 5.5, 6.5],
+        "extrator": _serie_total_jogo("cartoes_amarelos_mandante", "cartoes_amarelos_visitante"),
+    },
+]
+
+
+def calcular_destaques_total_jogo(db, time_id, mando, data_referencia, janela=JANELA_PADRAO):
+    """
+    Mesma logica de calcular_destaques_time, mas olhando o TOTAL da
+    partida (soma dos dois times) em vez de so o que o time filtrado fez
+    -- ex.: "quando o Botafogo joga em casa, o jogo costuma ter mais de
+    25.5 chutes no total" (nao so os chutes do Botafogo).
+
+    Passa as partidas brutas pro extrator (em vez da perspectiva
+    time-a-time ja usada em calcular_destaques_time), porque o total
+    precisa dos dois lados do placar/estatistica ao mesmo tempo.
+    """
+    jogos = _buscar_jogos_anteriores(db, time_id, data_referencia, janela, mando)
+    if len(jogos) < MINIMO_JOGOS:
+        return []
+
+    return _encontrar_destaques(jogos, STATS_DESTAQUE_TOTAL_JOGO)
+
+
 def calcular_destaques_time(db, time_id, mando, data_referencia, janela=JANELA_PADRAO):
     """
     Acha padroes que se repetem nos ultimos jogos de um time, com mando de

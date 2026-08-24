@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Sparkles, Eye } from "lucide-react";
+import { ChevronLeft, Sparkles, Eye, Target } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
 import { ListaDestaques, SequenciaBadges, type Destaque } from "@/components/lista-destaques";
-import { BilheteSimplesCard, BilheteMultiplaCard, type Perna } from "@/components/bilhete-card";
+import { BilheteSimplesCard, BilheteMultiplaCard, fraseCurta, type Perna } from "@/components/bilhete-card";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 
@@ -47,6 +47,8 @@ interface AnaliseResponse {
   destaques_visitante: Destaque[];
   destaques_jogadores_mandante: DestaqueJogador[];
   destaques_jogadores_visitante: DestaqueJogador[];
+  destaques_totais: Perna[];
+  dicas: string | null;
   bilhete_simples: BilheteSimples | null;
   bilhete_multipla: BilheteMultipla | null;
 }
@@ -196,6 +198,33 @@ export default function AnalisePartida() {
                       <div className="mt-1.5">
                         <SequenciaBadges destaque={j.destaques[0]} />
                       </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {analise && analise.destaques_totais.length > 0 && (
+              <div className="mt-4 rounded-lg border border-violet-500/25 bg-card p-4">
+                <div className="flex items-center gap-1.5">
+                  <Target className="size-4 text-violet-400" />
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-violet-400">
+                    Dicas da IA · Totais do jogo
+                  </span>
+                  <span className="ml-auto shrink-0 rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-400">
+                    PRO
+                  </span>
+                </div>
+                {analise.dicas && (
+                  <p className="mt-2 text-xs italic leading-relaxed text-muted-foreground">{analise.dicas}</p>
+                )}
+                <ul className="mt-2.5 grid gap-1.5">
+                  {analise.destaques_totais.map((p, i) => (
+                    <li key={i} className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-xs">
+                      <span className="min-w-0 flex-1">{fraseCurta(p)}</span>
+                      <span className="shrink-0 font-mono text-muted-foreground">
+                        {Math.round(p.destaque.taxa * 100)}%
+                      </span>
                     </li>
                   ))}
                 </ul>

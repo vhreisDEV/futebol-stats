@@ -11,5 +11,9 @@ class AnaliseIAPartida(Base):
     # regenerar toda vez que alguem abre a pagina da partida.
     partida_id = Column(Integer, ForeignKey("partidas.id"), unique=True, nullable=False, index=True)
     texto = Column(String, nullable=False)
+    # Paragrafo curto sintetizando os mercados de "totais do jogo"
+    # (chutes/escanteios/cartoes somando os dois times) -- nulo pras
+    # linhas geradas antes dessa coluna existir.
+    dicas = Column(String, nullable=True)
     modelo = Column(String, nullable=False)
     criado_em = Column(DateTime(timezone=True), server_default=func.now())

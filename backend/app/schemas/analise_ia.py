@@ -29,5 +29,7 @@ class AnaliseIAResponse(BaseModel):
     destaques_visitante: List[Destaque] = []
     destaques_jogadores_mandante: List[DestaqueJogador] = []
     destaques_jogadores_visitante: List[DestaqueJogador] = []
+    destaques_totais: List[Perna] = []
+    dicas: Optional[str] = None
     bilhete_simples: Optional[BilheteSimples] = None
     bilhete_multipla: Optional[BilheteMultipla] = None

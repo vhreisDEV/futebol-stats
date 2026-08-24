@@ -7,9 +7,13 @@ from app.database import SessionLocal
 from app.models.partida import Partida
 from app.models.analise_ia import AnaliseIAPartida
 from app.schemas.analise_ia import AnaliseIAResponse, BilheteSimples, BilheteMultipla
-from app.services.analise_ia import gerar_analise, IANaoConfiguradaError
+from app.services.analise_ia import gerar_analise, gerar_dicas, IANaoConfiguradaError
 from app.services.analise_mercado import montar_pernas, montar_bilhetes
-from app.services.destaques import calcular_destaques_time, calcular_destaques_jogadores_time
+from app.services.destaques import (
+    calcular_destaques_time,
+    calcular_destaques_jogadores_time,
+    calcular_destaques_total_jogo,
+)
 
 router = APIRouter(prefix="/partidas", tags=["Análise IA"])
 
@@ -28,9 +32,9 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
     if not partida:
         raise HTTPException(status_code=404, detail="Partida nao encontrada")
 
-    # A analise (mercados + bilhetes + resumo da IA) so existe pra partida
-    # que ainda vai acontecer -- nao faz sentido "prever" um jogo ja
-    # disputado.
+    # A analise (mercados + bilhetes + resumo/dicas da IA) so existe pra
+    # partida que ainda vai acontecer -- nao faz sentido "prever" um jogo
+    # ja disputado.
     if partida.status == "finalizada":
         return AnaliseIAResponse(partida_id=partida_id, disponivel=False)
 
@@ -43,14 +47,21 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
     )
     bilhete_simples_dict, bilhete_multipla_dict = montar_bilhetes(pernas)
 
+    destaques_totais_mandante = calcular_destaques_total_jogo(db, partida.time_mandante_id, "mandante", referencia)
+    destaques_totais_visitante = calcular_destaques_total_jogo(db, partida.time_visitante_id, "visitante", referencia)
+    pernas_totais = montar_pernas(
+        partida.time_mandante.nome, destaques_totais_mandante, partida.time_visitante.nome, destaques_totais_visitante
+    )
+
     # Bilhetes e destaques sao calculados na hora (gratis, sem IA) e sempre
-    # aparecem -- so o resumo em texto depende da chave do Gemini
+    # aparecem -- so o resumo/dicas em texto dependem da chave do Gemini
     # configurada.
     base = dict(
         destaques_mandante=destaques_mandante,
         destaques_visitante=destaques_visitante,
         destaques_jogadores_mandante=calcular_destaques_jogadores_time(db, partida.time_mandante_id),
         destaques_jogadores_visitante=calcular_destaques_jogadores_time(db, partida.time_visitante_id),
+        destaques_totais=pernas_totais,
         bilhete_simples=BilheteSimples(**bilhete_simples_dict) if bilhete_simples_dict else None,
         bilhete_multipla=BilheteMultipla(**bilhete_multipla_dict) if bilhete_multipla_dict else None,
     )
@@ -61,16 +72,18 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
             partida_id=partida_id,
             disponivel=True,
             resumo=existente.texto,
+            dicas=existente.dicas,
             gerado_em=existente.criado_em.isoformat() if existente.criado_em else None,
             **base,
         )
 
     try:
         resumo, modelo = gerar_analise(bilhete_simples_dict, bilhete_multipla_dict)
+        dicas, _ = gerar_dicas(pernas_totais)
     except IANaoConfiguradaError:
         return AnaliseIAResponse(partida_id=partida_id, disponivel=False, **base)
 
-    nova = AnaliseIAPartida(partida_id=partida_id, texto=resumo, modelo=modelo)
+    nova = AnaliseIAPartida(partida_id=partida_id, texto=resumo, dicas=dicas, modelo=modelo)
     db.add(nova)
     db.commit()
     db.refresh(nova)
@@ -79,6 +92,7 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
         partida_id=partida_id,
         disponivel=True,
         resumo=nova.texto,
+        dicas=nova.dicas,
         gerado_em=nova.criado_em.isoformat() if nova.criado_em else None,
         **base,
     )

@@ -58,3 +58,34 @@ def gerar_analise(bilhete_simples, bilhete_multipla):
     resposta = cliente.models.generate_content(model=MODELO_PADRAO, contents=prompt)
     texto = resposta.text.strip()
     return texto, MODELO_PADRAO
+
+
+def _montar_prompt_dicas(pernas_totais):
+    linhas = [f"- {_descrever_perna(p)}" for p in pernas_totais]
+    dados = "\n".join(linhas)
+
+    return (
+        "Você é um analista de apostas esportivas. Com base SOMENTE nos dados abaixo sobre totais "
+        "do jogo (soma dos dois times em chutes, escanteios ou cartões), escreva de 2 a 3 dicas "
+        "curtas em português do Brasil, no estilo 'fique de olho em chutes totais: linha de X+ "
+        "costuma bater quando [time] joga em casa/fora'. Uma dica por linha, direto, sem repetir "
+        "os números crus. Não invente dados que não estão aqui.\n\n"
+        f"Dados:\n{dados}"
+    )
+
+
+def gerar_dicas(pernas_totais):
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise IANaoConfiguradaError()
+    if not pernas_totais:
+        return None, MODELO_PADRAO
+
+    from google import genai  # import atrasado -- so precisa resolver se a chave existir
+
+    cliente = genai.Client(api_key=api_key)
+    prompt = _montar_prompt_dicas(pernas_totais)
+
+    resposta = cliente.models.generate_content(model=MODELO_PADRAO, contents=prompt)
+    texto = resposta.text.strip()
+    return texto, MODELO_PADRAO
