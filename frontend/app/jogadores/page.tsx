@@ -6,6 +6,7 @@ import { ChevronLeft, Crown } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { JogadorModal } from "@/components/jogador-modal";
+import { SeletorCampeonato } from "@/components/seletor-campeonato";
 import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
@@ -96,6 +97,7 @@ function BadgePosicao({ index }: { index: number }) {
 }
 
 export default function Jogadores() {
+  const [campeonatoId, setCampeonatoId] = useState(CAMPEONATO_BRASILEIRAO_ID);
   const [statSelecionado, setStatSelecionado] = useState("gols");
   const [mando, setMando] = useState("todos");
   const [timeSelecionado, setTimeSelecionado] = useState("");
@@ -106,11 +108,11 @@ export default function Jogadores() {
   const [jogadorAbertoId, setJogadorAbertoId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
+    fetch(`${API_URL}/times/?campeonato_id=${campeonatoId}`)
       .then((r) => r.json())
       .then((dados: Time[]) => setTimes(dados))
       .catch(() => {});
-  }, []);
+  }, [campeonatoId]);
 
   useEffect(() => {
     setCarregando(true);
@@ -120,7 +122,7 @@ export default function Jogadores() {
     const timeParam = timeSelecionado ? `&time_id=${timeSelecionado}` : "";
 
     fetch(
-      `${API_URL}/jogadores/ranking/${statSelecionado}?limit=20&campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}${mandoParam}${timeParam}`
+      `${API_URL}/jogadores/ranking/${statSelecionado}?limit=20&campeonato_id=${campeonatoId}${mandoParam}${timeParam}`
     )
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar ranking");
@@ -134,7 +136,7 @@ export default function Jogadores() {
         setErro(err.message);
         setCarregando(false);
       });
-  }, [statSelecionado, mando, timeSelecionado]);
+  }, [campeonatoId, statSelecionado, mando, timeSelecionado]);
 
   const categoriaAtual = TODAS_CATEGORIAS.find((c) => c.chave === statSelecionado) ?? TODAS_CATEGORIAS[0];
 
@@ -142,19 +144,28 @@ export default function Jogadores() {
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
       <div className="mx-auto max-w-5xl">
         <Link
-          href="/brasileirao"
+          href={campeonatoId === CAMPEONATO_BRASILEIRAO_ID ? "/brasileirao" : `/campeonato/${campeonatoId}`}
           className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Brasileirão
+          Voltar
         </Link>
 
-        <h1 className="mt-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-          Jogadores
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Ranking de estatísticas individuais do Brasileirão Série A.
-        </p>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+              Jogadores
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">Ranking de estatísticas individuais.</p>
+          </div>
+          <SeletorCampeonato
+            value={campeonatoId}
+            onChange={(id) => {
+              setCampeonatoId(id);
+              setTimeSelecionado("");
+            }}
+          />
+        </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[190px_1fr] lg:items-start">
           <nav className="flex gap-4 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">

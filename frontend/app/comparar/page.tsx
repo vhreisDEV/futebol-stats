@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { PartidaModal } from "@/components/partida-modal";
+import { SeletorCampeonato } from "@/components/seletor-campeonato";
 import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 
@@ -117,6 +118,7 @@ function CompararTimesConteudo() {
   const timePreSelecionado = searchParams.get("time") ?? "";
   const timeBPreSelecionado = searchParams.get("timeB") ?? "";
 
+  const [campeonatoId, setCampeonatoId] = useState<number | null>(null);
   const [times, setTimes] = useState<Time[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -133,8 +135,25 @@ function CompararTimesConteudo() {
   const [erroComparacao, setErroComparacao] = useState<string | null>(null);
   const [partidaAbertaId, setPartidaAbertaId] = useState<number | null>(null);
 
+  // Se veio de um link com time pre-selecionado (ex.: "ver completa" na
+  // pagina do time), descobre o campeonato dele primeiro -- pode ser
+  // qualquer liga, nao so o Brasileirao. Senao, comeca no Brasileirao.
   useEffect(() => {
-    fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
+    if (!timePreSelecionado) {
+      setCampeonatoId(CAMPEONATO_BRASILEIRAO_ID);
+      return;
+    }
+    fetch(`${API_URL}/times/${timePreSelecionado}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((time) => setCampeonatoId(time?.campeonato_id ?? CAMPEONATO_BRASILEIRAO_ID))
+      .catch(() => setCampeonatoId(CAMPEONATO_BRASILEIRAO_ID));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- so roda uma vez, no valor inicial da URL
+  }, []);
+
+  useEffect(() => {
+    if (campeonatoId === null) return;
+
+    fetch(`${API_URL}/times/?campeonato_id=${campeonatoId}`)
       .then((resposta) => {
         if (!resposta.ok) {
           throw new Error("Erro ao buscar times");
@@ -149,7 +168,7 @@ function CompararTimesConteudo() {
         setErro(err.message);
         setCarregando(false);
       });
-  }, []);
+  }, [campeonatoId]);
 
   useEffect(() => {
     if (!timeAId || !timeBId) {
@@ -240,23 +259,32 @@ function CompararTimesConteudo() {
     <main className="min-h-screen bg-background px-6 py-10 text-foreground">
       <div className="mx-auto max-w-3xl">
         <Link
-          href="/brasileirao"
+          href={campeonatoId === CAMPEONATO_BRASILEIRAO_ID ? "/brasileirao" : `/campeonato/${campeonatoId}`}
           className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Brasileirão
+          Voltar
         </Link>
 
-        <h1 className="mt-4 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-          Comparar Times
-        </h1>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+            Comparar Times
+          </h1>
+          <SeletorCampeonato
+            value={campeonatoId ?? CAMPEONATO_BRASILEIRAO_ID}
+            onChange={(id) => {
+              setCampeonatoId(id);
+              setTimeAId("");
+              setTimeBId("");
+            }}
+          />
+        </div>
         <p className="mt-2 text-muted-foreground">
           Selecione dois times para comparar suas estatísticas.
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Considera apenas jogos do Brasileirão Série A — os times também disputam outras
-          competições (Copa do Brasil, Libertadores, Sul-Americana etc.), que não entram nesta
-          conta. Os números somam jogos dentro e fora de casa.
+          Considera apenas jogos do campeonato selecionado — os times também disputam outras
+          competições, que não entram nesta conta. Os números somam jogos dentro e fora de casa.
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">

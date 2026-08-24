@@ -20,6 +20,7 @@ import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
+import { SeletorCampeonato } from "@/components/seletor-campeonato";
 
 interface Destaque {
   stat: string;
@@ -215,15 +216,21 @@ function BlocoTime({
 }
 
 export default function Dicas() {
+  const [campeonatoId, setCampeonatoId] = useState(CAMPEONATO_BRASILEIRAO_ID);
   const [rodadaMaxima, setRodadaMaxima] = useState<number | null>(null);
   const [rodadaSelecionada, setRodadaSelecionada] = useState<number | null>(null);
   const [jogos, setJogos] = useState<JogoComDestaques[]>([]);
-  const [carregandoInicial, setCarregandoInicial] = useState(true);
   const [carregandoRodada, setCarregandoRodada] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
+  // Reusa o spinner de "carregando rodada" tambem pra troca de
+  // campeonato (nao mostra spinner de pagina inteira de novo, senao o
+  // cabecalho/seletor sumiria a cada troca) -- so a primeira carga
+  // (rodadaMaxima ainda nulo) usa o spinner de pagina inteira.
   useEffect(() => {
-    fetch(`${API_URL}/rodadas/atual?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
+    setCarregandoRodada(true);
+
+    fetch(`${API_URL}/rodadas/atual?campeonato_id=${campeonatoId}`)
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar a rodada atual");
         return r.json();
@@ -231,20 +238,19 @@ export default function Dicas() {
       .then((dados: RodadaAtualResponse) => {
         setRodadaMaxima(dados.rodada_maxima);
         setRodadaSelecionada(Math.min(dados.rodada_atual + 1, dados.rodada_maxima));
-        setCarregandoInicial(false);
       })
       .catch((err) => {
         setErro(err.message);
-        setCarregandoInicial(false);
+        setCarregandoRodada(false);
       });
-  }, []);
+  }, [campeonatoId]);
 
   useEffect(() => {
     if (rodadaSelecionada === null) return;
 
     setCarregandoRodada(true);
 
-    fetch(`${API_URL}/destaques/rodada/${rodadaSelecionada}?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
+    fetch(`${API_URL}/destaques/rodada/${rodadaSelecionada}?campeonato_id=${campeonatoId}`)
       .then((r) => {
         if (r.status === 404) return { rodada: rodadaSelecionada, jogos: [] };
         if (!r.ok) throw new Error("Erro ao buscar destaques da rodada");
@@ -258,7 +264,7 @@ export default function Dicas() {
         setErro(err.message);
         setCarregandoRodada(false);
       });
-  }, [rodadaSelecionada]);
+  }, [rodadaSelecionada, campeonatoId]);
 
   if (erro) {
     return (
@@ -268,7 +274,7 @@ export default function Dicas() {
     );
   }
 
-  if (carregandoInicial || rodadaSelecionada === null || rodadaMaxima === null) {
+  if (rodadaMaxima === null) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <VhSpinner />
@@ -280,18 +286,21 @@ export default function Dicas() {
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
       <div className="mx-auto max-w-3xl">
         <Link
-          href="/brasileirao"
+          href={campeonatoId === CAMPEONATO_BRASILEIRAO_ID ? "/brasileirao" : `/campeonato/${campeonatoId}`}
           className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Brasileirão
+          Voltar
         </Link>
 
-        <div className="mt-2 flex items-center gap-2">
-          <Flame className="size-6 text-emerald-400" />
-          <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-            Dicas da Rodada
-          </h1>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Flame className="size-6 text-emerald-400" />
+            <h1 className="font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+              Dicas da Rodada
+            </h1>
+          </div>
+          <SeletorCampeonato value={campeonatoId} onChange={setCampeonatoId} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           Sequências recentes de cada time que vêm se repetindo, pros confrontos que ainda vão acontecer.
