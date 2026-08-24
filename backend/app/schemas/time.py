@@ -11,6 +11,10 @@ class TimeBase(BaseModel):
         from_attributes = True
 
 
+class TimeDetalheResponse(TimeBase):
+    campeonato_id: Optional[int]
+
+
 class JogoResponse(BaseModel):
     id: int
     # Nulo quando so temos o placar (ex.: veio do PDF da CBF, sem data

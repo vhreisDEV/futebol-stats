@@ -330,6 +330,13 @@ export default function DetalheTime() {
     const mandoParam = mando === "todos" ? "" : `&mando=${mando}`;
 
     Promise.all([
+      fetch(`${API_URL}/times/${id}`).then((r) => {
+        if (!r.ok) {
+          throw new Error("Time não encontrado");
+        }
+        return r.json();
+      }),
+
       fetch(`${API_URL}/times/${id}/jogos?quantidade=${quantidade}${mandoParam}`).then((r) => {
         if (!r.ok) {
           throw new Error("Time não encontrado ou erro ao buscar os jogos");
@@ -343,15 +350,20 @@ export default function DetalheTime() {
         }
         return r.json();
       }),
-
-      fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`).then((r) => r.json()),
     ])
-      .then(([dadosJogos, dadosEstatisticas, dadosTimes]) => {
+      .then(([dadosTime, dadosJogos, dadosEstatisticas]) => {
         setJogos(dadosJogos);
         setEstatisticas(dadosEstatisticas);
+        setNomeTime(dadosTime.nome);
+
+        // Lista de times pro "Comparar com"/"Projeção contra" tem que ser
+        // do mesmo campeonato do time atual -- nao faz sentido comparar
+        // um time da Premier League com um do Brasileirao.
+        const campeonatoId = dadosTime.campeonato_id ?? CAMPEONATO_BRASILEIRAO_ID;
+        return fetch(`${API_URL}/times/?campeonato_id=${campeonatoId}`).then((r) => r.json());
+      })
+      .then((dadosTimes) => {
         setTimes(dadosTimes);
-        const timeAtual = dadosTimes.find((t: { id: number; nome: string }) => t.id === Number(id));
-        setNomeTime(timeAtual ? timeAtual.nome : "Time");
         setCarregando(false);
       })
       .catch((err) => {

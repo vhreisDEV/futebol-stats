@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from app.database import SessionLocal
 from app.models.time import Time
-from app.schemas.time import TimeBase, JogoResponse, EstatisticasResponse
+from app.schemas.time import TimeBase, TimeDetalheResponse, JogoResponse, EstatisticasResponse
 from app.services.estatisticas import obter_ultimos_jogos, obter_jogos_ate_rodada, calcular_estatisticas
 
 router = APIRouter(prefix="/times", tags=["Times"])
@@ -22,6 +22,13 @@ def listar_times(campeonato_id: Optional[int] = None, db: Session = Depends(get_
     if campeonato_id is not None:
         query = query.filter(Time.campeonato_id == campeonato_id)
     return query.order_by(Time.nome).all()
+
+@router.get("/{time_id}", response_model=TimeDetalheResponse)
+def obter_time(time_id: int, db: Session = Depends(get_db)):
+    time = db.query(Time).filter(Time.id == time_id).first()
+    if not time:
+        raise HTTPException(status_code=404, detail="Time nao encontrado")
+    return time
 
 @router.get("/{time_id}/jogos", response_model=List[JogoResponse])
 def listar_ultimos_jogos(
