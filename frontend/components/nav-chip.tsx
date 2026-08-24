@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 
-export type CorNavChip = "gold" | "rose" | "orange" | "emerald" | "neutral";
+export type CorNavChip = "gold" | "rose" | "orange" | "emerald" | "neutral" | "violet";
 
 const ESTILOS: Record<CorNavChip, string> = {
   gold: "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20",
@@ -9,6 +9,7 @@ const ESTILOS: Record<CorNavChip, string> = {
   orange: "border-orange-500/40 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20",
   emerald: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20",
   neutral: "border-border bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+  violet: "border-violet-500/40 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20",
 };
 
 export function NavChip({

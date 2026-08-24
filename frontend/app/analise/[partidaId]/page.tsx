@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Sparkles } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
+import { NotaPartida } from "@/components/nota-partida";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 
@@ -20,10 +21,19 @@ interface PartidaResumo {
   time_visitante: string;
 }
 
+interface NotasPartida {
+  equilibrio: number | null;
+  poder_ofensivo_mandante: number | null;
+  poder_ofensivo_visitante: number | null;
+  intensidade: number | null;
+  confianca: number | null;
+}
+
 interface AnaliseResponse {
   partida_id: number;
   disponivel: boolean;
   texto: string | null;
+  notas: NotasPartida | null;
 }
 
 export default function AnalisePartida() {
@@ -96,8 +106,21 @@ export default function AnalisePartida() {
               {partida.time_mandante} <span className="text-muted-foreground">x</span> {partida.time_visitante}
             </p>
 
+            {analise?.notas && (
+              <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 rounded-lg border border-border bg-card p-4 sm:grid-cols-5">
+                <NotaPartida label="Equilíbrio" nota={analise.notas.equilibrio} />
+                <NotaPartida label={`Ataque ${partida.time_mandante}`} nota={analise.notas.poder_ofensivo_mandante} />
+                <NotaPartida label={`Ataque ${partida.time_visitante}`} nota={analise.notas.poder_ofensivo_visitante} />
+                <NotaPartida label="Intensidade" nota={analise.notas.intensidade} />
+                <NotaPartida label="Confiança" nota={analise.notas.confianca} />
+              </div>
+            )}
+
             {analise?.disponivel && analise.texto ? (
-              <div className="mt-6 rounded-lg border border-primary/20 bg-card p-5">
+              <div className="mt-4 rounded-lg border border-violet-500/25 bg-card p-5">
+                <span className="mb-3 inline-block rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-400">
+                  PRO
+                </span>
                 {analise.texto.split("\n").filter(Boolean).map((paragrafo, i) => (
                   <p key={i} className="text-sm leading-relaxed text-foreground/90 [&:not(:first-child)]:mt-3">
                     {paragrafo}
