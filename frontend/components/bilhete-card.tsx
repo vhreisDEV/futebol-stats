@@ -7,8 +7,16 @@ export interface Perna {
   destaque: Destaque;
 }
 
+export function SeloPRO() {
+  return (
+    <span className="ml-auto shrink-0 rounded-full bg-violet-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-300">
+      PRO
+    </span>
+  );
+}
+
 export function fraseCurta(p: Perna) {
-  const mando = p.time === "mandante" ? "em casa" : "fora";
+  const mando = p.time === "mandante" ? "em casa" : "fora de casa";
   const d = p.destaque;
   if (d.tipo === "booleano") {
     return (
@@ -29,7 +37,7 @@ export function fraseCurta(p: Perna) {
 // (fora): mais de 18.5 chutes" lia como se fosse so o time dele, entao
 // aqui a frase deixa explicito que e' a partida inteira, nao um lado so.
 export function fraseTotal(p: Perna) {
-  const mando = p.time === "mandante" ? "em casa" : "fora";
+  const mando = p.time === "mandante" ? "em casa" : "fora de casa";
   const d = p.destaque;
   const stat = d.label.replace(/ totais no jogo/i, "").toLowerCase();
   return (
@@ -47,6 +55,7 @@ export function BilheteSimplesCard({ perna }: { perna: Perna }) {
       <div className="flex items-center gap-1.5">
         <Ticket className="size-3.5 text-violet-400" />
         <span className="text-[10px] font-bold uppercase tracking-wide text-violet-400">Bilhete simples</span>
+        <SeloPRO />
       </div>
       <p className="mt-1.5 text-sm font-medium text-foreground">{fraseCurta(perna)}</p>
       <p className="text-xs text-muted-foreground">
@@ -65,6 +74,7 @@ export function BilheteMultiplaCard({ pernas }: { pernas: Perna[] }) {
         <span className="text-[10px] font-bold uppercase tracking-wide text-amber-400">
           Bilhete múltipla · {pernas.length} seleções
         </span>
+        <SeloPRO />
       </div>
       <ol className="mt-1.5 grid gap-1">
         {pernas.map((p, i) => (
