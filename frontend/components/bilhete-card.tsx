@@ -1,4 +1,4 @@
-import { Ticket, Layers } from "lucide-react";
+import { Trophy, Layers } from "lucide-react";
 import type { Destaque } from "@/components/lista-destaques";
 
 export interface Perna {
@@ -35,29 +35,42 @@ export function fraseTotal(p: Perna) {
   return (
     <>
       Jogos com {p.nome_time} {mando} costumam ter mais de{" "}
-      <span className="font-mono font-bold text-primary">{d.linha}</span> {stat} no total (somando os dois
+      <span className="font-mono font-bold text-cyan-400">{d.linha}</span> {stat} no total (somando os dois
       times)
     </>
   );
 }
 
+// O Bilhete Simples e' o "veredito" da pagina -- card bem maior e mais
+// chamativo que o resto, pra quem quer decidir rapido bater o olho e ja
+// saber qual e' a aposta principal, sem precisar comparar cards do
+// mesmo tamanho pra descobrir qual e' o mais importante.
 export function BilheteSimplesCard({ perna }: { perna: Perna }) {
+  const porcentagem = Math.round(perna.destaque.taxa * 100);
   return (
-    <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3">
+    <div className="rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card p-4">
       <div className="flex items-center gap-1.5">
-        <Ticket className="size-3.5 text-violet-400" />
-        <span className="text-[10px] font-bold uppercase tracking-wide text-violet-400">Bilhete simples</span>
+        <Trophy className="size-4 text-primary" />
+        <span className="text-[11px] font-bold uppercase tracking-wide text-primary">Nossa aposta principal</span>
       </div>
-      <p className="mt-1.5 text-sm font-medium text-foreground">{fraseCurta(perna)}</p>
-      <p className="text-xs text-muted-foreground">
-        <span className="font-mono font-semibold text-primary">{Math.round(perna.destaque.taxa * 100)}%</span> dos
-        últimos {perna.destaque.total} jogos
-      </p>
+      <p className="mt-2 text-base font-semibold leading-snug text-foreground sm:text-lg">{fraseCurta(perna)}</p>
+      <div className="mt-2 flex items-baseline gap-1.5">
+        <span className="font-mono text-3xl font-bold tabular-nums text-primary">{porcentagem}%</span>
+        <span className="text-xs text-muted-foreground">dos últimos {perna.destaque.total} jogos</span>
+      </div>
     </div>
   );
 }
 
-export function BilheteMultiplaCard({ pernas }: { pernas: Perna[] }) {
+// Quando uma perna da multipla e' a mesma do Bilhete Simples (comum --
+// a multipla naturalmente inclui o melhor palpite isolado como uma das
+// pernas), mostra so uma referencia curta em vez de repetir a frase
+// inteira de novo -- ja apareceu inteira no card acima.
+function mesmaPerna(a: Perna, b: Perna) {
+  return a.time === b.time && a.destaque.stat === b.destaque.stat;
+}
+
+export function BilheteMultiplaCard({ pernas, principal }: { pernas: Perna[]; principal?: Perna }) {
   return (
     <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
       <div className="flex items-center gap-1.5">
@@ -70,7 +83,11 @@ export function BilheteMultiplaCard({ pernas }: { pernas: Perna[] }) {
         {pernas.map((p, i) => (
           <li key={i} className="flex items-baseline gap-1.5 text-sm">
             <span className="font-mono text-xs text-muted-foreground">{i + 1}.</span>
-            <span className="min-w-0 flex-1 text-foreground">{fraseCurta(p)}</span>
+            {principal && mesmaPerna(p, principal) ? (
+              <span className="min-w-0 flex-1 italic text-muted-foreground">↑ mesma do Bilhete Simples acima</span>
+            ) : (
+              <span className="min-w-0 flex-1 text-foreground">{fraseCurta(p)}</span>
+            )}
             <span className="shrink-0 font-mono text-xs font-semibold text-primary">
               {Math.round(p.destaque.taxa * 100)}%
             </span>
