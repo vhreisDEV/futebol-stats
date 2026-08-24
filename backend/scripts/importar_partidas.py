@@ -24,7 +24,7 @@ SEASON = 2026
 MAX_IMPORTACOES_POR_EXECUCAO = 90  # limite de seguranca para nao estourar a cota diaria (100 req/dia)
 
 
-def buscar_temporada_completa():
+def buscar_temporada_completa(league_id=LEAGUE_ID_BRASILEIRAO, season=SEASON):
     # Lista a temporada inteira paginada (id, rodada, placar, times, status
     # de cada partida ja vem nessa resposta -- nao precisa de uma chamada
     # extra por partida so pra pegar isso).
@@ -36,7 +36,7 @@ def buscar_temporada_completa():
         resp = requests.get(
             f"{BASE_URL}/matches",
             headers=HEADERS,
-            params={"leagueId": LEAGUE_ID_BRASILEIRAO, "season": SEASON, "limit": limit, "offset": offset},
+            params={"leagueId": league_id, "season": season, "limit": limit, "offset": offset},
         )
         if resp.status_code == 429:
             print(f"  Cota excedida ao listar a temporada (offset {offset}). "
@@ -156,15 +156,15 @@ def buscar_partida_existente(db, id_externo, rodada, time_mandante_id, time_visi
     )
 
 
-def importar():
+def importar(league_id=LEAGUE_ID_BRASILEIRAO, season=SEASON, max_importacoes=MAX_IMPORTACOES_POR_EXECUCAO):
     if not API_KEY:
         print("ERRO: HIGHLIGHTLY_API_KEY não encontrada no .env")
         return
 
     db = SessionLocal()
-    campeonato = db.query(Campeonato).filter(Campeonato.id_externo_liga == LEAGUE_ID_BRASILEIRAO).first()
+    campeonato = db.query(Campeonato).filter(Campeonato.id_externo_liga == league_id).first()
     if not campeonato:
-        print("ERRO: Campeonato do Brasileirao nao encontrado (rode a migracao/seed do Campeonato primeiro).")
+        print(f"ERRO: Campeonato com id_externo_liga={league_id} nao encontrado (crie a linha antes de importar).")
         return
 
     importadas = 0
@@ -174,12 +174,12 @@ def importar():
     ignoradas_sem_time = 0
 
     try:
-        partidas_temporada = buscar_temporada_completa()
+        partidas_temporada = buscar_temporada_completa(league_id, season)
         print(f"{len(partidas_temporada)} partidas na temporada (todas as rodadas).\n")
 
         for p in partidas_temporada:
-            if importadas + enriquecidas >= MAX_IMPORTACOES_POR_EXECUCAO:
-                print(f"\nLimite de {MAX_IMPORTACOES_POR_EXECUCAO} importações por execução atingido. Rode de novo depois.")
+            if importadas + enriquecidas >= max_importacoes:
+                print(f"\nLimite de {max_importacoes} importações por execução atingido. Rode de novo depois.")
                 break
 
             id_externo = p["id"]

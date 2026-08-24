@@ -49,7 +49,7 @@ def extrair_times_do_standings(standings):
     return times
 
 
-def sincronizar():
+def sincronizar(league_id=LEAGUE_ID_BRASILEIRAO, season=SEASON):
     if not API_KEY:
         print("ERRO: HIGHLIGHTLY_API_KEY não encontrada no .env")
         return
@@ -57,15 +57,15 @@ def sincronizar():
     db = SessionLocal()
 
     try:
-        campeonato = db.query(Campeonato).filter(Campeonato.id_externo_liga == LEAGUE_ID_BRASILEIRAO).first()
+        campeonato = db.query(Campeonato).filter(Campeonato.id_externo_liga == league_id).first()
         if not campeonato:
-            print("ERRO: Campeonato do Brasileirao nao encontrado (rode a migracao/seed do Campeonato primeiro).")
+            print(f"ERRO: Campeonato com id_externo_liga={league_id} nao encontrado (crie a linha antes de sincronizar).")
             return
 
-        standings = buscar_standings(LEAGUE_ID_BRASILEIRAO, SEASON)
+        standings = buscar_standings(league_id, season)
         times_api = extrair_times_do_standings(standings)
 
-        print(f"{len(times_api)} times encontrados na Highlightly para o Brasileirão {SEASON}.\n")
+        print(f"{len(times_api)} times encontrados na Highlightly para {campeonato.nome} {season}.\n")
 
         criados = 0
         ja_existiam = 0
