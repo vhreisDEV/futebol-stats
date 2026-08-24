@@ -90,6 +90,7 @@ interface RodadaAtualResponse {
 }
 
 export default function Brasileirao() {
+  const [rodadaAtual, setRodadaAtual] = useState<number | null>(null);
   const [rodadaMaxima, setRodadaMaxima] = useState<number | null>(null);
   const [rodadaSelecionada, setRodadaSelecionada] = useState<number | null>(null);
   const [partidas, setPartidas] = useState<PartidaRodada[]>([]);
@@ -106,6 +107,7 @@ export default function Brasileirao() {
         return r.json();
       })
       .then((dados: RodadaAtualResponse) => {
+        setRodadaAtual(dados.rodada_atual);
         setRodadaMaxima(dados.rodada_maxima);
         setRodadaSelecionada(dados.rodada_atual);
         setCarregandoInicial(false);
@@ -248,55 +250,68 @@ export default function Brasileirao() {
                 key={`conteudo-${rodadaSelecionada}`}
                 className="animate-in fade-in mt-3 grid gap-1 duration-300 motion-reduce:animate-none"
               >
-                {partidas.map((partida) => (
-                  <Card
-                    key={partida.id}
-                    size="sm"
-                    onClick={() => setPartidaAbertaId(partida.id)}
-                    className="cursor-pointer overflow-hidden ring-0 transition-colors hover:bg-muted/50"
-                  >
-                    <CardContent className="py-0.5">
-                      <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground">
-                        {formatarDataHora(partida.data, partida.hora)}
-                      </p>
-                      <div className="mt-0.5 flex items-center justify-center gap-2">
-                        <div className="min-w-0 flex-1 text-right">
-                          <Link
-                            href={`/times/${partida.time_mandante_id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-block max-w-full truncate text-sm font-medium transition-colors hover:text-primary"
-                          >
-                            {partida.time_mandante}
-                          </Link>
-                        </div>
-                        {partida.status === "adiada" ? (
-                          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-amber-400">
-                            Adiado
-                          </span>
-                        ) : partida.status === "agendada" ? (
-                          <span className="shrink-0 text-[10px] uppercase tracking-wide text-muted-foreground">
-                            A jogar
-                          </span>
-                        ) : (
-                          <div className="flex shrink-0 items-center gap-1 font-mono text-sm font-semibold tabular-nums text-primary">
-                            <span>{partida.gols_mandante}</span>
-                            <span className="text-xs text-muted-foreground">–</span>
-                            <span>{partida.gols_visitante}</span>
+                {(() => {
+                  const dentroDaJanela =
+                    rodadaAtual !== null && rodadaSelecionada !== null && rodadaSelecionada <= rodadaAtual + 1;
+                  return partidas.map((partida) => (
+                    <Card
+                      key={partida.id}
+                      size="sm"
+                      onClick={() => setPartidaAbertaId(partida.id)}
+                      className="cursor-pointer overflow-hidden ring-0 transition-colors hover:bg-muted/50"
+                    >
+                      <CardContent className="py-0.5">
+                        <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground">
+                          {formatarDataHora(partida.data, partida.hora)}
+                        </p>
+                        <div className="mt-0.5 flex items-center justify-center gap-2">
+                          <div className="min-w-0 flex-1 text-right">
+                            <Link
+                              href={`/times/${partida.time_mandante_id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-block max-w-full truncate text-sm font-medium transition-colors hover:text-primary"
+                            >
+                              {partida.time_mandante}
+                            </Link>
                           </div>
-                        )}
-                        <div className="min-w-0 flex-1 text-left">
-                          <Link
-                            href={`/times/${partida.time_visitante_id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-block max-w-full truncate text-sm font-medium transition-colors hover:text-primary"
-                          >
-                            {partida.time_visitante}
-                          </Link>
+                          {partida.status === "adiada" ? (
+                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-amber-400">
+                              Adiado
+                            </span>
+                          ) : partida.status === "agendada" ? (
+                            <span className="shrink-0 text-[10px] uppercase tracking-wide text-muted-foreground">
+                              A jogar
+                            </span>
+                          ) : (
+                            <div className="flex shrink-0 items-center gap-1 font-mono text-sm font-semibold tabular-nums text-primary">
+                              <span>{partida.gols_mandante}</span>
+                              <span className="text-xs text-muted-foreground">–</span>
+                              <span>{partida.gols_visitante}</span>
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1 text-left">
+                            <Link
+                              href={`/times/${partida.time_visitante_id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-block max-w-full truncate text-sm font-medium transition-colors hover:text-primary"
+                            >
+                              {partida.time_visitante}
+                            </Link>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        {partida.status === "agendada" && dentroDaJanela && (
+                          <Link
+                            href={`/analise/${partida.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="mt-0.5 block text-center text-[9px] font-semibold uppercase tracking-wide text-violet-400 hover:text-violet-300"
+                          >
+                            ✨ Ver análise da IA
+                          </Link>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ));
+                })()}
               </div>
             )}
           </section>
