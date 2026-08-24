@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Sparkles, TrendingUp } from "lucide-react";
+import { ChevronLeft, Sparkles } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
-import { ListaDestaques, fraseDestaque, type Destaque } from "@/components/lista-destaques";
+import { ListaDestaques, type Destaque } from "@/components/lista-destaques";
+import { BilheteSimplesCard, BilheteMultiplaCard, type Perna } from "@/components/bilhete-card";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 
@@ -21,19 +22,24 @@ interface PartidaResumo {
   time_visitante: string;
 }
 
-interface MelhorMercado {
-  time: "mandante" | "visitante";
-  nome_time: string;
-  destaque: Destaque;
+interface BilheteSimples {
+  perna: Perna;
+  confianca: number;
+}
+
+interface BilheteMultipla {
+  pernas: Perna[];
+  confianca_combinada: number;
 }
 
 interface AnaliseResponse {
   partida_id: number;
   disponivel: boolean;
-  texto: string | null;
+  resumo: string | null;
   destaques_mandante: Destaque[];
   destaques_visitante: Destaque[];
-  melhor_mercado: MelhorMercado | null;
+  bilhete_simples: BilheteSimples | null;
+  bilhete_multipla: BilheteMultipla | null;
 }
 
 export default function AnalisePartida() {
@@ -70,10 +76,6 @@ export default function AnalisePartida() {
       });
   }, [partidaId]);
 
-  const nomeDoTimeDoMercado =
-    partida && analise?.melhor_mercado?.time === "mandante" ? partida.time_mandante : partida?.time_visitante;
-  const mandoDoMercado = analise?.melhor_mercado?.time === "mandante" ? "em casa" : "fora de casa";
-
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
       <div className="mx-auto max-w-2xl">
@@ -94,7 +96,7 @@ export default function AnalisePartida() {
 
         {carregando && (
           <div className="mt-10 flex min-h-64 items-center justify-center">
-            <VhSpinner mensagens={["Gerando a análise...", "Estudando o confronto..."]} />
+            <VhSpinner mensagens={["Montando os bilhetes...", "Estudando o confronto..."]} />
           </div>
         )}
 
@@ -110,25 +112,42 @@ export default function AnalisePartida() {
               {partida.time_mandante} <span className="text-muted-foreground">x</span> {partida.time_visitante}
             </p>
 
-            {analise?.melhor_mercado && nomeDoTimeDoMercado && (
-              <div className="mt-6 rounded-lg border border-violet-500/30 bg-violet-500/10 p-4">
-                <div className="flex items-center gap-1.5">
-                  <TrendingUp className="size-4 text-violet-400" />
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-violet-400">
-                    Melhor mercado
-                  </span>
-                  <span className="ml-auto rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-300">
-                    {Math.round(analise.melhor_mercado.destaque.taxa * 100)}%
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-foreground">
-                  {fraseDestaque(nomeDoTimeDoMercado, mandoDoMercado, analise.melhor_mercado.destaque)}
-                </p>
+            {(analise?.bilhete_simples || analise?.bilhete_multipla) && (
+              <div className="mt-6 grid gap-3">
+                {analise?.bilhete_simples && (
+                  <BilheteSimplesCard
+                    perna={analise.bilhete_simples.perna}
+                    confianca={analise.bilhete_simples.confianca}
+                  />
+                )}
+                {analise?.bilhete_multipla && (
+                  <BilheteMultiplaCard
+                    pernas={analise.bilhete_multipla.pernas}
+                    confiancaCombinada={analise.bilhete_multipla.confianca_combinada}
+                  />
+                )}
+              </div>
+            )}
+
+            {analise?.disponivel && analise.resumo && (
+              <div className="mt-3 flex items-start justify-center gap-1.5 text-center">
+                <p className="text-xs italic leading-relaxed text-muted-foreground">“{analise.resumo}”</p>
+                <span className="mt-0.5 shrink-0 rounded-full bg-violet-500/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-violet-400">
+                  PRO
+                </span>
+              </div>
+            )}
+
+            {!analise?.bilhete_simples && (
+              <div className="mt-6 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+                {partida.status === "finalizada"
+                  ? "A análise da IA é gerada apenas para partidas que ainda vão acontecer."
+                  : "Ainda não há mercados suficientes se destacando pra essa partida."}
               </div>
             )}
 
             {analise && (analise.destaques_mandante.length > 0 || analise.destaques_visitante.length > 0) && (
-              <div className="mt-4 grid gap-4 rounded-lg border border-border bg-card p-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
+              <div className="mt-4 grid gap-4 rounded-lg border border-border bg-card/60 p-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
                 <div className="min-w-0">
                   <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
                     {partida.time_mandante} em casa
@@ -153,25 +172,6 @@ export default function AnalisePartida() {
                     />
                   </div>
                 </div>
-              </div>
-            )}
-
-            {analise?.disponivel && analise.texto ? (
-              <div className="mt-4 rounded-lg border border-violet-500/25 bg-card p-5">
-                <span className="mb-3 inline-block rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-400">
-                  PRO
-                </span>
-                {analise.texto.split("\n").filter(Boolean).map((paragrafo, i) => (
-                  <p key={i} className="text-sm leading-relaxed text-foreground/90 [&:not(:first-child)]:mt-3">
-                    {paragrafo}
-                  </p>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-4 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                {partida.status === "finalizada"
-                  ? "A análise da IA é gerada apenas para partidas que ainda vão acontecer."
-                  : "Essa análise ainda está em preparação — o recurso está em construção e chega em breve."}
               </div>
             )}
           </>

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Sparkles, TrendingUp, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, ChevronDown, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
-import { ListaDestaques, fraseDestaque, type Destaque } from "@/components/lista-destaques";
+import { ListaDestaques, type Destaque } from "@/components/lista-destaques";
+import { BilheteSimplesCard, BilheteMultiplaCard, type Perna } from "@/components/bilhete-card";
 import { SeletorCampeonato } from "@/components/seletor-campeonato";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
@@ -30,23 +31,119 @@ interface RodadaAtualResponse {
   rodada_maxima: number;
 }
 
-interface MelhorMercado {
-  time: "mandante" | "visitante";
-  nome_time: string;
-  destaque: Destaque;
+interface BilheteSimples {
+  perna: Perna;
+  confianca: number;
+}
+
+interface BilheteMultipla {
+  pernas: Perna[];
+  confianca_combinada: number;
 }
 
 interface AnaliseResponse {
   disponivel: boolean;
-  texto: string | null;
+  resumo: string | null;
   destaques_mandante: Destaque[];
   destaques_visitante: Destaque[];
-  melhor_mercado: MelhorMercado | null;
+  bilhete_simples: BilheteSimples | null;
+  bilhete_multipla: BilheteMultipla | null;
 }
 
 interface JogoComAnalise {
   partida: PartidaRodada;
   analise: AnaliseResponse;
+}
+
+function CardPartida({ partida, analise }: JogoComAnalise) {
+  const [mercadosAbertos, setMercadosAbertos] = useState(false);
+
+  return (
+    <Card className="overflow-hidden border-primary/15">
+      <CardContent>
+        <p className="text-center text-xs uppercase tracking-wide text-muted-foreground">
+          {formatarDataHora(partida.data, partida.hora)}
+        </p>
+        <p className="mt-1 text-center font-heading text-base font-semibold uppercase tracking-wide">
+          {partida.time_mandante}
+          <span className="mx-2 text-muted-foreground">x</span>
+          {partida.time_visitante}
+        </p>
+
+        {(analise.bilhete_simples || analise.bilhete_multipla) && (
+          <div className="mt-4 grid gap-2">
+            {analise.bilhete_simples && (
+              <BilheteSimplesCard
+                perna={analise.bilhete_simples.perna}
+                confianca={analise.bilhete_simples.confianca}
+              />
+            )}
+            {analise.bilhete_multipla && (
+              <BilheteMultiplaCard
+                pernas={analise.bilhete_multipla.pernas}
+                confiancaCombinada={analise.bilhete_multipla.confianca_combinada}
+              />
+            )}
+          </div>
+        )}
+
+        {analise.disponivel && analise.resumo && (
+          <div className="mt-3 flex items-start justify-center gap-1.5 text-center">
+            <p className="text-xs italic leading-relaxed text-muted-foreground">“{analise.resumo}”</p>
+            <span className="mt-0.5 shrink-0 rounded-full bg-violet-500/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-violet-400">
+              PRO
+            </span>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setMercadosAbertos((v) => !v)}
+          className="mt-3 flex w-full items-center justify-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
+        >
+          <ChevronDown className={`size-3.5 transition-transform ${mercadosAbertos ? "rotate-180" : ""}`} />
+          {mercadosAbertos ? "Ocultar todos os mercados" : "Ver todos os mercados"}
+        </button>
+
+        {mercadosAbertos && (
+          <div className="mt-2 grid gap-4 rounded-lg border border-border bg-card/60 p-3 sm:grid-cols-2 sm:divide-x sm:divide-border">
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                {partida.time_mandante} em casa
+              </p>
+              <div className="mt-1.5">
+                <ListaDestaques
+                  time={partida.time_mandante}
+                  mandoLabel="em casa"
+                  destaques={analise.destaques_mandante}
+                />
+              </div>
+            </div>
+            <div className="min-w-0 sm:pl-4">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                {partida.time_visitante} fora
+              </p>
+              <div className="mt-1.5">
+                <ListaDestaques
+                  time={partida.time_visitante}
+                  mandoLabel="fora de casa"
+                  destaques={analise.destaques_visitante}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <Link
+          href={`/analise/${partida.id}`}
+          className="mt-3 flex items-center justify-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70 transition-colors hover:text-primary"
+        >
+          <ExternalLink className="size-3" />
+          Ver página completa
+        </Link>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function AnaliseIA() {
@@ -143,8 +240,8 @@ export default function AnaliseIA() {
           <SeletorCampeonato value={campeonatoId} onChange={setCampeonatoId} />
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Mercados em que cada time vem se destacando (mando de campo já considerado), com o melhor palpite
-          apontado pela IA.
+          Bilhete simples e múltipla sugeridos pra cada confronto, com base nos mercados em que os times vêm
+          se destacando.
         </p>
 
         <div className="mx-auto mt-6 flex w-fit items-stretch overflow-hidden rounded-lg border border-border bg-card">
@@ -187,87 +284,9 @@ export default function AnaliseIA() {
           </div>
         ) : (
           <div className="mt-6 grid gap-3">
-            {jogos.map(({ partida, analise }) => {
-              const nomeDoTimeDoMercado =
-                analise.melhor_mercado?.time === "mandante" ? partida.time_mandante : partida.time_visitante;
-              const mandoDoMercado = analise.melhor_mercado?.time === "mandante" ? "em casa" : "fora de casa";
-
-              return (
-                <Card key={partida.id} className="overflow-hidden border-primary/15">
-                  <CardContent>
-                    <p className="text-center text-xs uppercase tracking-wide text-muted-foreground">
-                      {formatarDataHora(partida.data, partida.hora)}
-                    </p>
-                    <p className="mt-1 text-center font-heading text-base font-semibold uppercase tracking-wide">
-                      {partida.time_mandante}
-                      <span className="mx-2 text-muted-foreground">x</span>
-                      {partida.time_visitante}
-                    </p>
-
-                    {analise.melhor_mercado && (
-                      <div className="mt-4 rounded-lg border border-violet-500/30 bg-violet-500/10 p-3">
-                        <div className="flex items-center gap-1.5">
-                          <TrendingUp className="size-3.5 text-violet-400" />
-                          <span className="text-[10px] font-bold uppercase tracking-wide text-violet-400">
-                            Melhor mercado
-                          </span>
-                          <span className="ml-auto rounded-full bg-violet-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-300">
-                            {Math.round(analise.melhor_mercado.destaque.taxa * 100)}%
-                          </span>
-                        </div>
-                        <p className="mt-1.5 text-sm text-foreground">
-                          {fraseDestaque(nomeDoTimeDoMercado, mandoDoMercado, analise.melhor_mercado.destaque)}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="mt-4 grid gap-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-                          {partida.time_mandante} em casa
-                        </p>
-                        <div className="mt-1.5">
-                          <ListaDestaques
-                            time={partida.time_mandante}
-                            mandoLabel="em casa"
-                            destaques={analise.destaques_mandante}
-                          />
-                        </div>
-                      </div>
-                      <div className="min-w-0 sm:pl-4">
-                        <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-                          {partida.time_visitante} fora
-                        </p>
-                        <div className="mt-1.5">
-                          <ListaDestaques
-                            time={partida.time_visitante}
-                            mandoLabel="fora de casa"
-                            destaques={analise.destaques_visitante}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <Link
-                      href={`/analise/${partida.id}`}
-                      className="mt-4 flex items-center gap-2 rounded-md border border-violet-500/30 bg-violet-500/5 p-3 transition-colors hover:bg-violet-500/10"
-                    >
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-violet-400">
-                        <Lock className="size-3" />
-                      </span>
-                      <span className="min-w-0 flex-1 text-xs leading-relaxed text-muted-foreground">
-                        {analise.disponivel && analise.texto
-                          ? analise.texto.slice(0, 90).trim() + "…"
-                          : "A análise completa dessa partida está em preparação."}
-                      </span>
-                      <span className="shrink-0 rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-400">
-                        PRO
-                      </span>
-                    </Link>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {jogos.map((jogo) => (
+              <CardPartida key={jogo.partida.id} {...jogo} />
+            ))}
           </div>
         )}
       </div>

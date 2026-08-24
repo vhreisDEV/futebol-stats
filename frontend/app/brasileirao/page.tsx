@@ -147,9 +147,9 @@ export default function Brasileirao() {
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
       <div className="mx-auto max-w-5xl">
-        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <CabecalhoCampeonato />
-          <div className="flex w-full shrink-0 flex-wrap gap-2 sm:w-auto">
+          <div className="flex flex-wrap gap-2">
             <NavChip href="/previsao" label="Previsão de Jogos" icon={TrendingUp} cor="gold" />
             <NavChip href="/dicas" label="Dicas da Rodada" icon={Flame} cor="emerald" />
             <NavChip href="/analise" label="Análise IA" icon={Sparkles} cor="violet" />

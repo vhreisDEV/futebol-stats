@@ -11,53 +11,41 @@ class IANaoConfiguradaError(Exception):
     pass
 
 
-def _formatar_destaque(nome_time, mando_label, d):
+def _mando_label(perna):
+    return "em casa" if perna["time"] == "mandante" else "fora de casa"
+
+
+def _descrever_perna(perna):
+    d = perna["destaque"]
     porcentagem = round(d["taxa"] * 100)
     if d["tipo"] == "booleano":
-        return f"{nome_time} ({mando_label}): {d['label'].lower()} em {d['acertos']}/{d['total']} jogos ({porcentagem}%)"
+        return f"{perna['nome_time']} ({_mando_label(perna)}): {d['label'].lower()} em {porcentagem}% dos últimos jogos"
     return (
-        f"{nome_time} ({mando_label}): passou de {d['linha']} {d['label'].lower()} em "
-        f"{d['acertos']}/{d['total']} jogos ({porcentagem}%), média {d['media']}"
+        f"{perna['nome_time']} ({_mando_label(perna)}): mais de {d['linha']} {d['label'].lower()} "
+        f"em {porcentagem}% dos últimos jogos"
     )
 
 
-def _montar_prompt(partida, destaques_mandante, destaques_visitante):
-    mandante = partida.time_mandante.nome
-    visitante = partida.time_visitante.nome
-
-    linhas = [
-        f"Partida: {mandante} (mandante) x {visitante} (visitante)"
-        + (f", rodada {partida.rodada}" if partida.rodada else "")
-    ]
-
-    linhas.append("Mercados em que o mandante vem se destacando em casa (últimos jogos):")
-    if destaques_mandante:
-        linhas += [f"- {_formatar_destaque(mandante, 'em casa', d)}" for d in destaques_mandante]
-    else:
-        linhas.append("- nenhum mercado com pelo menos 70% de acerto no recorte em casa.")
-
-    linhas.append("Mercados em que o visitante vem se destacando fora de casa (últimos jogos):")
-    if destaques_visitante:
-        linhas += [f"- {_formatar_destaque(visitante, 'fora de casa', d)}" for d in destaques_visitante]
-    else:
-        linhas.append("- nenhum mercado com pelo menos 70% de acerto no recorte fora de casa.")
+def _montar_prompt(bilhete_simples, bilhete_multipla):
+    linhas = []
+    if bilhete_simples:
+        linhas.append(f"Bilhete simples sugerido: {_descrever_perna(bilhete_simples['perna'])}")
+    if bilhete_multipla:
+        for p in bilhete_multipla["pernas"]:
+            linhas.append(f"Perna da múltipla: {_descrever_perna(p)}")
 
     dados = "\n".join(linhas)
 
     return (
-        "Você é um analista de apostas esportivas experiente. Com base SOMENTE nos dados abaixo "
-        "(taxas de acerto reais dos últimos jogos de cada time, já filtrados pelo mando de campo que "
-        "cada um vai ter nessa partida), escreva uma análise curta (2 parágrafos, português do Brasil) "
-        "apontando qual é o MELHOR mercado pra essa partida e por quê — pode ser um mercado do "
-        "mandante, do visitante, ou combinar os dois se fizer sentido (ex.: ambas marcam, se os dois "
-        "times tiverem essa tendência). Seja direto e claro, como se estivesse entregando uma dica "
-        "pronta pro cliente — não liste os dados brutos como uma tabela. Não invente números que não "
-        "estão nos dados, nem informações externas (lesões, escalações, notícias, clima).\n\n"
+        "Você é um analista de apostas esportivas. Com base SOMENTE nos dados abaixo, escreva UMA "
+        "frase curta (no máximo 25 palavras, português do Brasil, direta e didática) validando por "
+        "que esse bilhete faz sentido. Não repita os números (eles já aparecem na tela) — só o "
+        "raciocínio central. Não invente dados que não estão aqui.\n\n"
         f"Dados:\n{dados}"
     )
 
 
-def gerar_analise(partida, destaques_mandante, destaques_visitante):
+def gerar_analise(bilhete_simples, bilhete_multipla):
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise IANaoConfiguradaError()
@@ -65,7 +53,7 @@ def gerar_analise(partida, destaques_mandante, destaques_visitante):
     from google import genai  # import atrasado -- so precisa resolver se a chave existir
 
     cliente = genai.Client(api_key=api_key)
-    prompt = _montar_prompt(partida, destaques_mandante, destaques_visitante)
+    prompt = _montar_prompt(bilhete_simples, bilhete_multipla)
 
     resposta = cliente.models.generate_content(model=MODELO_PADRAO, contents=prompt)
     texto = resposta.text.strip()
