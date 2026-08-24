@@ -60,16 +60,31 @@ def gerar_analise(bilhete_simples, bilhete_multipla):
     return texto, MODELO_PADRAO
 
 
+def _descrever_perna_total(perna):
+    # Mercado de "totais do jogo" soma os dois times -- descrever como
+    # "[time] (mando): mais de X [stat]" lia como se fosse so daquele
+    # time (feedback real de usuario), entao aqui a frase deixa explicito
+    # que e' a partida inteira.
+    d = perna["destaque"]
+    porcentagem = round(d["taxa"] * 100)
+    stat = d["label"].replace(" totais no jogo", "").lower()
+    return (
+        f"Jogos com {perna['nome_time']} {_mando_label(perna)} costumam ter mais de {d['linha']} {stat} "
+        f"no total somando os dois times, em {porcentagem}% dos últimos jogos"
+    )
+
+
 def _montar_prompt_dicas(pernas_totais):
-    linhas = [f"- {_descrever_perna(p)}" for p in pernas_totais]
+    linhas = [f"- {_descrever_perna_total(p)}" for p in pernas_totais]
     dados = "\n".join(linhas)
 
     return (
         "Você é um analista de apostas esportivas. Com base SOMENTE nos dados abaixo sobre totais "
-        "do jogo (soma dos dois times em chutes, escanteios ou cartões), escreva de 2 a 3 dicas "
-        "curtas em português do Brasil, no estilo 'fique de olho em chutes totais: linha de X+ "
-        "costuma bater quando [time] joga em casa/fora'. Uma dica por linha, direto, sem repetir "
-        "os números crus. Não invente dados que não estão aqui.\n\n"
+        "do jogo (soma dos dois times em chutes, escanteios ou cartões -- não é a estatística de um "
+        "time isolado), escreva de 2 a 3 dicas curtas em português do Brasil, no estilo 'fique de "
+        "olho no total de chutes: costuma passar de X quando [time] joga em casa/fora'. Deixe claro "
+        "em cada dica que o número é a soma dos dois times, não só de um lado. Uma dica por linha, "
+        "direto, sem repetir os números crus. Não invente dados que não estão aqui.\n\n"
         f"Dados:\n{dados}"
     )
 

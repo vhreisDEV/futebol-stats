@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, Sparkles, Eye, Target } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
 import { ListaDestaques, SequenciaBadges, type Destaque } from "@/components/lista-destaques";
-import { BilheteSimplesCard, BilheteMultiplaCard, fraseCurta, type Perna } from "@/components/bilhete-card";
+import { BilheteSimplesCard, BilheteMultiplaCard, fraseTotal, type Perna } from "@/components/bilhete-card";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 
@@ -221,7 +221,7 @@ export default function AnalisePartida() {
                 <ul className="mt-2.5 grid gap-1.5">
                   {analise.destaques_totais.map((p, i) => (
                     <li key={i} className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-xs">
-                      <span className="min-w-0 flex-1">{fraseCurta(p)}</span>
+                      <span className="min-w-0 flex-1">{fraseTotal(p)}</span>
                       <span className="shrink-0 font-mono text-muted-foreground">
                         {Math.round(p.destaque.taxa * 100)}%
                       </span>

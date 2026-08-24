@@ -16,6 +16,16 @@ export function fraseCurta(p: Perna) {
   return `${p.nome_time} (${mando}): mais de ${d.linha} ${d.label.toLowerCase()}`;
 }
 
+// Mercados de "totais do jogo" somam os dois times -- "Athletico-PR
+// (fora): mais de 18.5 chutes" lia como se fosse so o time dele, entao
+// aqui a frase deixa explicito que e' a partida inteira, nao um lado so.
+export function fraseTotal(p: Perna) {
+  const mando = p.time === "mandante" ? "em casa" : "fora";
+  const d = p.destaque;
+  const stat = d.label.replace(/ totais no jogo/i, "").toLowerCase();
+  return `Jogos com ${p.nome_time} ${mando} costumam ter mais de ${d.linha} ${stat} no total (somando os dois times)`;
+}
+
 export function BilheteSimplesCard({ perna, confianca }: { perna: Perna; confianca: number }) {
   return (
     <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3">
