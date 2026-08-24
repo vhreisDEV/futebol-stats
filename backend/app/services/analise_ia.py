@@ -37,7 +37,7 @@ def _montar_prompt(bilhete_simples, bilhete_multipla):
     dados = "\n".join(linhas)
 
     return (
-        "Você é um analista de apostas esportivas. Com base SOMENTE nos dados abaixo, escreva UMA "
+        "Você é um analista esportivo especializado em dados e tendências estatísticas. Com base SOMENTE nos dados abaixo, escreva UMA "
         "frase curta (no máximo 25 palavras, português do Brasil, direta e didática) validando por "
         "que esse bilhete faz sentido. Não repita os números (eles já aparecem na tela) — só o "
         "raciocínio central. Não invente dados que não estão aqui.\n\n"
@@ -79,7 +79,7 @@ def _montar_prompt_dicas(pernas_totais):
     dados = "\n".join(linhas)
 
     return (
-        "Você é um analista de apostas esportivas. Com base SOMENTE nos dados abaixo sobre totais "
+        "Você é um analista esportivo especializado em dados e tendências estatísticas. Com base SOMENTE nos dados abaixo sobre totais "
         "do jogo (soma dos dois times em chutes, escanteios ou cartões -- não é a estatística de um "
         "time isolado), escreva de 2 a 3 dicas curtas em português do Brasil, no estilo 'fique de "
         "olho no total de chutes: costuma passar de X quando [time] joga em casa/fora'. Deixe claro "

@@ -186,12 +186,7 @@ export default function AnalisePartida() {
             {(analise?.bilhete_simples || analise?.bilhete_multipla) && (
               <div className="mt-6 grid gap-3">
                 {analise?.bilhete_simples && <BilheteSimplesCard perna={analise.bilhete_simples.perna} />}
-                {analise?.bilhete_multipla && (
-                  <BilheteMultiplaCard
-                    pernas={analise.bilhete_multipla.pernas}
-                    principal={analise.bilhete_simples?.perna}
-                  />
-                )}
+                {analise?.bilhete_multipla && <BilheteMultiplaCard pernas={analise.bilhete_multipla.pernas} />}
               </div>
             )}
 
@@ -233,23 +228,23 @@ export default function AnalisePartida() {
             )}
 
             {analise && analise.destaques_totais.length > 0 && (
-              <div className="mt-4 rounded-lg border border-cyan-500/25 bg-card p-4">
+              <div className="mt-4 rounded-lg border border-emerald-500/25 bg-card p-4">
                 <div className="flex items-center gap-1.5">
-                  <Target className="size-4 text-cyan-400" />
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-cyan-400">
+                  <Target className="size-4 text-emerald-400" />
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-400">
                     Dicas da IA · Totais do jogo
                   </span>
                 </div>
                 {analise.dicas && (
                   <p className="mt-2 text-xs italic leading-relaxed text-muted-foreground">
-                    {destacarNumeros(analise.dicas, "text-cyan-400")}
+                    {destacarNumeros(analise.dicas, "text-emerald-400")}
                   </p>
                 )}
                 <ul className="mt-2.5 grid gap-1.5">
                   {analise.destaques_totais.map((p, i) => (
                     <li key={i} className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-xs">
                       <span className="min-w-0 flex-1">{fraseTotal(p)}</span>
-                      <span className="shrink-0 font-mono font-semibold text-cyan-400">
+                      <span className="shrink-0 font-mono font-semibold text-emerald-400">
                         {Math.round(p.destaque.taxa * 100)}%
                       </span>
                     </li>
