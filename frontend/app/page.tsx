@@ -71,35 +71,46 @@ export default function Home() {
               <VhSpinner mensagens={["Buscando os campeonatos..."]} />
             </div>
           ) : (
-            campeonatos.map((c) => (
-              <Link
-                key={c.id}
-                href={c.id === CAMPEONATO_BRASILEIRAO_ID ? "/brasileirao" : `/campeonato/${c.id}`}
-                className="group block"
-              >
-                <SpotlightCard spotlightColor="rgba(212, 175, 55, 0.35)">
-                  <Card className="overflow-hidden border-primary/20 text-left transition-colors hover:border-primary/50">
-                    <CardContent className="flex items-center gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo, sem necessidade de otimizacao do Next/Image */}
-                        <img src={flagSrcQuadrada(c.pais_codigo)} alt="" className="size-full object-cover" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">
-                          {c.nome} {c.temporada_label}
-                        </p>
-                        <p className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
-                          {c.rodada_atual && `Rodada ${c.rodada_atual}/${c.rodadas_total ?? "?"}`}
-                          {c.rodada_atual && " · "}
-                          {c.total_times} times
-                        </p>
-                      </div>
-                      <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
-                    </CardContent>
-                  </Card>
-                </SpotlightCard>
-              </Link>
-            ))
+            campeonatos.map((c) => {
+              const emDesenvolvimento = c.total_times === 0;
+              return (
+                <Link
+                  key={c.id}
+                  href={c.id === CAMPEONATO_BRASILEIRAO_ID ? "/brasileirao" : `/campeonato/${c.id}`}
+                  className="group block"
+                >
+                  <SpotlightCard spotlightColor="rgba(212, 175, 55, 0.35)">
+                    <Card
+                      className={`overflow-hidden border-primary/20 text-left transition-colors hover:border-primary/50 ${emDesenvolvimento ? "opacity-70" : ""}`}
+                    >
+                      <CardContent className="flex items-center gap-3">
+                        <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo, sem necessidade de otimizacao do Next/Image */}
+                          <img src={flagSrcQuadrada(c.pais_codigo)} alt="" className="size-full object-cover" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium">
+                            {c.nome} {c.temporada_label}
+                          </p>
+                          {emDesenvolvimento ? (
+                            <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-400">
+                              Em desenvolvimento
+                            </p>
+                          ) : (
+                            <p className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
+                              {c.rodada_atual && `Rodada ${c.rodada_atual}/${c.rodadas_total ?? "?"}`}
+                              {c.rodada_atual && " · "}
+                              {c.total_times} times
+                            </p>
+                          )}
+                        </div>
+                        <ChevronRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+                      </CardContent>
+                    </Card>
+                  </SpotlightCard>
+                </Link>
+              );
+            })
           )}
         </div>
       </div>

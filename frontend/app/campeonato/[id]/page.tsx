@@ -18,6 +18,7 @@ interface Campeonato {
   pais_nome: string;
   pais_codigo: string;
   temporada_label: string;
+  total_times: number;
 }
 
 interface PartidaRodada {
@@ -61,18 +62,26 @@ export default function CampeonatoPage() {
   useEffect(() => {
     if (!campeonatoId) return;
 
-    Promise.all([
-      fetch(`${API_URL}/campeonatos/${campeonatoId}`).then((r) => {
+    fetch(`${API_URL}/campeonatos/${campeonatoId}`)
+      .then((r) => {
         if (!r.ok) throw new Error("Campeonato não encontrado");
         return r.json();
-      }),
-      fetch(`${API_URL}/rodadas/atual?campeonato_id=${campeonatoId}`).then((r) => {
-        if (!r.ok) throw new Error("Erro ao buscar a rodada atual");
-        return r.json();
-      }),
-    ])
-      .then(([dadosCampeonato, dadosRodada]: [Campeonato, RodadaAtualResponse]) => {
+      })
+      .then((dadosCampeonato: Campeonato) => {
         setCampeonato(dadosCampeonato);
+
+        if (dadosCampeonato.total_times === 0) {
+          setCarregandoInicial(false);
+          return null;
+        }
+
+        return fetch(`${API_URL}/rodadas/atual?campeonato_id=${campeonatoId}`).then((r) => {
+          if (!r.ok) throw new Error("Erro ao buscar a rodada atual");
+          return r.json();
+        });
+      })
+      .then((dadosRodada: RodadaAtualResponse | null) => {
+        if (!dadosRodada) return;
         setRodadaAtual(dadosRodada.rodada_atual);
         setRodadaMaxima(dadosRodada.rodada_maxima);
         setRodadaSelecionada(dadosRodada.rodada_atual);
@@ -109,6 +118,29 @@ export default function CampeonatoPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background text-destructive">
         <p>Erro: {erro}</p>
+      </main>
+    );
+  }
+
+  if (!carregandoInicial && campeonato && campeonato.total_times === 0) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
+        <div className="mx-auto max-w-sm text-center">
+          <Link
+            href="/"
+            className="font-heading text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+          >
+            VEAGA
+          </Link>
+          <h1 className="mt-3 flex items-center justify-center gap-2 font-heading text-xl font-semibold uppercase tracking-wide">
+            {/* eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo, sem necessidade de otimizacao do Next/Image */}
+            <img src={flagSrc(campeonato.pais_codigo)} alt="" className="h-[0.75em] w-auto rounded-sm" />
+            {campeonato.nome} {campeonato.temporada_label}
+          </h1>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Essa liga ainda está em desenvolvimento no VEAGA — os dados completos chegam em breve.
+          </p>
+        </div>
       </main>
     );
   }
