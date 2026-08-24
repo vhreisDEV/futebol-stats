@@ -176,18 +176,8 @@ export default function AnalisePartida() {
 
             {(analise?.bilhete_simples || analise?.bilhete_multipla) && (
               <div className="mt-6 grid gap-3">
-                {analise?.bilhete_simples && (
-                  <BilheteSimplesCard
-                    perna={analise.bilhete_simples.perna}
-                    confianca={analise.bilhete_simples.confianca}
-                  />
-                )}
-                {analise?.bilhete_multipla && (
-                  <BilheteMultiplaCard
-                    pernas={analise.bilhete_multipla.pernas}
-                    confiancaCombinada={analise.bilhete_multipla.confianca_combinada}
-                  />
-                )}
+                {analise?.bilhete_simples && <BilheteSimplesCard perna={analise.bilhete_simples.perna} />}
+                {analise?.bilhete_multipla && <BilheteMultiplaCard pernas={analise.bilhete_multipla.pernas} />}
               </div>
             )}
 

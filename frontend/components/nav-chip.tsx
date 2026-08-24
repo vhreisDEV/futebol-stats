@@ -33,7 +33,7 @@ export function NavChip({
       <Icon className="size-3.5" />
       {label}
       {novo && (
-        <span className="rounded-full bg-current px-1.5 py-0.5 text-[9px] font-bold text-background">
+        <span className="rounded-full bg-foreground px-1.5 py-0.5 text-[9px] font-bold text-background">
           novo
         </span>
       )}

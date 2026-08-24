@@ -41,15 +41,12 @@ export function fraseTotal(p: Perna) {
   );
 }
 
-export function BilheteSimplesCard({ perna, confianca }: { perna: Perna; confianca: number }) {
+export function BilheteSimplesCard({ perna }: { perna: Perna }) {
   return (
     <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 p-3">
       <div className="flex items-center gap-1.5">
         <Ticket className="size-3.5 text-violet-400" />
         <span className="text-[10px] font-bold uppercase tracking-wide text-violet-400">Bilhete simples</span>
-        <span className="ml-auto rounded-full bg-violet-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-violet-300">
-          {confianca.toFixed(1)}/10
-        </span>
       </div>
       <p className="mt-1.5 text-sm font-medium text-foreground">{fraseCurta(perna)}</p>
       <p className="text-xs text-muted-foreground">
@@ -60,22 +57,13 @@ export function BilheteSimplesCard({ perna, confianca }: { perna: Perna; confian
   );
 }
 
-export function BilheteMultiplaCard({
-  pernas,
-  confiancaCombinada,
-}: {
-  pernas: Perna[];
-  confiancaCombinada: number;
-}) {
+export function BilheteMultiplaCard({ pernas }: { pernas: Perna[] }) {
   return (
     <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
       <div className="flex items-center gap-1.5">
         <Layers className="size-3.5 text-amber-400" />
         <span className="text-[10px] font-bold uppercase tracking-wide text-amber-400">
           Bilhete múltipla · {pernas.length} seleções
-        </span>
-        <span className="ml-auto rounded-full bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-300">
-          {confiancaCombinada.toFixed(1)}/10
         </span>
       </div>
       <ol className="mt-1.5 grid gap-1">
