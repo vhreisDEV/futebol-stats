@@ -7,7 +7,11 @@ from app.services.probabilidade_resultado import calcular_probabilidade_resultad
 from app.services.escanteios_esperados import calcular_escanteios_esperados
 from app.services.cartoes_esperados import calcular_cartoes_esperados
 
-MODELO_PADRAO = "claude-haiku-4-5-20251001"
+# Gemini (Google AI Studio) tem free tier de verdade, sem cartao de credito
+# -- como a analise e' gerada uma vez so por partida e cacheada (ver
+# AnaliseIAPartida), o volume real (poucas dezenas de partidas por rodada,
+# uma chamada cada, pra sempre) fica bem abaixo do limite gratuito.
+MODELO_PADRAO = "gemini-2.5-flash"
 
 
 class IANaoConfiguradaError(Exception):
@@ -65,19 +69,15 @@ def _montar_prompt(db, partida):
 
 
 def gerar_analise(db, partida):
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise IANaoConfiguradaError()
 
-    import anthropic  # import atrasado -- so precisa resolver se a chave existir
+    from google import genai  # import atrasado -- so precisa resolver se a chave existir
 
-    cliente = anthropic.Anthropic(api_key=api_key)
+    cliente = genai.Client(api_key=api_key)
     prompt = _montar_prompt(db, partida)
 
-    resposta = cliente.messages.create(
-        model=MODELO_PADRAO,
-        max_tokens=600,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    texto = resposta.content[0].text.strip()
+    resposta = cliente.models.generate_content(model=MODELO_PADRAO, contents=prompt)
+    texto = resposta.text.strip()
     return texto, MODELO_PADRAO
