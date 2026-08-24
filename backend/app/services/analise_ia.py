@@ -1,11 +1,4 @@
 import os
-from datetime import date
-
-from app.services.gols_esperados import calcular_gols_esperados
-from app.services.placar_mais_provavel import calcular_placares_mais_provaveis
-from app.services.probabilidade_resultado import calcular_probabilidade_resultado
-from app.services.escanteios_esperados import calcular_escanteios_esperados
-from app.services.cartoes_esperados import calcular_cartoes_esperados
 
 # Gemini (Google AI Studio) tem free tier de verdade, sem cartao de credito
 # -- como a analise e' gerada uma vez so por partida e cacheada (ver
@@ -18,57 +11,53 @@ class IANaoConfiguradaError(Exception):
     pass
 
 
-def _montar_prompt(db, partida):
+def _formatar_destaque(nome_time, mando_label, d):
+    porcentagem = round(d["taxa"] * 100)
+    if d["tipo"] == "booleano":
+        return f"{nome_time} ({mando_label}): {d['label'].lower()} em {d['acertos']}/{d['total']} jogos ({porcentagem}%)"
+    return (
+        f"{nome_time} ({mando_label}): passou de {d['linha']} {d['label'].lower()} em "
+        f"{d['acertos']}/{d['total']} jogos ({porcentagem}%), média {d['media']}"
+    )
+
+
+def _montar_prompt(partida, destaques_mandante, destaques_visitante):
     mandante = partida.time_mandante.nome
     visitante = partida.time_visitante.nome
-    referencia = partida.data or date.today()
-
-    gols = calcular_gols_esperados(db, partida.time_mandante_id, partida.time_visitante_id, referencia)
-    resultado = calcular_probabilidade_resultado(db, partida.time_mandante_id, partida.time_visitante_id, referencia)
-    placares = calcular_placares_mais_provaveis(
-        gols.get("gols_esperados_mandante"), gols.get("gols_esperados_visitante")
-    )
-    escanteios = calcular_escanteios_esperados(db, partida.time_mandante_id, partida.time_visitante_id, referencia)
-    cartoes = calcular_cartoes_esperados(db, partida.time_mandante_id, partida.time_visitante_id, referencia)
 
     linhas = [
         f"Partida: {mandante} (mandante) x {visitante} (visitante)"
-        + (f", rodada {partida.rodada}" if partida.rodada else ""),
-        f"Gols esperados: {mandante} {gols.get('gols_esperados_mandante')}, "
-        f"{visitante} {gols.get('gols_esperados_visitante')}",
-        f"Probabilidades de resultado: vitoria {mandante} {resultado.get('probabilidade_vitoria_mandante')}%, "
-        f"empate {resultado.get('probabilidade_empate')}%, "
-        f"vitoria {visitante} {resultado.get('probabilidade_vitoria_visitante')}%",
+        + (f", rodada {partida.rodada}" if partida.rodada else "")
     ]
-    if placares:
-        top = placares[0]
-        linhas.append(
-            f"Placar mais provavel: {top['gols_mandante']}-{top['gols_visitante']} ({top['probabilidade']}%)"
-        )
-    if escanteios.get("total_esperado") is not None:
-        linhas.append(
-            f"Escanteios esperados no total: {escanteios.get('total_esperado')} "
-            f"(tendencia: {escanteios.get('tendencia')})"
-        )
-    if cartoes.get("total_cartoes_esperado") is not None:
-        linhas.append(
-            f"Cartoes esperados no total: {cartoes.get('total_cartoes_esperado')} "
-            f"(tendencia: {cartoes.get('tendencia')})"
-        )
+
+    linhas.append("Mercados em que o mandante vem se destacando em casa (últimos jogos):")
+    if destaques_mandante:
+        linhas += [f"- {_formatar_destaque(mandante, 'em casa', d)}" for d in destaques_mandante]
+    else:
+        linhas.append("- nenhum mercado com pelo menos 70% de acerto no recorte em casa.")
+
+    linhas.append("Mercados em que o visitante vem se destacando fora de casa (últimos jogos):")
+    if destaques_visitante:
+        linhas += [f"- {_formatar_destaque(visitante, 'fora de casa', d)}" for d in destaques_visitante]
+    else:
+        linhas.append("- nenhum mercado com pelo menos 70% de acerto no recorte fora de casa.")
 
     dados = "\n".join(linhas)
 
     return (
-        "Voce e um analista esportivo experiente escrevendo uma previa curta (2 a 3 paragrafos, "
-        "em portugues do Brasil) para uma partida de futebol, com base apenas nos dados estatisticos "
-        "abaixo. Escreva como um texto editorial natural e fluido -- nunca liste os dados brutos como "
-        "uma tabela. Nao invente informacoes que nao estao nos dados (lesoes, escalacoes, noticias, "
-        "clima); baseie-se so no que foi fornecido.\n\n"
+        "Você é um analista de apostas esportivas experiente. Com base SOMENTE nos dados abaixo "
+        "(taxas de acerto reais dos últimos jogos de cada time, já filtrados pelo mando de campo que "
+        "cada um vai ter nessa partida), escreva uma análise curta (2 parágrafos, português do Brasil) "
+        "apontando qual é o MELHOR mercado pra essa partida e por quê — pode ser um mercado do "
+        "mandante, do visitante, ou combinar os dois se fizer sentido (ex.: ambas marcam, se os dois "
+        "times tiverem essa tendência). Seja direto e claro, como se estivesse entregando uma dica "
+        "pronta pro cliente — não liste os dados brutos como uma tabela. Não invente números que não "
+        "estão nos dados, nem informações externas (lesões, escalações, notícias, clima).\n\n"
         f"Dados:\n{dados}"
     )
 
 
-def gerar_analise(db, partida):
+def gerar_analise(partida, destaques_mandante, destaques_visitante):
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise IANaoConfiguradaError()
@@ -76,7 +65,7 @@ def gerar_analise(db, partida):
     from google import genai  # import atrasado -- so precisa resolver se a chave existir
 
     cliente = genai.Client(api_key=api_key)
-    prompt = _montar_prompt(db, partida)
+    prompt = _montar_prompt(partida, destaques_mandante, destaques_visitante)
 
     resposta = cliente.models.generate_content(model=MODELO_PADRAO, contents=prompt)
     texto = resposta.text.strip()

@@ -1,13 +1,13 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
 
+from app.schemas.destaque import Destaque
 
-class NotasPartida(BaseModel):
-    equilibrio: Optional[float] = None
-    poder_ofensivo_mandante: Optional[float] = None
-    poder_ofensivo_visitante: Optional[float] = None
-    intensidade: Optional[float] = None
-    confianca: Optional[float] = None
+
+class MelhorMercado(BaseModel):
+    time: str  # "mandante" ou "visitante"
+    nome_time: str
+    destaque: Destaque
 
 
 class AnaliseIAResponse(BaseModel):
@@ -15,4 +15,6 @@ class AnaliseIAResponse(BaseModel):
     disponivel: bool
     texto: Optional[str] = None
     gerado_em: Optional[str] = None
-    notas: Optional[NotasPartida] = None
+    destaques_mandante: List[Destaque] = []
+    destaques_visitante: List[Destaque] = []
+    melhor_mercado: Optional[MelhorMercado] = None
