@@ -2,32 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Check,
-  TrendingUp,
-  Users,
-  Shield,
-  UserRound,
-  Flame,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, Users, Shield, UserRound, Flame } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
 import { NavChip } from "@/components/nav-chip";
 import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
+import { flagSrc } from "@/lib/paises";
 
 interface Campeonato {
   id: number;
@@ -35,25 +18,19 @@ interface Campeonato {
   pais_nome: string;
   pais_codigo: string;
   temporada: number;
-  rodadas_total: number | null;
-  ativo: boolean;
 }
 
 function CabecalhoCampeonato() {
-  const [campeonatos, setCampeonatos] = useState<Campeonato[]>([]);
+  const [campeonato, setCampeonato] = useState<Campeonato | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/campeonatos/`)
-      .then((r) => (r.ok ? r.json() : { campeonatos: [] }))
-      .then((dados: { campeonatos: Campeonato[] }) => setCampeonatos(dados.campeonatos))
+    fetch(`${API_URL}/campeonatos/${CAMPEONATO_BRASILEIRAO_ID}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setCampeonato)
       .catch(() => {});
   }, []);
 
-  // So o Brasileirao esta de fato navegavel por enquanto -- outros
-  // campeonatos aparecem listados (prova que o backend ja suporta
-  // multiplas ligas) mas ainda nao tem rota propria no front.
-  const atual = campeonatos[0];
-  const titulo = atual ? `${atual.nome} ${atual.temporada}` : "Brasileirão Série A 2026";
+  const titulo = campeonato ? `${campeonato.nome} ${campeonato.temporada}` : "Brasileirão Série A 2026";
 
   return (
     <div>
@@ -63,23 +40,13 @@ function CabecalhoCampeonato() {
       >
         VEAGA
       </Link>
-      <DropdownMenu>
-        <DropdownMenuTrigger className="mt-2 flex items-center gap-1.5 font-heading text-2xl font-semibold uppercase tracking-wide transition-colors hover:text-primary sm:text-3xl">
-          {titulo}
-          <ChevronDown className="size-5 text-muted-foreground" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Campeonatos</DropdownMenuLabel>
-            {campeonatos.map((c) => (
-              <DropdownMenuItem key={c.id} className="justify-between gap-4">
-                {c.nome} {c.temporada}
-                {c.id === atual?.id && <Check className="size-4 text-primary" />}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <h1 className="mt-2 flex items-center gap-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+        {campeonato && (
+          // eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo, sem necessidade de otimizacao do Next/Image
+          <img src={flagSrc(campeonato.pais_codigo)} alt="" className="h-[0.75em] w-auto rounded-sm" />
+        )}
+        {titulo}
+      </h1>
     </div>
   );
 }
