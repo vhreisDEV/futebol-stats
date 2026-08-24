@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Trophy } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { LightRays } from "@/components/light-rays";
 import { SpotlightCard } from "@/components/spotlight-card";
+import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { flagSrcQuadrada } from "@/lib/paises";
 
@@ -66,11 +67,8 @@ export default function Home() {
 
         <div className="mt-10 grid gap-3 text-left">
           {carregando ? (
-            <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-card px-4 py-3.5">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Trophy className="size-4" />
-              </span>
-              <span className="block h-3 w-28 shimmer-bar-gold" />
+            <div className="flex justify-center py-4">
+              <VhSpinner mensagens={["Buscando os campeonatos..."]} />
             </div>
           ) : (
             campeonatos.map((c) => (

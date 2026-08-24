@@ -6,3 +6,4 @@ python-dotenv==1.2.2
 requests==2.34.2
 psycopg2-binary==2.9.12
 pytest==8.4.2
+anthropic==1.0.0

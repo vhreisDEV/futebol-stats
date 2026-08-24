@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -187,6 +188,16 @@ export function PartidaModal({
               ? "Essa partida foi adiada. Assim que for remarcada e jogada, o placar e as estatísticas aparecem aqui automaticamente."
               : "Essa partida ainda não foi realizada."}
           </p>
+        )}
+
+        {partida && partida.status === "agendada" && (
+          <Link
+            href={`/analise/${partida.id}`}
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+          >
+            <Sparkles className="size-4" />
+            Análise da IA
+          </Link>
         )}
       </DialogContent>
     </Dialog>
