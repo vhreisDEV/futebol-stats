@@ -64,13 +64,13 @@ Este documento acompanha a evolução real do projeto, desde a primeira versão 
 
 ## 🔵 Fase 6 — Inteligência Artificial
 
-- [ ] Integrar API de IA
-- [ ] Criar análise automática das partidas
+- [ ] Integrar API de IA (endpoint e cache prontos, falta configurar `ANTHROPIC_API_KEY`)
+- [x] Criar análise automática das partidas (prévia por partida agendada, link dedicado no modal — ver Issue de Análise da IA)
 - [ ] Gerar explicações baseadas nos dados
 - [ ] Criar insights automáticos
 - [ ] Avaliar qualidade das respostas
 
-> Ainda não iniciada como *feature* do produto. O desenvolvimento do VEAGA em si já é assistido por IA (Claude Code) do planejamento à implementação — essa fase é sobre IA como parte da experiência pro usuário final, não como ferramenta de desenvolvimento.
+> Estrutura pronta (`/partidas/{id}/analise`, cache em banco pra não gastar chamada de API repetida), mas ainda sem chave de API configurada — degrada pra "em breve" até isso ser resolvido. Pensado desde já pra virar recurso premium quando o site tiver assinatura. O desenvolvimento do VEAGA em si já é assistido por IA (Claude Code) do planejamento à implementação — essa fase é sobre IA como parte da experiência pro usuário final, não como ferramenta de desenvolvimento.
 
 ---
 
