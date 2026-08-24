@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
-from app.schemas.destaque import Destaque
+from app.schemas.destaque import Destaque, DestaqueJogador
 
 
 class Perna(BaseModel):
@@ -27,5 +27,7 @@ class AnaliseIAResponse(BaseModel):
     gerado_em: Optional[str] = None
     destaques_mandante: List[Destaque] = []
     destaques_visitante: List[Destaque] = []
+    destaques_jogadores_mandante: List[DestaqueJogador] = []
+    destaques_jogadores_visitante: List[DestaqueJogador] = []
     bilhete_simples: Optional[BilheteSimples] = None
     bilhete_multipla: Optional[BilheteMultipla] = None

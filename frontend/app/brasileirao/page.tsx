@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, TrendingUp, Users, Shield, UserRound, Flame, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, Users, Shield, UserRound, Flame } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
@@ -152,7 +152,6 @@ export default function Brasileirao() {
           <div className="flex flex-wrap gap-2">
             <NavChip href="/previsao" label="Previsão de Jogos" icon={TrendingUp} cor="gold" />
             <NavChip href="/dicas" label="Dicas da Rodada" icon={Flame} cor="emerald" />
-            <NavChip href="/analise" label="Análise IA" icon={Sparkles} cor="violet" />
             <NavChip href="/comparar" label="Comparar Times" icon={Users} cor="rose" />
             <NavChip href="/times" label="Times" icon={Shield} cor="orange" />
             <NavChip href="/jogadores" label="Jogadores" icon={UserRound} cor="neutral" />

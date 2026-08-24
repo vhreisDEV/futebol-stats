@@ -46,7 +46,7 @@ export function BilheteMultiplaCard({
       <div className="flex items-center gap-1.5">
         <Layers className="size-3.5 text-amber-400" />
         <span className="text-[10px] font-bold uppercase tracking-wide text-amber-400">
-          Bilhete múltipla · {pernas.length} pernas
+          Bilhete múltipla · {pernas.length} seleções
         </span>
         <span className="ml-auto rounded-full bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-300">
           {confiancaCombinada.toFixed(1)}/10

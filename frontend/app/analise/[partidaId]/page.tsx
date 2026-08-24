@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Sparkles } from "lucide-react";
+import { ChevronLeft, Sparkles, Eye } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
 import { ListaDestaques, type Destaque } from "@/components/lista-destaques";
 import { BilheteSimplesCard, BilheteMultiplaCard, type Perna } from "@/components/bilhete-card";
@@ -32,14 +32,44 @@ interface BilheteMultipla {
   confianca_combinada: number;
 }
 
+interface DestaqueJogador {
+  jogador_id: number;
+  nome: string;
+  posicao: string | null;
+  destaques: Destaque[];
+}
+
 interface AnaliseResponse {
   partida_id: number;
   disponivel: boolean;
   resumo: string | null;
   destaques_mandante: Destaque[];
   destaques_visitante: Destaque[];
+  destaques_jogadores_mandante: DestaqueJogador[];
+  destaques_jogadores_visitante: DestaqueJogador[];
   bilhete_simples: BilheteSimples | null;
   bilhete_multipla: BilheteMultipla | null;
+}
+
+function fraseJogador(nomeTime: string, j: DestaqueJogador) {
+  const melhor = j.destaques[0];
+  const porcentagem = Math.round(melhor.taxa * 100);
+  const acao =
+    melhor.tipo === "booleano" ? melhor.label.toLowerCase() : `mais de ${melhor.linha} ${melhor.label.toLowerCase()}`;
+  const sequencia = melhor.sequencia
+    .slice()
+    .reverse()
+    .map((v) => (melhor.tipo === "booleano" ? (v > melhor.linha ? "✓" : "✗") : v))
+    .join("-");
+
+  return (
+    <>
+      <span className="font-semibold">{j.nome}</span>
+      {j.posicao && <span className="text-muted-foreground"> ({j.posicao})</span>} · {nomeTime} — {acao} em{" "}
+      <span className="font-mono font-semibold">{porcentagem}%</span> dos últimos {melhor.total} jogos
+      <span className="ml-1 font-mono text-[10px] text-muted-foreground/70">({sequencia})</span>
+    </>
+  );
 }
 
 export default function AnalisePartida() {
@@ -75,6 +105,14 @@ export default function AnalisePartida() {
         setCarregando(false);
       });
   }, [partidaId]);
+
+  const jogadoresCombinados =
+    partida && analise
+      ? [
+          ...analise.destaques_jogadores_mandante.map((j) => ({ j, nomeTime: partida.time_mandante })),
+          ...analise.destaques_jogadores_visitante.map((j) => ({ j, nomeTime: partida.time_visitante })),
+        ]
+      : [];
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
@@ -146,6 +184,27 @@ export default function AnalisePartida() {
               </div>
             )}
 
+            {jogadoresCombinados.length > 0 && (
+              <div className="mt-4 rounded-lg border border-violet-500/25 bg-card p-4">
+                <div className="flex items-center gap-1.5">
+                  <Eye className="size-4 text-violet-400" />
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-violet-400">
+                    Fique de olho
+                  </span>
+                  <span className="ml-auto shrink-0 rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-400">
+                    PRO
+                  </span>
+                </div>
+                <ul className="mt-2.5 grid gap-2">
+                  {jogadoresCombinados.map(({ j, nomeTime }) => (
+                    <li key={j.jogador_id} className="rounded-md bg-muted/40 p-2.5 text-xs leading-relaxed">
+                      {fraseJogador(nomeTime, j)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {analise && (analise.destaques_mandante.length > 0 || analise.destaques_visitante.length > 0) && (
               <div className="mt-4 grid gap-4 rounded-lg border border-border bg-card/60 p-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
                 <div className="min-w-0">
@@ -157,6 +216,7 @@ export default function AnalisePartida() {
                       time={partida.time_mandante}
                       mandoLabel="em casa"
                       destaques={analise.destaques_mandante}
+                      mostrarSequencia
                     />
                   </div>
                 </div>
@@ -169,6 +229,7 @@ export default function AnalisePartida() {
                       time={partida.time_visitante}
                       mandoLabel="fora de casa"
                       destaques={analise.destaques_visitante}
+                      mostrarSequencia
                     />
                   </div>
                 </div>

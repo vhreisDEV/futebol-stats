@@ -72,10 +72,12 @@ export function ListaDestaques({
   time,
   mandoLabel,
   destaques,
+  mostrarSequencia = false,
 }: {
   time: string;
   mandoLabel: "em casa" | "fora de casa";
   destaques: Destaque[];
+  mostrarSequencia?: boolean;
 }) {
   if (destaques.length === 0) {
     return <p className="text-xs text-muted-foreground/70">Nada que se destaque {mandoLabel}.</p>;
@@ -96,6 +98,16 @@ export function ListaDestaques({
             <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-background/60">
               <div className={`h-full rounded-full bg-current ${cor}`} style={{ width: `${porcentagem}%` }} />
             </div>
+            {mostrarSequencia && (
+              <p className="mt-1.5 pl-5.5 font-mono text-[10px] tabular-nums text-muted-foreground/70">
+                {d.sequencia
+                  .slice()
+                  .reverse()
+                  .map((v) => (d.tipo === "booleano" ? (v > d.linha ? "✓" : "✗") : v))
+                  .join("-")}
+                <span className="ml-1 text-muted-foreground/50">(mais recente → mais antigo)</span>
+              </p>
+            )}
           </li>
         );
       })}

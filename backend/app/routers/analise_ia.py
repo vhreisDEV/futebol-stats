@@ -9,7 +9,7 @@ from app.models.analise_ia import AnaliseIAPartida
 from app.schemas.analise_ia import AnaliseIAResponse, BilheteSimples, BilheteMultipla
 from app.services.analise_ia import gerar_analise, IANaoConfiguradaError
 from app.services.analise_mercado import montar_pernas, montar_bilhetes
-from app.services.destaques import calcular_destaques_time
+from app.services.destaques import calcular_destaques_time, calcular_destaques_jogadores_time
 
 router = APIRouter(prefix="/partidas", tags=["Análise IA"])
 
@@ -49,6 +49,8 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
     base = dict(
         destaques_mandante=destaques_mandante,
         destaques_visitante=destaques_visitante,
+        destaques_jogadores_mandante=calcular_destaques_jogadores_time(db, partida.time_mandante_id),
+        destaques_jogadores_visitante=calcular_destaques_jogadores_time(db, partida.time_visitante_id),
         bilhete_simples=BilheteSimples(**bilhete_simples_dict) if bilhete_simples_dict else None,
         bilhete_multipla=BilheteMultipla(**bilhete_multipla_dict) if bilhete_multipla_dict else None,
     )
