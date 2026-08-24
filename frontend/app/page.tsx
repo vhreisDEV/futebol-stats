@@ -82,7 +82,7 @@ export default function Home() {
                 <SpotlightCard spotlightColor="rgba(212, 175, 55, 0.35)">
                   <Card className="overflow-hidden border-primary/20 text-left transition-colors hover:border-primary/50">
                     <CardContent className="flex items-center gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg">
+                      <span className="emoji-flag flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg">
                         {bandeiraPais(c.pais_codigo)}
                       </span>
                       <div className="min-w-0 flex-1">

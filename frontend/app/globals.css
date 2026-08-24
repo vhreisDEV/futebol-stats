@@ -184,3 +184,13 @@
     background: rgba(212, 175, 55, 0.3);
   }
 }
+
+/* Bandeiras de pais (emoji) -- a fonte customizada (Geist, via next/font)
+   nao cobre glifos de emoji, entao o navegador as vezes renderiza so o
+   fallback textual da sequencia de indicador regional ("BR" em vez da
+   bandeira colorida) em vez de cair pra fonte de emoji do sistema.
+   Forcando explicitamente uma fonte de emoji aqui. */
+.emoji-flag {
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  font-style: normal;
+}

@@ -134,7 +134,7 @@ export default function CampeonatoPage() {
             VEAGA
           </Link>
           <h1 className="mt-2 flex items-center gap-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-            <span className="text-xl sm:text-2xl">{bandeiraPais(campeonato.pais_codigo)}</span>
+            <span className="emoji-flag text-xl sm:text-2xl">{bandeiraPais(campeonato.pais_codigo)}</span>
             {campeonato.nome} {campeonato.temporada}
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
