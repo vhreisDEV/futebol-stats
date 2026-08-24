@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Sparkles, Eye, Target, Lock } from "lucide-react";
+import { ChevronLeft, ChevronDown, Sparkles, Eye, Target, Lock } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
 import { ListaDestaques, SequenciaBadges, type Destaque } from "@/components/lista-destaques";
 import { BilheteSimplesCard, BilheteMultiplaCard, fraseTotal, type Perna } from "@/components/bilhete-card";
@@ -99,6 +99,7 @@ export default function AnalisePartida() {
   const [analise, setAnalise] = useState<AnaliseResponse | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [mercadosAbertos, setMercadosAbertos] = useState(false);
 
   useEffect(() => {
     setCarregando(true);
@@ -190,14 +191,9 @@ export default function AnalisePartida() {
             )}
 
             {analise?.disponivel && analise.resumo && (
-              <div className="mt-3 flex items-start justify-center gap-1.5 text-center">
-                <p className="text-xs italic leading-relaxed text-muted-foreground">
-                  “{destacarNumeros(analise.resumo)}”
-                </p>
-                <span className="mt-0.5 shrink-0 rounded-full bg-violet-500/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-violet-400">
-                  PRO
-                </span>
-              </div>
+              <p className="mt-3 text-center text-xs italic leading-relaxed text-muted-foreground">
+                “{destacarNumeros(analise.resumo)}”
+              </p>
             )}
 
             {!analise?.bilhete_simples && (
@@ -216,9 +212,6 @@ export default function AnalisePartida() {
                   <Eye className="size-4 text-violet-400" />
                   <span className="text-[11px] font-bold uppercase tracking-wide text-violet-400">
                     Fique de olho
-                  </span>
-                  <span className="ml-auto shrink-0 rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-400">
-                    PRO
                   </span>
                 </div>
                 <ul className="mt-2.5 grid gap-2">
@@ -241,9 +234,6 @@ export default function AnalisePartida() {
                   <span className="text-[11px] font-bold uppercase tracking-wide text-violet-400">
                     Dicas da IA · Totais do jogo
                   </span>
-                  <span className="ml-auto shrink-0 rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-400">
-                    PRO
-                  </span>
                 </div>
                 {analise.dicas && (
                   <p className="mt-2 text-xs italic leading-relaxed text-muted-foreground">
@@ -264,43 +254,46 @@ export default function AnalisePartida() {
             )}
 
             {analise && (analise.destaques_mandante.length > 0 || analise.destaques_visitante.length > 0) && (
-              <div className="mt-4 rounded-lg border border-border bg-card/60 p-4">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-                    Todos os mercados
-                  </span>
-                  <span className="ml-auto shrink-0 rounded-full bg-violet-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-violet-400">
-                    PRO
-                  </span>
-                </div>
-                <div className="mt-3 grid gap-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-                      {partida.time_mandante} em casa
-                    </p>
-                    <div className="mt-1.5">
-                      <ListaDestaques
-                        time={partida.time_mandante}
-                        mandoLabel="em casa"
-                        destaques={analise.destaques_mandante}
-                        mostrarSequencia
-                      />
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setMercadosAbertos((v) => !v)}
+                  className="flex w-full items-center justify-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
+                >
+                  <ChevronDown className={`size-3.5 transition-transform ${mercadosAbertos ? "rotate-180" : ""}`} />
+                  {mercadosAbertos ? "Ocultar todos os mercados" : "Ver todos os mercados"}
+                </button>
+
+                {mercadosAbertos && (
+                  <div className="mt-2 grid gap-4 rounded-lg border border-border bg-card/60 p-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                        {partida.time_mandante} em casa
+                      </p>
+                      <div className="mt-1.5">
+                        <ListaDestaques
+                          time={partida.time_mandante}
+                          mandoLabel="em casa"
+                          destaques={analise.destaques_mandante}
+                          mostrarSequencia
+                        />
+                      </div>
+                    </div>
+                    <div className="min-w-0 sm:pl-4">
+                      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                        {partida.time_visitante} fora
+                      </p>
+                      <div className="mt-1.5">
+                        <ListaDestaques
+                          time={partida.time_visitante}
+                          mandoLabel="fora de casa"
+                          destaques={analise.destaques_visitante}
+                          mostrarSequencia
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="min-w-0 sm:pl-4">
-                    <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
-                      {partida.time_visitante} fora
-                    </p>
-                    <div className="mt-1.5">
-                      <ListaDestaques
-                        time={partida.time_visitante}
-                        mandoLabel="fora de casa"
-                        destaques={analise.destaques_visitante}
-                        mostrarSequencia
-                      />
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </>
