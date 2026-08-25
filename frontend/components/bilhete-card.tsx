@@ -26,6 +26,15 @@ export function fraseCurta(p: Perna) {
   );
 }
 
+// Casa de aposta so' opera com linha de meio em meio ponto (X.5) ou
+// numero inteiro -- uma media crua (26.9, 9.7, 4.6...) nao corresponde
+// a nenhuma linha real do mercado. Arredonda pro multiplo de 0.5 mais
+// proximo, que pode cair num inteiro (ex.: 26.9 -> 27) ou ficar em X.5
+// (ex.: 9.7 -> 9.5), igual as linhas que o resto do site ja usa.
+function arredondarParaLinha(valor: number) {
+  return Math.round(valor * 2) / 2;
+}
+
 export interface CategoriaTotal {
   stat: string;
   nomeStat: string;
@@ -100,7 +109,7 @@ export function CategoriaTotalCard({ categoria }: { categoria: CategoriaTotal })
           <p className="mt-1 text-[10px] text-muted-foreground/70">
             Média combinada esperada:{" "}
             <span className={`${sumulaMono.className} font-semibold text-emerald-400`}>
-              ~{Math.round(((principal.destaque.media + extras[0].destaque.media) / 2) * 10) / 10}
+              {arredondarParaLinha((principal.destaque.media + extras[0].destaque.media) / 2)}
             </span>
           </p>
         </>
@@ -117,15 +126,17 @@ export function BilheteSimplesCard({ perna }: { perna: Perna }) {
   const porcentagem = Math.round(perna.destaque.taxa * 100);
   return (
     <div className="rounded-md border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card p-4">
-      <div className="flex items-center gap-1.5">
-        <Trophy className="size-4 text-primary" />
-        <span className="text-[11px] font-bold uppercase tracking-wide text-primary">Bilhete Simples</span>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <Trophy className="size-4 text-primary" />
+          <span className="text-[11px] font-bold uppercase tracking-wide text-primary">Bilhete Simples</span>
+        </div>
+        <span className={`${sumulaMono.className} rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold tabular-nums text-primary`}>
+          {porcentagem}%
+        </span>
       </div>
-      <p className="text-base font-semibold leading-snug text-foreground sm:text-lg">{fraseCurta(perna)}</p>
-      <div className="mt-1 flex items-baseline gap-1.5">
-        <span className={`${sumulaMono.className} text-base font-bold tabular-nums text-primary`}>{porcentagem}%</span>
-        <span className="text-xs text-muted-foreground">dos últimos {perna.destaque.total} jogos</span>
-      </div>
+      <p className="mt-2 text-base font-semibold leading-snug text-foreground sm:text-lg">{fraseCurta(perna)}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">dos últimos {perna.destaque.total} jogos</p>
     </div>
   );
 }
