@@ -156,7 +156,12 @@ def processar_partida(db, partida, cache_jogadores):
         if stats is None:
             continue
 
-        if tipo == "Goal":
+        if tipo in ("Goal", "Penalty"):
+            # Highlightly marca gol de penalti com type="Penalty", nao
+            # "Goal" -- sem esse `in`, todo penalti convertido ficava de
+            # fora da contagem de gols do jogador (bug real, encontrado
+            # 2026-08-25 investigando 58 partidas onde a soma dos gols
+            # por jogador nao batia com o placar real).
             stats["gols"] += 1
             assist_id = evento.get("assistingPlayerId")
             if assist_id:
@@ -167,6 +172,11 @@ def processar_partida(db, partida, cache_jogadores):
             stats["cartoes_amarelos"] += 1
         elif tipo in ("Red Card", "Second Yellow Card"):
             stats["cartoes_vermelhos"] += 1
+        # type == "Own Goal": o jogador e' registrado (aparicao conta),
+        # mas o gol NAO e' somado ao "gols" dele -- convencao padrao de
+        # estatistica de futebol (gol contra nao e' credito pessoal do
+        # jogador). Por isso a soma dos gols por jogador de uma partida
+        # com gol contra fica, de proposito, 1 a menos que o placar real.
 
     novas = 0
     for dados in estatisticas.values():
