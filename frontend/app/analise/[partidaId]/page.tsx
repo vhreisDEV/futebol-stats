@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronDown, Sparkles, Eye, Target, Lock } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
 import { ListaDestaques, SequenciaBadges, type Destaque } from "@/components/lista-destaques";
-import { BilheteSimplesCard, BilheteMultiplaCard, fraseTotal, type Perna } from "@/components/bilhete-card";
+import { BilheteSimplesCard, BilheteMultiplaCard, agruparTotais, CategoriaTotalCard, type Perna } from "@/components/bilhete-card";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 import { sumulaMono } from "@/lib/fonts";
@@ -246,13 +246,8 @@ export default function AnalisePartida() {
                   </p>
                 )}
                 <ul className="mt-2.5 grid gap-1.5">
-                  {analise.destaques_totais.map((p, i) => (
-                    <li key={i} className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-xs">
-                      <span className="min-w-0 flex-1">{fraseTotal(p)}</span>
-                      <span className={`${sumulaMono.className} shrink-0 font-semibold text-emerald-400`}>
-                        {Math.round(p.destaque.taxa * 100)}%
-                      </span>
-                    </li>
+                  {agruparTotais(analise.destaques_totais).map((categoria) => (
+                    <CategoriaTotalCard key={categoria.stat} categoria={categoria} />
                   ))}
                 </ul>
               </div>

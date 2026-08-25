@@ -26,19 +26,73 @@ export function fraseCurta(p: Perna) {
   );
 }
 
-// Mercados de "totais do jogo" somam os dois times -- "Athletico-PR
-// (fora): mais de 18.5 chutes" lia como se fosse so o time dele, entao
-// aqui a frase deixa explicito que e' a partida inteira, nao um lado so.
-export function fraseTotal(p: Perna) {
-  const mando = p.time === "mandante" ? "em casa" : "fora de casa";
-  const d = p.destaque;
-  const stat = d.label.replace(/ totais no jogo/i, "").toLowerCase();
+export interface CategoriaTotal {
+  stat: string;
+  nomeStat: string;
+  principal: Perna;
+  extras: Perna[];
+}
+
+// Os mercados de "total do jogo" vem um por time+mando (ex.: chutes
+// olhando os jogos do Botafogo em casa E olhando os jogos do
+// Athletico-PR fora, separadamente) -- listar os dois lado a lado como
+// itens soltos obrigava o usuario a comparar e decidir sozinho qual
+// numero valia mais. Agrupar por categoria (chutes/escanteios/cartoes) e
+// escolher o palpite de maior taxa como "principal" da um numero so por
+// categoria, mantendo o outro sinal visivel como apoio (nunca inventa
+// media nem soma -- so escolhe qual dos dois sinais reais e' o mais
+// forte).
+export function agruparTotais(pernas: Perna[]): CategoriaTotal[] {
+  const grupos = new Map<string, Perna[]>();
+  for (const p of pernas) {
+    const lista = grupos.get(p.destaque.stat) ?? [];
+    lista.push(p);
+    grupos.set(p.destaque.stat, lista);
+  }
+
+  return Array.from(grupos.values()).map((lista) => {
+    // Maior taxa primeiro; empatado, prefere a linha mais alta (sinal
+    // mais forte pra mesma confianca).
+    const [principal, ...extras] = [...lista].sort(
+      (a, b) => b.destaque.taxa - a.destaque.taxa || b.destaque.linha - a.destaque.linha
+    );
+    const nomeStat = principal.destaque.label.replace(/ totais no jogo/i, "");
+    return { stat: principal.destaque.stat, nomeStat, principal, extras };
+  });
+}
+
+export function CategoriaTotalCard({ categoria }: { categoria: CategoriaTotal }) {
+  const { principal, extras, nomeStat } = categoria;
+  const mando = principal.time === "mandante" ? "em casa" : "fora de casa";
+  const porcentagem = Math.round(principal.destaque.taxa * 100);
+
   return (
-    <>
-      Jogos com {p.nome_time} {mando} costumam ter mais de{" "}
-      <span className={`${sumulaMono.className} font-bold text-emerald-400`}>{d.linha}</span> {stat} no total (somando os dois
-      times)
-    </>
+    <li className="rounded-md bg-muted/40 p-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-emerald-400">{nomeStat}</span>
+        <span className="flex items-baseline gap-1 whitespace-nowrap">
+          <span className={`${sumulaMono.className} text-base font-bold text-emerald-400`}>
+            {principal.destaque.linha}+
+          </span>
+          <span className={`${sumulaMono.className} text-[10px] text-muted-foreground`}>{porcentagem}%</span>
+        </span>
+      </div>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">
+        {principal.nome_time} {mando} (somando os dois times no jogo)
+      </p>
+      {extras.length > 0 && (
+        <p className="mt-1 border-t border-emerald-500/10 pt-1 text-[10px] text-muted-foreground/70">
+          Também vale considerar:{" "}
+          {extras.map((e, i) => (
+            <span key={i}>
+              {i > 0 && " · "}
+              {e.nome_time} {e.time === "mandante" ? "em casa" : "fora de casa"}: mais de{" "}
+              <span className={sumulaMono.className}>{e.destaque.linha}</span> ({Math.round(e.destaque.taxa * 100)}%)
+            </span>
+          ))}
+        </p>
+      )}
+    </li>
   );
 }
 
@@ -54,8 +108,8 @@ export function BilheteSimplesCard({ perna }: { perna: Perna }) {
         <Trophy className="size-4 text-primary" />
         <span className="text-[11px] font-bold uppercase tracking-wide text-primary">Bilhete Simples</span>
       </div>
-      <p className="mt-2 text-base font-semibold leading-snug text-foreground sm:text-lg">{fraseCurta(perna)}</p>
-      <div className="mt-2 flex items-baseline gap-1.5">
+      <p className="text-base font-semibold leading-snug text-foreground sm:text-lg">{fraseCurta(perna)}</p>
+      <div className="mt-1 flex items-baseline gap-1.5">
         <span className={`${sumulaMono.className} text-lg font-bold tabular-nums text-primary`}>{porcentagem}%</span>
         <span className="text-xs text-muted-foreground">dos últimos {perna.destaque.total} jogos</span>
       </div>
