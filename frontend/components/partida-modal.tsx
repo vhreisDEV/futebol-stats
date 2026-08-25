@@ -63,7 +63,7 @@ function LinhaEstatistica({
   const visitanteVence = mandante !== null && visitante !== null && visitante > mandante;
 
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-2">
+    <div className="grid grid-cols-3 items-center gap-3 py-2">
       <span
         className={`${sumulaMono.className} text-right text-base tabular-nums ${mandanteVence ? "font-bold text-primary" : "text-muted-foreground"}`}
       >
