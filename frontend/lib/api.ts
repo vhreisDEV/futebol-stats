@@ -13,3 +13,8 @@ export const CAMPEONATO_BRASILEIRAO_ID = 1;
 // campeonatos continua liberada -- isso so trava a TROCA dentro da mesma
 // tela. Reativar quando todas as ligas estiverem com backfill completo.
 export const TROCA_CAMPEONATO_HABILITADA = false;
+
+// Username do bot do Telegram (sem "@"). Configura via
+// NEXT_PUBLIC_TELEGRAM_BOT_USERNAME depois de criar o bot no @BotFather
+// -- enquanto vazio, o link de inscrição fica escondido.
+export const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "";

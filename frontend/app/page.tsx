@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LightRays } from "@/components/light-rays";
 import { SpotlightCard } from "@/components/spotlight-card";
 import { VhSpinner } from "@/components/vh-spinner";
+import { TelegramCTA } from "@/components/telegram-cta";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { flagSrcQuadrada } from "@/lib/paises";
 
@@ -112,6 +113,10 @@ export default function Home() {
               );
             })
           )}
+        </div>
+
+        <div className="mt-4 flex justify-center">
+          <TelegramCTA />
         </div>
       </div>
     </main>

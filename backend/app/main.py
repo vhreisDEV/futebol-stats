@@ -12,6 +12,7 @@ from app.routers import (
     destaques,
     campeonatos,
     analise_ia,
+    telegram,
 )
 
 app = FastAPI(title="VEAGA")
@@ -44,6 +45,7 @@ app.include_router(jogadores.router)
 app.include_router(destaques.router)
 app.include_router(campeonatos.router)
 app.include_router(analise_ia.router)
+app.include_router(telegram.router)
 
 @app.get("/")
 def root():
