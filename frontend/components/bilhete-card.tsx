@@ -81,16 +81,29 @@ export function CategoriaTotalCard({ categoria }: { categoria: CategoriaTotal })
         {principal.nome_time} {mando} (somando os dois times no jogo)
       </p>
       {extras.length > 0 && (
-        <p className="mt-1 border-t border-emerald-500/10 pt-1 text-[10px] text-muted-foreground/70">
-          Também vale considerar:{" "}
-          {extras.map((e, i) => (
-            <span key={i}>
-              {i > 0 && " · "}
-              {e.nome_time} {e.time === "mandante" ? "em casa" : "fora de casa"}: mais de{" "}
-              <span className={sumulaMono.className}>{e.destaque.linha}</span> ({Math.round(e.destaque.taxa * 100)}%)
+        <>
+          <p className="mt-1 border-t border-emerald-500/10 pt-1 text-[10px] text-muted-foreground/70">
+            Também vale considerar:{" "}
+            {extras.map((e, i) => (
+              <span key={i}>
+                {i > 0 && " · "}
+                {e.nome_time} {e.time === "mandante" ? "em casa" : "fora de casa"}: mais de{" "}
+                <span className={sumulaMono.className}>{e.destaque.linha}</span> ({Math.round(e.destaque.taxa * 100)}%)
+              </span>
+            ))}
+          </p>
+          {/* Media combinada = media real de cada time (nao a "linha", que
+              e' um piso conservador escolhido pra bater em 70-90% dos
+              jogos, sempre mais baixo que a media de verdade) -- os dois
+              numeros de `media` ja vem calculados pelo backend a partir do
+              historico real, so' juntamos os dois aqui. */}
+          <p className="mt-1 text-[10px] text-muted-foreground/70">
+            Média combinada esperada:{" "}
+            <span className={`${sumulaMono.className} font-semibold text-emerald-400`}>
+              ~{Math.round(((principal.destaque.media + extras[0].destaque.media) / 2) * 10) / 10}
             </span>
-          ))}
-        </p>
+          </p>
+        </>
       )}
     </li>
   );
@@ -110,7 +123,7 @@ export function BilheteSimplesCard({ perna }: { perna: Perna }) {
       </div>
       <p className="text-base font-semibold leading-snug text-foreground sm:text-lg">{fraseCurta(perna)}</p>
       <div className="mt-1 flex items-baseline gap-1.5">
-        <span className={`${sumulaMono.className} text-lg font-bold tabular-nums text-primary`}>{porcentagem}%</span>
+        <span className={`${sumulaMono.className} text-base font-bold tabular-nums text-primary`}>{porcentagem}%</span>
         <span className="text-xs text-muted-foreground">dos últimos {perna.destaque.total} jogos</span>
       </div>
     </div>
