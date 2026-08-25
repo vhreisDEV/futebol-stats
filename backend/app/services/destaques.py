@@ -169,29 +169,20 @@ STATS_DESTAQUE_TOTAL_JOGO = [
 ]
 
 
-def calcular_destaques_total_jogo(db, time_id, mando, data_referencia, janela=JANELA_PADRAO):
-    """
-    Mesma logica de calcular_destaques_time, mas olhando o TOTAL da
-    partida (soma dos dois times) em vez de so o que o time filtrado fez
-    -- ex.: "quando o Botafogo joga em casa, o jogo costuma ter mais de
-    25.5 chutes no total" (nao so os chutes do Botafogo).
-
-    Passa as partidas brutas pro extrator (em vez da perspectiva
-    time-a-time ja usada em calcular_destaques_time), porque o total
-    precisa dos dois lados do placar/estatistica ao mesmo tempo.
-    """
-    jogos = _buscar_jogos_anteriores(db, time_id, data_referencia, janela, mando)
-    if len(jogos) < MINIMO_JOGOS:
-        return []
-
-    return _encontrar_destaques(jogos, STATS_DESTAQUE_TOTAL_JOGO)
-
-
-def calcular_destaques_time(db, time_id, mando, data_referencia, janela=JANELA_PADRAO):
+def calcular_destaques_time_e_totais(db, time_id, mando, data_referencia, janela=JANELA_PADRAO):
     """
     Acha padroes que se repetem nos ultimos jogos de um time, com mando de
     campo fixo (mesmo mando que ele vai ter no proximo jogo -- mandante
-    olha so jogos em casa, visitante so jogos fora).
+    olha so jogos em casa, visitante so jogos fora), tanto pros stats do
+    proprio time quanto pros de "total do jogo" (soma dos dois times, ex.:
+    "quando o Botafogo joga em casa, o jogo costuma ter mais de 25.5
+    chutes no total").
+
+    Busca os jogos anteriores UMA SO VEZ e reaproveita pros dois calculos
+    -- os dois usam exatamente o mesmo filtro (time_id + mando), entao
+    rodar a query 2x so pra separar as duas categorias so soma latencia
+    de rede pro Supabase sem motivo (essa era a causa real da Analise IA
+    demorando bem mais que as outras paginas pra carregar).
 
     Pra stats numericos, testa um punhado de linhas ".5" fixas (as mesmas
     que uma casa de aposta ofereceria) e fica com a MAIS ALTA que ainda
@@ -204,14 +195,25 @@ def calcular_destaques_time(db, time_id, mando, data_referencia, janela=JANELA_P
 
     So retorna o que realmente se destaca (>=70% de acerto, >=5 jogos na
     amostra). Cada destaque inclui a sequencia de valores brutos (mais
-    recente primeiro) pra dar transparencia.
+    recente primeiro) pra dar transparencia. Devolve (destaques_time,
+    destaques_totais).
     """
     jogos = _buscar_jogos_anteriores(db, time_id, data_referencia, janela, mando)
     if len(jogos) < MINIMO_JOGOS:
-        return []
+        return [], []
 
     perspectivas = [_extrair_perspectiva(p, time_id) for p in jogos]
-    return _encontrar_destaques(perspectivas, STATS_DESTAQUE_TIME)
+    destaques_time = _encontrar_destaques(perspectivas, STATS_DESTAQUE_TIME)
+    destaques_totais = _encontrar_destaques(jogos, STATS_DESTAQUE_TOTAL_JOGO)
+    return destaques_time, destaques_totais
+
+
+def calcular_destaques_time(db, time_id, mando, data_referencia, janela=JANELA_PADRAO):
+    """Usado por quem so precisa dos destaques do proprio time (Dicas da
+    Rodada) -- ver calcular_destaques_time_e_totais pra quem tambem
+    precisa dos destaques de "total do jogo" pro mesmo time+mando."""
+    destaques_time, _ = calcular_destaques_time_e_totais(db, time_id, mando, data_referencia, janela)
+    return destaques_time
 
 
 def _serie_campo_jogo(campo):

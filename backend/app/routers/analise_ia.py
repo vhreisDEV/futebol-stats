@@ -11,9 +11,8 @@ from app.schemas.analise_ia import AnaliseIAResponse, BilheteSimples, BilheteMul
 from app.services.analise_ia import gerar_analise, gerar_dicas, IANaoConfiguradaError
 from app.services.analise_mercado import montar_pernas, montar_bilhetes
 from app.services.destaques import (
-    calcular_destaques_time,
+    calcular_destaques_time_e_totais,
     calcular_destaques_jogadores_time,
-    calcular_destaques_total_jogo,
 )
 
 router = APIRouter(prefix="/partidas", tags=["Análise IA"])
@@ -56,16 +55,18 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
         return AnaliseIAResponse(partida_id=partida_id, disponivel=False, dentro_da_janela=False)
 
     referencia = partida.data or date.today()
-    destaques_mandante = calcular_destaques_time(db, partida.time_mandante_id, "mandante", referencia)
-    destaques_visitante = calcular_destaques_time(db, partida.time_visitante_id, "visitante", referencia)
+    destaques_mandante, destaques_totais_mandante = calcular_destaques_time_e_totais(
+        db, partida.time_mandante_id, "mandante", referencia
+    )
+    destaques_visitante, destaques_totais_visitante = calcular_destaques_time_e_totais(
+        db, partida.time_visitante_id, "visitante", referencia
+    )
 
     pernas = montar_pernas(
         partida.time_mandante.nome, destaques_mandante, partida.time_visitante.nome, destaques_visitante
     )
     bilhete_simples_dict, bilhete_multipla_dict = montar_bilhetes(pernas)
 
-    destaques_totais_mandante = calcular_destaques_total_jogo(db, partida.time_mandante_id, "mandante", referencia)
-    destaques_totais_visitante = calcular_destaques_total_jogo(db, partida.time_visitante_id, "visitante", referencia)
     pernas_totais = montar_pernas(
         partida.time_mandante.nome, destaques_totais_mandante, partida.time_visitante.nome, destaques_totais_visitante
     )
