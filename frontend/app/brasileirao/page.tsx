@@ -51,21 +51,6 @@ function CabecalhoCampeonato() {
   );
 }
 
-function ChipAnaliseIA() {
-  const [partidaId, setPartidaId] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetch(`${API_URL}/partidas/proxima?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setPartidaId(d?.id ?? null))
-      .catch(() => {});
-  }, []);
-
-  if (!partidaId) return null;
-
-  return <NavChip href={`/analise/${partidaId}`} label="Análise IA" icon={Sparkles} cor="violet" novo />;
-}
-
 interface PartidaRodada {
   id: number;
   data: string | null;
@@ -94,6 +79,7 @@ export default function Brasileirao() {
   const [rodadaMaxima, setRodadaMaxima] = useState<number | null>(null);
   const [rodadaSelecionada, setRodadaSelecionada] = useState<number | null>(null);
   const [partidas, setPartidas] = useState<PartidaRodada[]>([]);
+  const [partidaAnaliseId, setPartidaAnaliseId] = useState<number | null>(null);
   const [carregandoInicial, setCarregandoInicial] = useState(true);
   const [carregandoRodada, setCarregandoRodada] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -101,15 +87,23 @@ export default function Brasileirao() {
   const [direcao, setDirecao] = useState<"next" | "prev">("next");
 
   useEffect(() => {
-    fetch(`${API_URL}/rodadas/atual?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
-      .then((r) => {
+    // Busca a rodada atual e a proxima partida (pro chip "Análise IA")
+    // juntas -- so libera a tela quando as duas terminarem, pra nao ter
+    // um chip aparecendo sozinho depois dos outros ja renderizados.
+    Promise.all([
+      fetch(`${API_URL}/rodadas/atual?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar a rodada atual");
         return r.json();
-      })
-      .then((dados: RodadaAtualResponse) => {
-        setRodadaAtual(dados.rodada_atual);
-        setRodadaMaxima(dados.rodada_maxima);
-        setRodadaSelecionada(dados.rodada_atual);
+      }),
+      fetch(`${API_URL}/partidas/proxima?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ])
+      .then(([dadosRodada, proxima]: [RodadaAtualResponse, { id: number } | null]) => {
+        setRodadaAtual(dadosRodada.rodada_atual);
+        setRodadaMaxima(dadosRodada.rodada_maxima);
+        setRodadaSelecionada(dadosRodada.rodada_atual);
+        setPartidaAnaliseId(proxima?.id ?? null);
         setCarregandoInicial(false);
       })
       .catch((err) => {
@@ -169,7 +163,9 @@ export default function Brasileirao() {
           <div className="flex flex-wrap gap-2">
             <NavChip href="/previsao" label="Previsão de Jogos" icon={TrendingUp} cor="gold" />
             <NavChip href="/dicas" label="Dicas da Rodada" icon={Flame} cor="emerald" />
-            <ChipAnaliseIA />
+            {partidaAnaliseId && (
+              <NavChip href={`/analise/${partidaAnaliseId}`} label="Análise IA" icon={Sparkles} cor="violet" novo />
+            )}
             <NavChip href="/comparar" label="Comparar Times" icon={Users} cor="rose" />
             <NavChip href="/times" label="Times" icon={Shield} cor="orange" />
             <NavChip href="/jogadores" label="Jogadores" icon={UserRound} cor="neutral" />
