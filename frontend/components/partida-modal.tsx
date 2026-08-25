@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Space_Mono } from "next/font/google";
 import { Sparkles } from "lucide-react";
 import {
   Dialog,
@@ -13,13 +12,7 @@ import {
 import { VhSpinner } from "@/components/vh-spinner";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
-
-// Fonte so' deste componente (prototipo da linha visual "sumula oficial"
-// -- ver [[project_veaga_sumula_visual]]): Geist Mono e' a mono padrao de
-// qualquer projeto Next.js, Space Mono tem mais cara de maquina de
-// escrever/formulario carbonado, o que combina mais com "documento
-// oficial preenchido a mao" do que com "interface de app".
-const sumulaMono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"] });
+import { sumulaMono } from "@/lib/fonts";
 
 interface PartidaDetalhe {
   id: number;

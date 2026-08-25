@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
+import { sumulaMono } from "@/lib/fonts";
 
 export interface Destaque {
   stat: string;
@@ -38,7 +39,7 @@ export function fraseDestaque(time: string, mandoLabel: "em casa" | "fora de cas
     return (
       <>
         Nos jogos de <span className="font-semibold">{time}</span> {mandoLabel}, ambas equipes costumam marcar —{" "}
-        <span className="font-mono font-semibold">
+        <span className={`${sumulaMono.className} font-semibold`}>
           {d.acertos}/{d.total}
         </span>{" "}
         jogos ({porcentagem}%)
@@ -49,7 +50,7 @@ export function fraseDestaque(time: string, mandoLabel: "em casa" | "fora de cas
     return (
       <>
         <span className="font-semibold">{time}</span> costuma não perder {mandoLabel} —{" "}
-        <span className="font-mono font-semibold">
+        <span className={`${sumulaMono.className} font-semibold`}>
           {d.acertos}/{d.total}
         </span>{" "}
         jogos ({porcentagem}%)
@@ -59,8 +60,8 @@ export function fraseDestaque(time: string, mandoLabel: "em casa" | "fora de cas
   return (
     <>
       <span className="font-semibold">{time}</span> costuma passar de{" "}
-      <span className="font-mono font-semibold text-primary">{d.linha}</span> {d.label.toLowerCase()} {mandoLabel} —{" "}
-      <span className="font-mono font-semibold">
+      <span className={`${sumulaMono.className} font-semibold text-primary`}>{d.linha}</span> {d.label.toLowerCase()} {mandoLabel} —{" "}
+      <span className={`${sumulaMono.className} font-semibold`}>
         {d.acertos}/{d.total}
       </span>{" "}
       jogos ({porcentagem}%)
@@ -77,7 +78,7 @@ export function SequenciaBadges({ destaque }: { destaque: Destaque }) {
         .map((v, i) => (
           <span
             key={i}
-            className={`rounded px-1.5 py-0.5 font-mono text-[10px] tabular-nums ${
+            className={`${sumulaMono.className} rounded px-1.5 py-0.5 text-[10px] tabular-nums ${
               v > destaque.linha ? "bg-primary/15 font-semibold text-primary" : "bg-background/60 text-muted-foreground/70"
             }`}
           >

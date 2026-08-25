@@ -9,6 +9,7 @@ import { ListaDestaques, SequenciaBadges, type Destaque } from "@/components/lis
 import { BilheteSimplesCard, BilheteMultiplaCard, fraseTotal, type Perna } from "@/components/bilhete-card";
 import { API_URL } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
+import { sumulaMono } from "@/lib/fonts";
 
 interface PartidaResumo {
   id: number;
@@ -66,11 +67,11 @@ function fraseJogador(nomeTime: string, j: DestaqueJogador) {
         melhor.label.toLowerCase()
       ) : (
         <>
-          passar de <span className="font-mono font-bold text-primary">{melhor.linha}</span>{" "}
+          passar de <span className={`${sumulaMono.className} font-bold text-primary`}>{melhor.linha}</span>{" "}
           {melhor.label.toLowerCase()}
         </>
       )}{" "}
-      em <span className="font-mono font-semibold text-primary">{porcentagem}%</span> dos últimos {melhor.total}{" "}
+      em <span className={`${sumulaMono.className} font-semibold text-primary`}>{porcentagem}%</span> dos últimos {melhor.total}{" "}
       jogos
     </>
   );
@@ -82,7 +83,7 @@ function fraseJogador(nomeTime: string, j: DestaqueJogador) {
 function destacarNumeros(texto: string, cor: string = "text-primary") {
   return texto.split(/(\d+[.,]\d+|\d+%?)/g).map((parte, i) =>
     /^\d/.test(parte) ? (
-      <span key={i} className={`font-mono font-bold ${cor}`}>
+      <span key={i} className={`${sumulaMono.className} font-bold ${cor}`}>
         {parte}
       </span>
     ) : (
@@ -157,7 +158,7 @@ export default function AnalisePartida() {
           <span className="font-semibold text-foreground">Dicas da IA</span> = tendências do jogo todo
         </p>
 
-        <div className="mt-3 flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2">
+        <div className="mt-3 flex items-center gap-2 rounded-md border border-violet-500/30 bg-violet-500/10 px-3 py-2">
           <Lock className="size-3.5 shrink-0 text-violet-400" />
           <p className="text-[11px] leading-relaxed text-violet-200">
             <span className="font-bold uppercase tracking-wide">Conteúdo PRO</span> — toda essa análise está
@@ -178,6 +179,10 @@ export default function AnalisePartida() {
             <p className="mt-4 text-center text-xs text-muted-foreground">
               {formatarDataHora(partida.data, partida.hora)}
               {partida.rodada !== null && ` · Rodada ${partida.rodada}`}
+              {" · "}
+              <span className={`${sumulaMono.className} text-[10px] tracking-wide text-primary/70`}>
+                Nº {String(partida.id).padStart(6, "0")}
+              </span>
             </p>
             <p className="mt-1 text-center font-heading text-lg uppercase tracking-wide">
               {partida.time_mandante} <span className="text-muted-foreground">x</span> {partida.time_visitante}
@@ -197,7 +202,7 @@ export default function AnalisePartida() {
             )}
 
             {!analise?.bilhete_simples && (
-              <div className="mt-6 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+              <div className="mt-6 rounded-md border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                 {partida.status === "finalizada"
                   ? "A análise da IA é gerada apenas para partidas que ainda vão acontecer."
                   : analise?.dentro_da_janela === false
@@ -207,7 +212,7 @@ export default function AnalisePartida() {
             )}
 
             {jogadoresCombinados.length > 0 && (
-              <div className="mt-4 rounded-lg border border-violet-500/25 bg-card p-4">
+              <div className="mt-4 rounded-md border border-violet-500/25 bg-card p-4">
                 <div className="flex items-center gap-1.5">
                   <Eye className="size-4 text-violet-400" />
                   <span className="text-[11px] font-bold uppercase tracking-wide text-violet-400">
@@ -228,7 +233,7 @@ export default function AnalisePartida() {
             )}
 
             {analise && analise.destaques_totais.length > 0 && (
-              <div className="mt-4 rounded-lg border border-emerald-500/25 bg-card p-4">
+              <div className="mt-4 rounded-md border border-emerald-500/25 bg-card p-4">
                 <div className="flex items-center gap-1.5">
                   <Target className="size-4 text-emerald-400" />
                   <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-400">
@@ -244,7 +249,7 @@ export default function AnalisePartida() {
                   {analise.destaques_totais.map((p, i) => (
                     <li key={i} className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-xs">
                       <span className="min-w-0 flex-1">{fraseTotal(p)}</span>
-                      <span className="shrink-0 font-mono font-semibold text-emerald-400">
+                      <span className={`${sumulaMono.className} shrink-0 font-semibold text-emerald-400`}>
                         {Math.round(p.destaque.taxa * 100)}%
                       </span>
                     </li>
@@ -265,7 +270,7 @@ export default function AnalisePartida() {
                 </button>
 
                 {mercadosAbertos && (
-                  <div className="mt-2 grid gap-4 rounded-lg border border-border bg-card/60 p-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
+                  <div className="mt-2 grid gap-4 rounded-md border border-border bg-card/60 p-4 sm:grid-cols-2 sm:divide-x sm:divide-border">
                     <div className="min-w-0">
                       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
                         {partida.time_mandante} em casa
