@@ -1,5 +1,18 @@
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, func
 from app.models.partida import Partida
+
+
+def ultimo_jogo_finalizado(db, time_id):
+    """Data do jogo finalizado mais recente de um time (mandante ou
+    visitante) -- usado pra saber se o cache de destaques de um time
+    ainda vale (ver AnaliseIAPartida.mandante_ultimo_jogo/
+    visitante_ultimo_jogo): se essa data nao mudou desde que o cache foi
+    calculado, os ultimos jogos considerados sao exatamente os mesmos."""
+    return (
+        db.query(func.max(Partida.data))
+        .filter(Partida.status == "finalizada", or_(Partida.time_mandante_id == time_id, Partida.time_visitante_id == time_id))
+        .scalar()
+    )
 
 
 def _buscar_jogos_anteriores(db, time_id, data_referencia, janela, mando=None):
