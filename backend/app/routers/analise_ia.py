@@ -2,7 +2,7 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import SessionLocal
 from app.models.partida import Partida
@@ -12,7 +12,7 @@ from app.services.analise_ia import gerar_analise, gerar_dicas, IANaoConfigurada
 from app.services.analise_mercado import montar_pernas, montar_bilhetes
 from app.services.destaques import (
     calcular_destaques_time_e_totais,
-    calcular_destaques_jogadores_time,
+    calcular_destaques_jogadores_confronto,
 )
 
 router = APIRouter(prefix="/partidas", tags=["Análise IA"])
@@ -28,7 +28,14 @@ def get_db():
 
 @router.get("/{partida_id}/analise", response_model=AnaliseIAResponse)
 def obter_analise(partida_id: int, db: Session = Depends(get_db)):
-    partida = db.query(Partida).filter(Partida.id == partida_id).first()
+    # joinedload evita 2 queries extras (lazy load de time_mandante/
+    # time_visitante na primeira vez que .nome e' acessado mais abaixo).
+    partida = (
+        db.query(Partida)
+        .options(joinedload(Partida.time_mandante), joinedload(Partida.time_visitante))
+        .filter(Partida.id == partida_id)
+        .first()
+    )
     if not partida:
         raise HTTPException(status_code=404, detail="Partida nao encontrada")
 
@@ -74,11 +81,14 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
     # Bilhetes e destaques sao calculados na hora (gratis, sem IA) e sempre
     # aparecem -- so o resumo/dicas em texto dependem da chave do Gemini
     # configurada.
+    destaques_jogadores_mandante, destaques_jogadores_visitante = calcular_destaques_jogadores_confronto(
+        db, partida.time_mandante_id, partida.time_visitante_id
+    )
     base = dict(
         destaques_mandante=destaques_mandante,
         destaques_visitante=destaques_visitante,
-        destaques_jogadores_mandante=calcular_destaques_jogadores_time(db, partida.time_mandante_id),
-        destaques_jogadores_visitante=calcular_destaques_jogadores_time(db, partida.time_visitante_id),
+        destaques_jogadores_mandante=destaques_jogadores_mandante,
+        destaques_jogadores_visitante=destaques_jogadores_visitante,
         destaques_totais=pernas_totais,
         bilhete_simples=BilheteSimples(**bilhete_simples_dict) if bilhete_simples_dict else None,
         bilhete_multipla=BilheteMultipla(**bilhete_multipla_dict) if bilhete_multipla_dict else None,

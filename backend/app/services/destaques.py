@@ -269,22 +269,23 @@ def calcular_destaques_jogador(db, jogador_id, janela=JANELA_PADRAO):
     return _encontrar_destaques(jogos, STATS_DESTAQUE_JOGADOR)
 
 
-def calcular_destaques_jogadores_time(db, time_id, janela=JANELA_PADRAO, limite=3):
-    """Mesma ideia de calcular_destaques_jogador, mas pro elenco inteiro de
-    um time de uma vez -- so devolve quem realmente tem algum destaque, e
-    corta pros `limite` jogadores com maior taxa de acerto (pra nao afogar
-    o card do confronto com o elenco inteiro).
+def _destaques_jogadores_por_time(db, times_ids, janela, limite):
+    """
+    Nucleo comum de calcular_destaques_jogadores_time e
+    calcular_destaques_jogadores_confronto: busca jogadores e estatisticas
+    de varios times numa unica query cada (em vez de uma query por time),
+    e devolve um dict {time_id: [jogadores com destaque]}.
 
-    Busca os jogos de TODOS os jogadores do time numa unica query (em vez
-    de uma query por jogador via calcular_destaques_jogador/
+    Busca os jogos de TODOS os jogadores dos times numa unica query (em
+    vez de uma query por jogador via calcular_destaques_jogador/
     obter_ultimos_jogos_jogador) -- usado em /destaques/rodada, que roda
     isso pra ambos os times de cada jogo da rodada; uma query por jogador
     vira facilmente umas 500 queries pro Supabase numa rodada de 10 jogos
     e estoura o tempo de resposta (timeout real ja visto em producao).
     """
-    jogadores = db.query(Jogador).filter(Jogador.time_id == time_id).all()
+    jogadores = db.query(Jogador).filter(Jogador.time_id.in_(times_ids)).all()
     if not jogadores:
-        return []
+        return {time_id: [] for time_id in times_ids}
 
     jogador_ids = [j.id for j in jogadores]
     linhas = (
@@ -306,14 +307,14 @@ def calcular_destaques_jogadores_time(db, time_id, janela=JANELA_PADRAO, limite=
             {"gols": linha.gols, "assistencias": linha.assistencias, "cartoes_amarelos": linha.cartoes_amarelos}
         )
 
-    resultado = []
+    resultado_por_time = {time_id: [] for time_id in times_ids}
     for jogador in jogadores:
         jogos = jogos_por_jogador.get(jogador.id, [])[:janela]
         if len(jogos) < MINIMO_JOGOS:
             continue
         destaques = _encontrar_destaques(jogos, STATS_DESTAQUE_JOGADOR)
         if destaques:
-            resultado.append(
+            resultado_por_time[jogador.time_id].append(
                 {
                     "jogador_id": jogador.id,
                     "nome": jogador.nome,
@@ -322,5 +323,27 @@ def calcular_destaques_jogadores_time(db, time_id, janela=JANELA_PADRAO, limite=
                 }
             )
 
-    resultado.sort(key=lambda j: max(d["taxa"] for d in j["destaques"]), reverse=True)
-    return resultado[:limite]
+    for time_id, resultado in resultado_por_time.items():
+        resultado.sort(key=lambda j: max(d["taxa"] for d in j["destaques"]), reverse=True)
+        resultado_por_time[time_id] = resultado[:limite]
+
+    return resultado_por_time
+
+
+def calcular_destaques_jogadores_time(db, time_id, janela=JANELA_PADRAO, limite=3):
+    """Mesma ideia de calcular_destaques_jogador, mas pro elenco inteiro de
+    um time de uma vez -- so devolve quem realmente tem algum destaque, e
+    corta pros `limite` jogadores com maior taxa de acerto (pra nao afogar
+    o card do confronto com o elenco inteiro)."""
+    return _destaques_jogadores_por_time(db, [time_id], janela, limite)[time_id]
+
+
+def calcular_destaques_jogadores_confronto(db, time_mandante_id, time_visitante_id, janela=JANELA_PADRAO, limite=3):
+    """
+    Versao combinada de calcular_destaques_jogadores_time pros dois times
+    de um confronto de uma vez -- usado pela Analise IA, que sempre
+    precisa dos dois times do mesmo jogo e antes rodava a busca 2x (uma
+    por time). Devolve (destaques_mandante, destaques_visitante).
+    """
+    resultado = _destaques_jogadores_por_time(db, [time_mandante_id, time_visitante_id], janela, limite)
+    return resultado[time_mandante_id], resultado[time_visitante_id]
