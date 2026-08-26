@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ChevronDown, Sparkles, Eye, Target, Lock } from "lucide-react";
 import { VhSpinner } from "@/components/vh-spinner";
 import { ListaDestaques, SequenciaBadges, type Destaque } from "@/components/lista-destaques";
 import { BilheteSimplesCard, BilheteMultiplaCard, agruparTotais, CategoriaTotalCard, type Perna } from "@/components/bilhete-card";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 import { sumulaMono } from "@/lib/fonts";
 
@@ -38,6 +38,15 @@ interface DestaqueJogador {
   nome: string;
   posicao: string | null;
   destaques: Destaque[];
+}
+
+interface PartidaDisponivel {
+  id: number;
+  rodada: number | null;
+  time_mandante: string;
+  time_visitante: string;
+  data: string | null;
+  hora: string | null;
 }
 
 interface AnaliseResponse {
@@ -94,6 +103,7 @@ function destacarNumeros(texto: string, cor: string = "text-primary") {
 
 export default function AnalisePartida() {
   const params = useParams();
+  const router = useRouter();
   const partidaId = params.partidaId as string;
 
   const [partida, setPartida] = useState<PartidaResumo | null>(null);
@@ -101,6 +111,17 @@ export default function AnalisePartida() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [mercadosAbertos, setMercadosAbertos] = useState(false);
+  const [partidasDisponiveis, setPartidasDisponiveis] = useState<PartidaDisponivel[]>([]);
+
+  // Lista as partidas que a Analise IA libera agora (rodada atual +
+  // proxima) pro seletor de "ver outra partida" -- independente da
+  // partida atual, so muda quando o usuario troca de rodada de verdade.
+  useEffect(() => {
+    fetch(`${API_URL}/partidas/analise/disponiveis?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
+      .then((r) => (r.ok ? r.json() : { partidas: [] }))
+      .then((dados: { partidas: PartidaDisponivel[] }) => setPartidasDisponiveis(dados.partidas))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setCarregando(true);
@@ -187,6 +208,33 @@ export default function AnalisePartida() {
             <p className="mt-1 text-center font-heading text-lg uppercase tracking-wide">
               {partida.time_mandante} <span className="text-muted-foreground">x</span> {partida.time_visitante}
             </p>
+
+            {partidasDisponiveis.length > 1 && (
+              <div className="mt-3 flex justify-center">
+                <select
+                  value={partida.id}
+                  onChange={(e) => router.push(`/analise/${e.target.value}`)}
+                  className="max-w-full rounded-md border border-primary/25 bg-card px-3 py-1.5 text-xs text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  aria-label="Ver análise de outra partida"
+                >
+                  {Object.entries(
+                    partidasDisponiveis.reduce<Record<string, PartidaDisponivel[]>>((grupos, p) => {
+                      const chave = String(p.rodada ?? "?");
+                      (grupos[chave] ??= []).push(p);
+                      return grupos;
+                    }, {})
+                  ).map(([rodada, jogos]) => (
+                    <optgroup key={rodada} label={`Rodada ${rodada}`}>
+                      {jogos.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.time_mandante} x {p.time_visitante}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {(analise?.bilhete_simples || analise?.bilhete_multipla) && (
               <div className="mt-6 grid gap-3">

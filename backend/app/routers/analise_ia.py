@@ -65,6 +65,49 @@ def _calcular_destaques_e_bilhetes(db, partida):
     }
 
 
+@router.get("/analise/disponiveis")
+def listar_partidas_disponiveis_analise(campeonato_id: int, db: Session = Depends(get_db)):
+    """
+    Lista as partidas que a Analise IA libera agora (agendada + dentro da
+    janela rodada atual/proxima) -- usado pelo seletor de partida dentro
+    da propria pagina de analise, pra trocar de jogo sem precisar voltar
+    pra lista da rodada. Path de 2 segmentos (/analise/disponiveis) de
+    proposito: um path de 1 segmento colidiria com /{partida_id} do
+    router de partidas.py (registrado antes deste no main.py).
+    """
+    rodada_atual = (
+        db.query(func.max(Partida.rodada))
+        .filter(Partida.status == "finalizada", Partida.campeonato_id == campeonato_id)
+        .scalar()
+    )
+
+    query = (
+        db.query(Partida)
+        .options(joinedload(Partida.time_mandante), joinedload(Partida.time_visitante))
+        .filter(Partida.campeonato_id == campeonato_id, Partida.status == "agendada")
+    )
+    if rodada_atual is not None:
+        query = query.filter(Partida.rodada <= rodada_atual + 1)
+
+    partidas = query.order_by(
+        Partida.rodada, Partida.data.is_(None), Partida.data, Partida.hora.is_(None), Partida.hora
+    ).all()
+
+    return {
+        "partidas": [
+            {
+                "id": p.id,
+                "rodada": p.rodada,
+                "time_mandante": p.time_mandante.nome,
+                "time_visitante": p.time_visitante.nome,
+                "data": str(p.data) if p.data else None,
+                "hora": p.hora.strftime("%H:%M") if p.hora else None,
+            }
+            for p in partidas
+        ]
+    }
+
+
 @router.get("/{partida_id}/analise", response_model=AnaliseIAResponse)
 def obter_analise(partida_id: int, db: Session = Depends(get_db)):
     # joinedload evita 2 queries extras (lazy load de time_mandante/
