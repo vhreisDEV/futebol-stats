@@ -24,7 +24,10 @@ def enviar_mensagem(chat_id, texto):
     quem chama decide se marca o inscrito como inativo)."""
     resp = requests.post(
         f"{BASE_URL}/bot{_token()}/sendMessage",
-        json={"chat_id": chat_id, "text": texto, "parse_mode": "HTML", "disable_web_page_preview": False},
+        # disable_web_page_preview=True -- o site nao tem Open Graph
+        # configurado ainda, entao o card de preview do link saia feio/
+        # vazio. Sem isso, so o texto mesmo (o link continua clicavel).
+        json={"chat_id": chat_id, "text": texto, "parse_mode": "HTML", "disable_web_page_preview": True},
         timeout=10,
     )
     return resp.ok
@@ -57,7 +60,12 @@ def enviar_broadcast(db, texto):
     for inscrito in inscritos:
         resp = requests.post(
             f"{BASE_URL}/bot{_token()}/sendMessage",
-            json={"chat_id": inscrito.chat_id, "text": texto, "parse_mode": "HTML"},
+            json={
+                "chat_id": inscrito.chat_id,
+                "text": texto,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True,
+            },
             timeout=10,
         )
         if resp.ok:
