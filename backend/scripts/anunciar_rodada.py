@@ -94,9 +94,9 @@ def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
             confronto += f" — {quando}"
 
         blocos.append(
-            "🔥 <b>Melhor palpite da rodada</b>\n"
-            f"{confronto}\n"
-            f"{_frase_perna(perna)} (acertou em {acertos} de {total} jogos)"
+            "🔥 <b>Melhor palpite da rodada</b>\n\n"
+            f"📅 {confronto}\n"
+            f"🎯 {_frase_perna(perna)} (acertou em {acertos} de {total} jogos)"
         )
         link_id = partida_destaque.id
         restantes = len(partidas) - 1
