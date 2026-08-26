@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
 import { VhSpinner } from "@/components/vh-spinner";
-import { API_URL } from "@/lib/api";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 import { flagSrc } from "@/lib/paises";
 
@@ -301,7 +301,9 @@ export default function CampeonatoPage() {
                             </Link>
                           </div>
                         </div>
-                        {partida.status === "agendada" && dentroDaJanela && (
+                        {partida.status === "agendada" &&
+                          dentroDaJanela &&
+                          campeonatoId === CAMPEONATO_BRASILEIRAO_ID && (
                           <Link
                             href={`/analise/${partida.id}`}
                             onClick={(e) => e.stopPropagation()}
