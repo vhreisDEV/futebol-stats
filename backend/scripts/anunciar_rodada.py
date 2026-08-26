@@ -77,18 +77,26 @@ def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
         if melhor is None or confianca > melhor[0]:
             melhor = (confianca, p, bilhete_simples["perna"])
 
-    linhas = [f"Fala, {{nome}}! A Rodada {numero_rodada} do Brasileirão já tem <b>Análise IA</b> no ar."]
+    # Cada bloco e' separado por linha em branco (join com "\n\n") --
+    # dentro do bloco de destaque, cada informacao (titulo, confronto,
+    # palpite) fica na propria linha, pra nao ficar tudo amontoado numa
+    # frase so.
+    blocos = [f"Fala, {{nome}}! A Rodada {numero_rodada} do Brasileirão já tem <b>Análise IA</b> no ar."]
 
     if melhor:
         _, partida_destaque, perna = melhor
         acertos = perna["destaque"]["acertos"]
         total = perna["destaque"]["total"]
         quando = _data_formatada(partida_destaque)
-        linhas.append(
-            f"\n🔥 <b>Melhor palpite da rodada:</b> {partida_destaque.time_mandante.nome} x "
-            f"{partida_destaque.time_visitante.nome}"
-            + (f" ({quando})" if quando else "")
-            + f"\n{_frase_perna(perna)} — acertou em {acertos} dos últimos {total} jogos."
+
+        confronto = f"{partida_destaque.time_mandante.nome} x {partida_destaque.time_visitante.nome}"
+        if quando:
+            confronto += f" — {quando}"
+
+        blocos.append(
+            "🔥 <b>Melhor palpite da rodada</b>\n"
+            f"{confronto}\n"
+            f"{_frase_perna(perna)} (acertou em {acertos} de {total} jogos)"
         )
         link_id = partida_destaque.id
         restantes = len(partidas) - 1
@@ -98,11 +106,11 @@ def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
 
     if restantes > 0:
         plural = "jogo" if restantes == 1 else "jogos"
-        linhas.append(f"\n📊 Mais {restantes} {plural} com Análise IA disponível nesta rodada.")
+        blocos.append(f"📊 Mais {restantes} {plural} com Análise IA disponível nesta rodada.")
 
-    linhas.append(f"\n👉 Dá uma olhada: {URL_SITE}/analise/{link_id}")
+    blocos.append(f"👉 Dá uma olhada: {URL_SITE}/analise/{link_id}")
 
-    return "\n".join(linhas)
+    return "\n\n".join(blocos)
 
 
 def anunciar_rodada(campeonato_id, numero_rodada, dry_run=False):

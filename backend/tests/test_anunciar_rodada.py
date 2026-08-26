@@ -86,7 +86,7 @@ def test_escolhe_o_bilhete_de_maior_confianca_como_destaque(db):
 
     assert "Palmeiras x Corinthians" in texto
     assert f"/analise/{partida_melhor.id}" in texto
-    assert "Flamengo x Botafogo" not in texto.split("Melhor palpite")[1].split("\n")[0]
+    assert "Flamengo x Botafogo" not in texto
 
 
 def test_menciona_quantidade_de_jogos_restantes_no_plural(db):
