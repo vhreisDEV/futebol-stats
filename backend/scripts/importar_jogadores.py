@@ -34,7 +34,7 @@ load_dotenv()
 
 API_KEY = os.getenv("HIGHLIGHTLY_API_KEY")
 BASE_URL = "https://soccer.highlightly.net"
-HEADERS = {"x-rapidapi-key": API_KEY}
+HEADERS = {"x-rapidapi-key": API_KEY, "x-rapidapi-host": "soccer.highlightly.net"}
 
 MAX_PARTIDAS_POR_EXECUCAO = 40  # 2 chamadas cada (lineups + events) -- ~80 requests, com folga da cota de 100/dia
 
@@ -150,6 +150,19 @@ def processar_partida(db, partida, cache_jogadores):
 
         if tipo == "Substitution":
             registrar(player_id, player_nome, time_id_externo)  # quem ENTROU
+
+            # "assistingPlayerId"/"substituted" aqui NAO sao assistencia --
+            # a Highlightly reaproveita esses dois campos genericos (que em
+            # eventos de gol carregam quem deu assistencia) pra carregar o
+            # ID/nome de quem SAIU. Sem isso, um jogador que o /lineups
+            # errou (listou como reserva quando na verdade comecou -- caso
+            # real encontrado 2026-08-26, Pedro do Flamengo) desaparece do
+            # banco inteiro: nao pega o titular-loop (lineups errado) nem
+            # o registro de substituicao (so registravamos quem entrava).
+            saiu_id = evento.get("assistingPlayerId")
+            saiu_nome = evento.get("substituted")
+            if saiu_id:
+                registrar(saiu_id, saiu_nome, time_id_externo)
             continue
 
         stats = registrar(player_id, player_nome, time_id_externo)

@@ -42,7 +42,7 @@ load_dotenv()
 
 API_KEY = os.getenv("HIGHLIGHTLY_API_KEY")
 BASE_URL = "https://soccer.highlightly.net"
-HEADERS = {"x-rapidapi-key": API_KEY}
+HEADERS = {"x-rapidapi-key": API_KEY, "x-rapidapi-host": "soccer.highlightly.net"}
 
 
 class CotaExcedidaError(Exception):

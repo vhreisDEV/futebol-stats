@@ -66,7 +66,7 @@ LINEUPS_FAKE = {
 }
 
 
-def _evento(team_id_externo, tipo, player_id, player_nome, minuto="10", assist_id=None, assist_nome=None):
+def _evento(team_id_externo, tipo, player_id, player_nome, minuto="10", assist_id=None, assist_nome=None, substituted=None):
     return {
         "team": {"id": team_id_externo},
         "time": minuto,
@@ -75,6 +75,7 @@ def _evento(team_id_externo, tipo, player_id, player_nome, minuto="10", assist_i
         "playerId": player_id,
         "assist": assist_nome,
         "assistingPlayerId": assist_id,
+        "substituted": substituted,
     }
 
 
@@ -146,6 +147,37 @@ def test_cartao_amarelo_e_creditado(db, partida):
     jogador = db.query(Jogador).filter(Jogador.id_externo == 10).first()
     linha = db.query(EstatisticaJogadorPartida).filter_by(jogador_id=jogador.id, partida_id=partida.id).first()
     assert linha.cartoes_amarelos == 1
+
+
+def test_jogador_que_saiu_na_substituicao_tambem_e_registrado(db, partida):
+    # Regressao do bug real encontrado 2026-08-26: o Pedro (Flamengo)
+    # sumia do banco inteiro porque o /lineups da Highlightly errou pra
+    # essa partida e o listou como reserva (nunca aparecia no
+    # initialLineup), e o import so registrava quem ENTRAVA na
+    # substituicao, nunca quem saia -- mesmo o /events confirmando que
+    # ele jogou (foi substituido aos 46min). "assistingPlayerId"/
+    # "substituted" no evento de substituicao carregam o id/nome de quem
+    # saiu (confirmado comparando com o id_externo real do Pedro ja
+    # salvo no banco).
+    events = [
+        _evento(1001, "Substitution", 999, "Entrou", minuto="46", assist_id=888, substituted="Saiu"),
+    ]
+
+    with patch("scripts.importar_jogadores.buscar_lineups", return_value=LINEUPS_FAKE), patch(
+        "scripts.importar_jogadores.buscar_events", return_value=events
+    ):
+        processar_partida(db, partida, cache_jogadores={})
+
+    saiu = db.query(Jogador).filter(Jogador.id_externo == 888).first()
+    assert saiu is not None
+    assert saiu.nome == "Saiu"
+    linha_saiu = db.query(EstatisticaJogadorPartida).filter_by(jogador_id=saiu.id, partida_id=partida.id).first()
+    assert linha_saiu is not None
+
+    entrou = db.query(Jogador).filter(Jogador.id_externo == 999).first()
+    assert entrou is not None
+    linha_entrou = db.query(EstatisticaJogadorPartida).filter_by(jogador_id=entrou.id, partida_id=partida.id).first()
+    assert linha_entrou is not None
 
 
 def test_titular_sem_nenhum_evento_ainda_conta_como_aparicao(db, partida):

@@ -11,6 +11,7 @@ BASE_URL = "https://soccer.highlightly.net"
 
 HEADERS = {
     "x-rapidapi-key": API_KEY,
+    "x-rapidapi-host": "soccer.highlightly.net",
 }
 
 
