@@ -30,12 +30,26 @@ from app.services.telegram import enviar_broadcast, BotNaoConfiguradoError
 URL_SITE = "https://veaga-psi.vercel.app"
 
 
+DIAS_SEMANA = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"]
+
+
+def _data_formatada(partida):
+    if not partida.data:
+        return ""
+    dia_semana = DIAS_SEMANA[partida.data.weekday()]
+    texto = f"{dia_semana}, {partida.data.strftime('%d/%m')}"
+    if partida.hora:
+        texto += f" às {partida.hora.strftime('%Hh%M')}"
+    return texto
+
+
 def _frase_perna(perna):
     mando = "em casa" if perna["time"] == "mandante" else "fora de casa"
     d = perna["destaque"]
+    nome = perna["nome_time"]
     if d["tipo"] == "booleano":
-        return f"{perna['nome_time']} ({mando}): {d['label'].lower()}"
-    return f"{perna['nome_time']} ({mando}): mais de {d['linha']} {d['label'].lower()}"
+        return f"{nome} {mando}: {d['label'].lower()}"
+    return f"{nome} {mando} tende a passar de {d['linha']} {d['label'].lower()}"
 
 
 def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
@@ -63,16 +77,18 @@ def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
         if melhor is None or confianca > melhor[0]:
             melhor = (confianca, p, bilhete_simples["perna"])
 
-    linhas = [f"⚽ Fala, {{nome}}! A Rodada {numero_rodada} já tem <b>Análise IA</b> no ar."]
+    linhas = [f"⚽ Fala, {{nome}}! A Rodada {numero_rodada} do Brasileirão já tem <b>Análise IA</b> no ar."]
 
     if melhor:
         _, partida_destaque, perna = melhor
-        porcentagem = round(perna["destaque"]["taxa"] * 100)
+        acertos = perna["destaque"]["acertos"]
         total = perna["destaque"]["total"]
+        quando = _data_formatada(partida_destaque)
         linhas.append(
-            f"\n🔥 <b>Destaque:</b> {partida_destaque.time_mandante.nome} x "
-            f"{partida_destaque.time_visitante.nome} — {_frase_perna(perna)} "
-            f"({porcentagem}% dos últimos {total} jogos)"
+            f"\n🔥 <b>Melhor palpite da rodada:</b> {partida_destaque.time_mandante.nome} x "
+            f"{partida_destaque.time_visitante.nome}"
+            + (f" ({quando})" if quando else "")
+            + f"\n{_frase_perna(perna)} — acertou em {acertos} dos últimos {total} jogos."
         )
         link_id = partida_destaque.id
         restantes = len(partidas) - 1
@@ -81,9 +97,13 @@ def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
         restantes = len(partidas)
 
     if restantes > 0:
-        linhas.append(f"\n📊 Mais {restantes} jogo(s) com Análise IA disponível nesta rodada.")
+        plural = "jogo" if restantes == 1 else "jogos"
+        linhas.append(
+            f"\n📊 Mais {restantes} {plural} com Análise IA disponível — "
+            "escolha o que quiser direto na página, tem seletor lá."
+        )
 
-    linhas.append(f"\n👉 Ver Análise IA: {URL_SITE}/analise/{link_id}")
+    linhas.append(f"\n👉 {URL_SITE}/analise/{link_id}")
 
     return "\n".join(linhas)
 
