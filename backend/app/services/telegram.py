@@ -24,10 +24,9 @@ def enviar_mensagem(chat_id, texto):
     quem chama decide se marca o inscrito como inativo)."""
     resp = requests.post(
         f"{BASE_URL}/bot{_token()}/sendMessage",
-        # disable_web_page_preview=True -- o site nao tem Open Graph
-        # configurado ainda, entao o card de preview do link saia feio/
-        # vazio. Sem isso, so o texto mesmo (o link continua clicavel).
-        json={"chat_id": chat_id, "text": texto, "parse_mode": "HTML", "disable_web_page_preview": True},
+        # preview de link liberada -- o site agora tem Open Graph (logo
+        # real do VEAGA), entao o card de preview fica bom.
+        json={"chat_id": chat_id, "text": texto, "parse_mode": "HTML"},
         timeout=10,
     )
     return resp.ok
@@ -71,7 +70,6 @@ def enviar_broadcast(db, texto):
                 "chat_id": inscrito.chat_id,
                 "text": texto_pessoal,
                 "parse_mode": "HTML",
-                "disable_web_page_preview": True,
             },
             timeout=10,
         )
