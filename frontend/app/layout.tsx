@@ -18,9 +18,27 @@ const oswald = Oswald({
   weight: ["500", "600", "700"],
 });
 
+const URL_SITE = "https://veaga-psi.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(URL_SITE),
   title: "VEAGA — Football Data & Analytics",
   description: "Football Data & Analytics.",
+  openGraph: {
+    title: "VEAGA — Football Data & Analytics",
+    description: "Estatísticas e Análise IA do Brasileirão e outras ligas.",
+    url: URL_SITE,
+    siteName: "VEAGA",
+    images: [{ url: "/logo_VEAGA.jpg", width: 1024, height: 572 }],
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VEAGA — Football Data & Analytics",
+    description: "Estatísticas e Análise IA do Brasileirão e outras ligas.",
+    images: ["/logo_VEAGA.jpg"],
+  },
 };
 
 export const viewport: Viewport = {
