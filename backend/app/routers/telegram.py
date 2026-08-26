@@ -12,7 +12,7 @@ router = APIRouter(prefix="/telegram", tags=["Telegram"])
 def montar_mensagem_boas_vindas(nome):
     saudacao = f"Fala, {nome}! 👋" if nome else "Fala! 👋"
     return (
-        f"{saudacao} Bem-vindo à <b>Súmula do VEAGA</b> ⚽📋\n\n"
+        f"{saudacao} Bem-vindo ao <b>VEAGA</b> ⚽\n\n"
         "A partir de agora você recebe aqui, em primeira mão, o aviso sempre que "
         "uma rodada nova estiver com <b>Análise IA</b> e <b>Dicas da Rodada</b> no ar.\n\n"
         "Pra parar de receber, é só mandar /parar quando quiser."
