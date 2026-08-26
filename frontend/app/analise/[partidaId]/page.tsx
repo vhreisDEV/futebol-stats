@@ -209,7 +209,7 @@ export default function AnalisePartida() {
               {partida.time_mandante} <span className="text-muted-foreground">x</span> {partida.time_visitante}
             </p>
 
-            {partidasDisponiveis.length > 1 && (
+            {partidasDisponiveis.length > 1 && partidasDisponiveis.some((p) => p.id === partida.id) && (
               <div className="mt-3 flex justify-center">
                 <select
                   value={partida.id}
