@@ -89,6 +89,26 @@ def listar_partidas_disponiveis_analise(campeonato_id: int, db: Session = Depend
     if rodada_atual is not None:
         query = query.filter(Partida.rodada <= rodada_atual + 1)
 
+        # Um jogo adiado da rodada atual pode acabar remarcado com uma
+        # data bem mais distante do que o resto da rodada (ex.: rodada 4
+        # jogada so em setembro, com a rodada 25 ja rolando) -- olhar so
+        # o numero da rodada colocaria ele lado a lado com jogos bem mais
+        # proximos no seletor, o que confunde. Descobre ate quando vai a
+        # janela em DATA (a data mais distante entre os jogos "normais"
+        # da rodada atual/proxima) e usa isso como segundo filtro.
+        data_limite = (
+            db.query(func.max(Partida.data))
+            .filter(
+                Partida.campeonato_id == campeonato_id,
+                Partida.status == "agendada",
+                Partida.rodada >= rodada_atual,
+                Partida.rodada <= rodada_atual + 1,
+            )
+            .scalar()
+        )
+        if data_limite is not None:
+            query = query.filter(Partida.data.is_(None) | (Partida.data <= data_limite))
+
     partidas = query.order_by(
         Partida.rodada, Partida.data.is_(None), Partida.data, Partida.hora.is_(None), Partida.hora
     ).all()
