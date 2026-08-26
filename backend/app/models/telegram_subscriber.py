@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, BigInteger, Boolean, DateTime
+from sqlalchemy import Column, Integer, BigInteger, Boolean, DateTime, String
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -16,6 +16,10 @@ class TelegramSubscriber(Base):
     # no SQLite local, que nao reforca o tamanho do campo, por isso so
     # apareceu com um chat_id real).
     chat_id = Column(BigInteger, unique=True, nullable=False, index=True)
+    # Primeiro nome que o Telegram manda junto do /start -- so' pra
+    # personalizar a mensagem ("Fala, Victor!"), nulo pra quem se
+    # inscreveu antes dessa coluna existir.
+    nome = Column(String, nullable=True)
     # False quando o usuario deu /parar (ou bloqueou o bot e o envio
     # devolveu 403) -- nunca deletamos a linha, so paramos de mandar.
     ativo = Column(Boolean, nullable=False, default=True)

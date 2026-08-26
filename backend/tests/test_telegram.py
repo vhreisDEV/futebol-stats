@@ -1,13 +1,16 @@
 """Testa a logica de inscricao/cancelamento do bot do Telegram contra um
 SQLite isolado em memoria -- nao faz nenhuma chamada real a API do
-Telegram (enviar_mensagem/enviar_broadcast ficam de fora de proposito)."""
+Telegram (as chamadas de envio sao mockadas onde precisam ser
+exercitadas, ex.: personalizacao do broadcast)."""
+from unittest.mock import MagicMock, patch
+
 import pytest
 from sqlalchemy import BigInteger, create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.database import Base
 from app.models.telegram_subscriber import TelegramSubscriber
-from app.services.telegram import registrar_inscrito, cancelar_inscrito
+from app.services.telegram import registrar_inscrito, cancelar_inscrito, enviar_broadcast
 
 
 @pytest.fixture
@@ -74,3 +77,33 @@ def test_registrar_inscrito_com_chat_id_maior_que_int32(db):
     inscrito = db.query(TelegramSubscriber).filter_by(chat_id=chat_id_grande).first()
     assert inscrito is not None
     assert inscrito.chat_id == chat_id_grande
+
+
+def test_registrar_inscrito_guarda_nome(db):
+    registrar_inscrito(db, chat_id=123, nome="Victor")
+
+    inscrito = db.query(TelegramSubscriber).filter_by(chat_id=123).first()
+    assert inscrito.nome == "Victor"
+
+
+def test_dar_start_de_novo_atualiza_nome(db):
+    registrar_inscrito(db, chat_id=123, nome="Victor")
+    registrar_inscrito(db, chat_id=123, nome="Victor Hugo")
+
+    inscrito = db.query(TelegramSubscriber).filter_by(chat_id=123).first()
+    assert inscrito.nome == "Victor Hugo"
+
+
+def test_broadcast_personaliza_com_o_nome_de_cada_inscrito(db):
+    registrar_inscrito(db, chat_id=111, nome="Ana")
+    registrar_inscrito(db, chat_id=222, nome=None)  # inscrito antigo, sem nome guardado
+
+    with patch("app.services.telegram.os.getenv", return_value="token-fake"), patch(
+        "app.services.telegram.requests.post"
+    ) as mock_post:
+        mock_post.return_value = MagicMock(ok=True, status_code=200)
+        enviar_broadcast(db, "Fala, {nome}! Saiu a rodada nova.")
+
+    textos_enviados = [chamada.kwargs["json"]["text"] for chamada in mock_post.call_args_list]
+    assert "Fala, Ana! Saiu a rodada nova." in textos_enviados
+    assert "Fala, torcedor! Saiu a rodada nova." in textos_enviados

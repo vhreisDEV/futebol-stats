@@ -33,14 +33,17 @@ def enviar_mensagem(chat_id, texto):
     return resp.ok
 
 
-def registrar_inscrito(db, chat_id):
+def registrar_inscrito(db, chat_id, nome=None):
     inscrito = db.query(TelegramSubscriber).filter(TelegramSubscriber.chat_id == chat_id).first()
     if inscrito:
         inscrito.ativo = True
+        if nome:
+            inscrito.nome = nome
     else:
-        inscrito = TelegramSubscriber(chat_id=chat_id, ativo=True)
+        inscrito = TelegramSubscriber(chat_id=chat_id, nome=nome, ativo=True)
         db.add(inscrito)
     db.commit()
+    return inscrito
 
 
 def cancelar_inscrito(db, chat_id):
@@ -51,18 +54,22 @@ def cancelar_inscrito(db, chat_id):
 
 
 def enviar_broadcast(db, texto):
-    """Manda a mesma mensagem pra todo inscrito ativo. Quem apanhar um
-    403 (usuario bloqueou o bot) e' marcado como inativo na hora, pra
-    nao tentar de novo no proximo broadcast. Devolve (enviados, desativados)."""
+    """Manda a mesma mensagem pra todo inscrito ativo. Se o texto tiver
+    "{nome}", cada um recebe com o proprio primeiro nome no lugar (cai
+    pra "torcedor" em quem se inscreveu antes de guardarmos o nome).
+    Quem apanhar um 403 (usuario bloqueou o bot) e' marcado como
+    inativo na hora, pra nao tentar de novo no proximo broadcast.
+    Devolve (enviados, desativados)."""
     inscritos = db.query(TelegramSubscriber).filter(TelegramSubscriber.ativo.is_(True)).all()
     enviados = 0
     desativados = 0
     for inscrito in inscritos:
+        texto_pessoal = texto.replace("{nome}", inscrito.nome or "torcedor")
         resp = requests.post(
             f"{BASE_URL}/bot{_token()}/sendMessage",
             json={
                 "chat_id": inscrito.chat_id,
-                "text": texto,
+                "text": texto_pessoal,
                 "parse_mode": "HTML",
                 "disable_web_page_preview": True,
             },

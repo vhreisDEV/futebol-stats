@@ -9,12 +9,17 @@ from app.services.telegram import enviar_mensagem, registrar_inscrito, cancelar_
 
 router = APIRouter(prefix="/telegram", tags=["Telegram"])
 
-MENSAGEM_BOAS_VINDAS = (
-    "🔔 Inscrito! Você vai receber um aviso por aqui sempre que uma nova rodada "
-    "estiver disponível na Análise IA e nas Dicas da Rodada do VEAGA.\n\n"
-    "Pra parar de receber, mande /parar a qualquer momento."
-)
-MENSAGEM_CANCELAMENTO = "Inscrição cancelada. Você pode voltar quando quiser com /start."
+def montar_mensagem_boas_vindas(nome):
+    saudacao = f"Fala, {nome}! 👋" if nome else "Fala! 👋"
+    return (
+        f"{saudacao} Bem-vindo à <b>Súmula do VEAGA</b> ⚽📋\n\n"
+        "A partir de agora você recebe aqui, em primeira mão, o aviso sempre que "
+        "uma rodada nova estiver com <b>Análise IA</b> e <b>Dicas da Rodada</b> no ar.\n\n"
+        "Pra parar de receber, é só mandar /parar quando quiser."
+    )
+
+
+MENSAGEM_CANCELAMENTO = "Inscrição cancelada. Você pode voltar quando quiser com /start. 👋"
 
 
 def get_db():
@@ -44,13 +49,14 @@ def webhook(
 
     chat_id = mensagem.get("chat", {}).get("id")
     texto = (mensagem.get("text") or "").strip().lower()
+    nome = mensagem.get("from", {}).get("first_name")
     if chat_id is None:
         return {"ok": True}
 
     try:
-        if texto in ("/start", "/start@veaga_bot"):
-            registrar_inscrito(db, chat_id)
-            enviar_mensagem(chat_id, MENSAGEM_BOAS_VINDAS)
+        if texto in ("/start", "/start@veaga_dicas_bot"):
+            registrar_inscrito(db, chat_id, nome=nome)
+            enviar_mensagem(chat_id, montar_mensagem_boas_vindas(nome))
         elif texto in ("/parar", "/stop"):
             cancelar_inscrito(db, chat_id)
             enviar_mensagem(chat_id, MENSAGEM_CANCELAMENTO)
