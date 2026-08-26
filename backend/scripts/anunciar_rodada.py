@@ -125,6 +125,16 @@ def anunciar_rodada(campeonato_id, numero_rodada, dry_run=False):
         print(texto.replace("{nome}", "torcedor"))
         print("---")
 
+        # Sem nome nenhum (nao so' "torcedor") -- o canal do WhatsApp e'
+        # broadcast pra todo mundo de uma vez, nao tem como personalizar
+        # por pessoa como no Telegram, entao a saudacao com nome nem faz
+        # sentido la. Victor pede esse texto toda vez pra colar manualmente
+        # no canal (WhatsApp Channels nao tem API publica de post ainda).
+        texto_whatsapp = texto.replace("Fala, {nome}! ", "")
+        print("\n--- Versão pra colar no WhatsApp (sem nome) ---")
+        print(texto_whatsapp)
+        print("---")
+
         if dry_run:
             print("Modo --dry-run: nada foi enviado.")
             return
