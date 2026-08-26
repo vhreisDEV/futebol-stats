@@ -18,3 +18,7 @@ export const TROCA_CAMPEONATO_HABILITADA = false;
 // NEXT_PUBLIC_TELEGRAM_BOT_USERNAME depois de criar o bot no @BotFather
 // -- enquanto vazio, o link de inscrição fica escondido.
 export const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "";
+
+// URL completa do canal do WhatsApp (formato whatsapp.com/channel/...).
+// Enquanto vazio, o link fica escondido -- mesmo padrao do Telegram acima.
+export const WHATSAPP_CHANNEL_URL = process.env.NEXT_PUBLIC_WHATSAPP_CHANNEL_URL ?? "";
