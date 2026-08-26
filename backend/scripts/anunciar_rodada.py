@@ -77,7 +77,7 @@ def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
         if melhor is None or confianca > melhor[0]:
             melhor = (confianca, p, bilhete_simples["perna"])
 
-    linhas = [f"⚽ Fala, {{nome}}! A Rodada {numero_rodada} do Brasileirão já tem <b>Análise IA</b> no ar."]
+    linhas = [f"Fala, {{nome}}! A Rodada {numero_rodada} do Brasileirão já tem <b>Análise IA</b> no ar."]
 
     if melhor:
         _, partida_destaque, perna = melhor
@@ -98,12 +98,9 @@ def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
 
     if restantes > 0:
         plural = "jogo" if restantes == 1 else "jogos"
-        linhas.append(
-            f"\n📊 Mais {restantes} {plural} com Análise IA disponível — "
-            "escolha o que quiser direto na página, tem seletor lá."
-        )
+        linhas.append(f"\n📊 Mais {restantes} {plural} com Análise IA disponível nesta rodada.")
 
-    linhas.append(f"\n👉 {URL_SITE}/analise/{link_id}")
+    linhas.append(f"\n👉 Dá uma olhada: {URL_SITE}/analise/{link_id}")
 
     return "\n".join(linhas)
 
