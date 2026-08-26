@@ -19,7 +19,7 @@ export function TelegramCTA() {
       className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-400 transition-colors hover:bg-sky-500/20"
     >
       <TelegramIcon />
-      Avisos da rodada no Telegram
+      Dicas da Rodada no Telegram
     </a>
   );
 }
