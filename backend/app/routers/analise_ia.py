@@ -2,6 +2,7 @@ import json
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
+from google.genai.errors import APIError as GeminiAPIError
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
@@ -214,6 +215,14 @@ def obter_analise(partida_id: int, db: Session = Depends(get_db)):
         resumo, modelo = gerar_analise(bilhete_simples_dict, bilhete_multipla_dict)
         dicas, _ = gerar_dicas(calculado["destaques_totais"])
     except IANaoConfiguradaError:
+        return AnaliseIAResponse(partida_id=partida_id, disponivel=False, **base)
+    except GeminiAPIError:
+        # Gemini fora do ar/sobrecarregado (ex.: 503 "high demand") e' falha
+        # transitoria do lado deles, nao um bug nosso -- degrada mostrando
+        # os destaques/bilhetes (que ja estao calculados) sem o texto da
+        # IA, em vez de quebrar a pagina inteira com 500. Nao cacheia nada
+        # aqui (destaques_json so' e' salvo no caminho de sucesso abaixo),
+        # entao a proxima visita tenta gerar o texto de novo.
         return AnaliseIAResponse(partida_id=partida_id, disponivel=False, **base)
 
     destaques_json = json.dumps(calculado)
