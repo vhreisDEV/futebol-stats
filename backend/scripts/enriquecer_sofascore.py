@@ -139,16 +139,32 @@ def casar_jogador(nome_sofa, candidatos):
     """candidatos: lista de Jogador. Compara pelo nome normalizado -- quem
     chama decide o universo de candidatos (ver enriquecer_partida: tem
     que ser quem jogou NESSA partida por ESSE time, nao o time atual do
-    jogador, que pode ter mudado por transferencia depois)."""
+    jogador, que pode ter mudado por transferencia depois).
+
+    Prefere sempre um match EXATO (conjunto de tokens identico) sobre
+    um match parcial -- sem isso, dois jogadores reais com nome parecido
+    (ex.: "Erick" e "Erick Pulga" no mesmo time, caso real encontrado
+    2026-09-02) empatavam no score de intersecao (ambos batem 1 token
+    com "Erick") e o match errado as vezes ganhava por ordem arbitraria.
+    Se nao houver match exato e o melhor score parcial empatar entre
+    2+ candidatos diferentes, devolve None (ambiguo) em vez de
+    adivinhar errado -- melhor deixar sem enriquecer do que enriquecer
+    o jogador errado."""
     tokens_sofa = normalizar_nome(nome_sofa)
-    melhor = None
-    melhor_score = 0
-    for jogador in candidatos:
-        score = len(tokens_sofa & normalizar_nome(jogador.nome))
-        if score > melhor_score:
-            melhor_score = score
-            melhor = jogador
-    return melhor if melhor_score > 0 else None
+
+    exatos = [j for j in candidatos if normalizar_nome(j.nome) == tokens_sofa]
+    if len(exatos) == 1:
+        return exatos[0]
+    if len(exatos) > 1:
+        return None  # ambiguo mesmo no exato (nomes duplicados) -- nao adivinha
+
+    pontuados = [(len(tokens_sofa & normalizar_nome(j.nome)), j) for j in candidatos]
+    pontuados = [(score, j) for score, j in pontuados if score > 0]
+    if not pontuados:
+        return None
+    melhor_score = max(score for score, _ in pontuados)
+    melhores = [j for score, j in pontuados if score == melhor_score]
+    return melhores[0] if len(melhores) == 1 else None
 
 
 def enriquecer_partida(db, partida, evento_sofascore):

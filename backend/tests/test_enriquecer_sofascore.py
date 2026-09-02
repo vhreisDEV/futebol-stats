@@ -142,6 +142,29 @@ def test_casar_jogador_por_nome_normalizado():
     assert casar_jogador("Ninguem Conhecido", candidatos) is None
 
 
+def test_casar_jogador_prefere_match_exato_sobre_parcial_empatado():
+    # Regressao do bug real encontrado 2026-09-02: dois jogadores reais
+    # do Bahia, "Erick" e "Erick Pulga", empatavam no score de
+    # intersecao de tokens contra o nome "Erick" vindo do SofaScore
+    # (ambos batem 1 token: "erick") -- sem preferir o match exato, o
+    # "Erick" ficava as vezes sem ser enriquecido (o "Erick Pulga"
+    # ganhava o empate por ordem arbitraria).
+    erick = Jogador(nome="Erick", time_id=1)
+    erick_pulga = Jogador(nome="Erick Pulga", time_id=1)
+    candidatos = [erick_pulga, erick]  # Erick Pulga listado primeiro de proposito
+
+    assert casar_jogador("Erick", candidatos) is erick
+    assert casar_jogador("Erick Pulga", candidatos) is erick_pulga
+
+
+def test_casar_jogador_devolve_none_em_empate_parcial_ambiguo():
+    # Sem nome exato batendo e o melhor score parcial empatado entre
+    # 2+ candidatos diferentes -- melhor nao adivinhar.
+    a = Jogador(nome="João Silva Santos", time_id=1)
+    b = Jogador(nome="Pedro Silva Costa", time_id=1)
+    assert casar_jogador("Silva", [a, b]) is None
+
+
 def test_normalizar_nome_remove_acento_e_ignora_maiuscula():
     assert normalizar_nome("Léo Pereira") == normalizar_nome("leo pereira")
 
