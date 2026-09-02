@@ -156,9 +156,10 @@ export default function GradeJogadoresTime() {
 
   const cores = corTime(nomeTime);
   const larguraLabel = 170;
-  const larguraTotal = 70;
+  const larguraTotal = 60;
+  const larguraMedia = 60;
   const larguraJogo = 84;
-  const larguraFixa = larguraLabel + larguraTotal;
+  const larguraFixa = larguraLabel + larguraTotal + larguraMedia;
   const larguraGrade = grade ? larguraFixa + grade.jogos.length * larguraJogo : larguraFixa;
 
   return (
@@ -289,12 +290,15 @@ export default function GradeJogadoresTime() {
                     <div
                       className="grid gap-[2px] bg-border/70 text-xs"
                       style={{
-                        gridTemplateColumns: `${larguraLabel}px ${larguraTotal}px repeat(${grade.jogos.length}, ${larguraJogo}px)`,
+                        gridTemplateColumns: `${larguraLabel}px ${larguraTotal}px ${larguraMedia}px repeat(${grade.jogos.length}, ${larguraJogo}px)`,
                       }}
                     >
                       <div className="bg-card px-2 py-2" />
                       <div className="bg-card px-2 py-2 text-center text-[10px] font-semibold text-muted-foreground">
                         Total
+                      </div>
+                      <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center text-[10px] font-semibold text-primary">
+                        Média
                       </div>
                       {grade.jogos.map((jogo) => (
                         <div key={jogo.partida_id} className="bg-card px-2 py-2 text-center">
@@ -317,8 +321,11 @@ export default function GradeJogadoresTime() {
                             <p className="truncate font-medium">{jogador.nome}</p>
                             <p className="text-[10px] text-muted-foreground">{jogador.posicao ?? "—"}</p>
                           </div>
-                          <div className="bg-background px-2 py-2 text-center font-mono font-semibold tabular-nums text-primary hover:bg-muted">
+                          <div className="bg-background px-2 py-2 text-center font-mono font-semibold tabular-nums text-foreground hover:bg-muted">
                             {jogador.total}
+                          </div>
+                          <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-mono font-semibold tabular-nums text-primary hover:bg-primary/15">
+                            {jogador.media}
                           </div>
                           {jogador.valores.map((valor, index) => (
                             <div
