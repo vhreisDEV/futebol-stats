@@ -146,6 +146,98 @@ def obter_ultimos_jogos_jogador(db, jogador_id, quantidade=10, mando=None):
     return [_montar_jogo_jogador(linha) for linha in linhas]
 
 
+def obter_grade_time(db, time_id, stat, quantidade=10, mando=None):
+    """Grade estilo PlayerStats.com: colunas = ultimos N jogos do time,
+    linhas = jogadores que jogaram pelo menos um desses jogos por ESSE
+    time. Um jogador que nao jogou um jogo especifico (poupado,
+    lesionado, ainda nao tinha chegado no elenco) fica com valor None
+    naquela coluna -- diferente de 0, que seria "jogou e nao fez nada".
+
+    Busca os candidatos pelas proprias linhas de EstatisticaJogadorPartida
+    do time NESSES jogos (nao por Jogador.time_id, que reflete o time
+    ATUAL do jogador e quebraria pra quem foi transferido depois --
+    mesma licao do bug real encontrado no enriquecimento via SofaScore,
+    ver enriquecer_sofascore.py)."""
+    coluna = STATS_VALIDAS.get(stat)
+    if coluna is None:
+        return None
+
+    query = (
+        db.query(Partida)
+        .filter(
+            Partida.status == "finalizada",
+            (Partida.time_mandante_id == time_id) | (Partida.time_visitante_id == time_id),
+        )
+    )
+    if mando == "casa":
+        query = query.filter(Partida.time_mandante_id == time_id)
+    elif mando == "fora":
+        query = query.filter(Partida.time_visitante_id == time_id)
+
+    partidas = query.order_by(Partida.data.desc()).limit(quantidade).all()
+    if not partidas:
+        return {"stat": stat, "jogos": [], "jogadores": []}
+
+    partida_por_id = {p.id: p for p in partidas}
+    linhas = (
+        db.query(EstatisticaJogadorPartida)
+        .filter(
+            EstatisticaJogadorPartida.partida_id.in_(partida_por_id.keys()),
+            EstatisticaJogadorPartida.time_id == time_id,
+        )
+        .all()
+    )
+
+    jogadores_por_id = {}
+    valores_por_jogador = {}
+    for linha in linhas:
+        valores_por_jogador.setdefault(linha.jogador_id, {})[linha.partida_id] = getattr(linha, stat)
+        if linha.jogador_id not in jogadores_por_id:
+            jogadores_por_id[linha.jogador_id] = linha.jogador
+
+    if stat in STATS_SO_GOLEIRO:
+        jogadores_por_id = {
+            jid: j for jid, j in jogadores_por_id.items() if j.posicao == "Goleiro"
+        }
+
+    jogos_resposta = [_montar_jogo_time(p, time_id) for p in partidas]
+
+    jogadores_resposta = []
+    for jogador_id, jogador in jogadores_por_id.items():
+        valores_partida = valores_por_jogador[jogador_id]
+        valores = [valores_partida.get(p.id) for p in partidas]
+        valores_validos = [v for v in valores if v is not None]
+        total = sum(valores_validos)
+        jogadores_resposta.append(
+            {
+                "jogador_id": jogador_id,
+                "nome": jogador.nome,
+                "posicao": jogador.posicao,
+                "total": total,
+                "media": round(total / len(valores_validos), 2) if valores_validos else 0,
+                "valores": valores,
+            }
+        )
+
+    jogadores_resposta.sort(key=lambda j: j["total"], reverse=True)
+
+    return {"stat": stat, "jogos": jogos_resposta, "jogadores": jogadores_resposta}
+
+
+def _montar_jogo_time(partida, time_id):
+    jogou_em_casa = partida.time_mandante_id == time_id
+    adversario = partida.time_visitante.nome if jogou_em_casa else partida.time_mandante.nome
+    gols_time = partida.gols_mandante if jogou_em_casa else partida.gols_visitante
+    gols_adversario = partida.gols_visitante if jogou_em_casa else partida.gols_mandante
+    return {
+        "partida_id": partida.id,
+        "data": partida.data,
+        "adversario": adversario,
+        "casa_ou_fora": "casa" if jogou_em_casa else "fora",
+        "placar": f"{gols_time}-{gols_adversario}" if gols_time is not None else None,
+    }
+
+
 def _montar_jogo_jogador(linha):
     partida = linha.partida
     jogou_em_casa = partida.time_mandante_id == linha.time_id

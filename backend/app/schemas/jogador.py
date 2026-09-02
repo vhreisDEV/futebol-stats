@@ -27,6 +27,29 @@ class JogadorPerfilResponse(BaseModel):
     time_nome: Optional[str]
 
 
+class JogoGradeTimeResponse(BaseModel):
+    partida_id: int
+    data: date
+    adversario: str
+    casa_ou_fora: str
+    placar: Optional[str]
+
+
+class JogadorGradeTimeResponse(BaseModel):
+    jogador_id: int
+    nome: str
+    posicao: Optional[str]
+    total: int
+    media: float
+    valores: List[Optional[int]]
+
+
+class GradeTimeResponse(BaseModel):
+    stat: str
+    jogos: List[JogoGradeTimeResponse]
+    jogadores: List[JogadorGradeTimeResponse]
+
+
 class JogoJogadorResponse(BaseModel):
     id: int
     partida_id: int
