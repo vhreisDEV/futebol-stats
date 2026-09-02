@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, TrendingUp, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, Users, BarChart3 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PartidaModal } from "@/components/partida-modal";
@@ -449,6 +449,7 @@ export default function DetalheTime() {
           <div className="flex gap-2">
             <NavChip href={`/comparar?time=${id}`} label="Comparar" icon={Users} cor="rose" />
             <NavChip href={`/previsao?mandante=${id}`} label="Projeção" icon={TrendingUp} cor="gold" />
+            <NavChip href={`/times/${id}/jogadores`} label="Jogadores" icon={BarChart3} cor="violet" />
           </div>
         </div>
 
