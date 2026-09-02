@@ -48,10 +48,11 @@ const linhasTabela: LinhaTabela[] = [
   { label: "Desarmes", chave: "desarmes" },
   { label: "Faltas cometidas", chave: "faltas_cometidas" },
   { label: "Faltas sofridas", chave: "faltas_sofridas" },
-  { label: "Defesas", chave: "defesas" },
   { label: "Cartões amarelos", chave: "cartoes_amarelos" },
   { label: "Cartões vermelhos", chave: "cartoes_vermelhos" },
 ];
+
+const LINHA_DEFESAS: LinhaTabela = { label: "Defesas", chave: "defesas" };
 
 function formatarData(dataStr: string) {
   const partes = dataStr.split("-");
@@ -122,6 +123,7 @@ export function JogadorModal({
 
   if (jogadorId === null) return null;
 
+  const linhas = perfil?.posicao === "Goleiro" ? [...linhasTabela, LINHA_DEFESAS] : linhasTabela;
   const cores = corTime(perfil?.time_nome ?? "");
   const larguraLabel = 130;
   const larguraMedia = 60;
@@ -209,7 +211,7 @@ export function JogadorModal({
 
             <div className="overflow-hidden rounded-lg ring-1 ring-border">
               <div
-                className="grid gap-px bg-border text-xs"
+                className="grid gap-[2px] bg-border/70 text-xs"
                 style={{
                   gridTemplateColumns: `${larguraLabel}px ${larguraMedia}px repeat(${jogos.length}, ${larguraJogo}px)`,
                 }}
@@ -228,7 +230,7 @@ export function JogadorModal({
                   </div>
                 ))}
 
-                {linhasTabela.map((linha) => (
+                {linhas.map((linha) => (
                   <Fragment key={linha.chave}>
                     <div className="bg-background px-2 py-2 text-[11px] text-muted-foreground">
                       {linha.label}
