@@ -40,7 +40,7 @@ MAX_PARTIDAS_POR_EXECUCAO = 40  # 2 chamadas cada (lineups + events) -- ~80 requ
 
 POSICAO_PT = {
     "Goalkeeper": "Goleiro",
-    "Defender": "Zagueiro",
+    "Defender": "Defensor",
     "Midfielder": "Meia",
     "Forward": "Atacante",
 }
