@@ -135,11 +135,15 @@ def encontrar_evento(partida, eventos_rodada):
     return finalizados[0] if finalizados else candidatos[0]
 
 
-def casar_jogador(nome_sofa, jogadores_do_time):
+def casar_jogador(nome_sofa, candidatos):
+    """candidatos: lista de Jogador. Compara pelo nome normalizado -- quem
+    chama decide o universo de candidatos (ver enriquecer_partida: tem
+    que ser quem jogou NESSA partida por ESSE time, nao o time atual do
+    jogador, que pode ter mudado por transferencia depois)."""
     tokens_sofa = normalizar_nome(nome_sofa)
     melhor = None
     melhor_score = 0
-    for jogador in jogadores_do_time:
+    for jogador in candidatos:
         score = len(tokens_sofa & normalizar_nome(jogador.nome))
         if score > melhor_score:
             melhor_score = score
@@ -158,29 +162,32 @@ def enriquecer_partida(db, partida, evento_sofascore):
 
     atualizadas = 0
     for lado, time_id_nosso in (("home", partida.time_mandante_id), ("away", partida.time_visitante_id)):
-        jogadores_do_time = db.query(Jogador).filter(Jogador.time_id == time_id_nosso).all()
-        if not jogadores_do_time:
+        # Candidatos = quem JA TEM linha de estatistica nessa partida por
+        # esse time -- nao filtra por Jogador.time_id (time ATUAL do
+        # jogador), porque um jogador pode ter sido transferido depois
+        # dessa partida e Jogador.time_id ja reflete o time novo (bug
+        # real encontrado 2026-09-02: goleiro que saiu do Bahia pro
+        # Chapecoense sumia do "elenco do Bahia" ao comparar so' pelo
+        # time atual, mesmo tendo uma linha de partida antiga do Bahia).
+        linhas_do_time = (
+            db.query(EstatisticaJogadorPartida)
+            .filter(EstatisticaJogadorPartida.partida_id == partida.id, EstatisticaJogadorPartida.time_id == time_id_nosso)
+            .all()
+        )
+        if not linhas_do_time:
             continue
+        linhas_por_jogador = {linha.jogador_id: linha for linha in linhas_do_time}
+        jogadores_candidatos = db.query(Jogador).filter(Jogador.id.in_(linhas_por_jogador.keys())).all()
 
         for entrada in lineups.get(lado, {}).get("players", []):
             stats_sofa = entrada.get("statistics")
             if not stats_sofa:
                 continue
-            jogador = casar_jogador(entrada["player"]["name"], jogadores_do_time)
+            jogador = casar_jogador(entrada["player"]["name"], jogadores_candidatos)
             if not jogador:
                 continue
 
-            linha = (
-                db.query(EstatisticaJogadorPartida)
-                .filter(
-                    EstatisticaJogadorPartida.jogador_id == jogador.id,
-                    EstatisticaJogadorPartida.partida_id == partida.id,
-                )
-                .first()
-            )
-            if not linha:
-                continue
-
+            linha = linhas_por_jogador[jogador.id]
             mudou = False
             for campo_sofa, campo_nosso in MAPA_CAMPOS.items():
                 if getattr(linha, campo_nosso) is None and campo_sofa in stats_sofa:

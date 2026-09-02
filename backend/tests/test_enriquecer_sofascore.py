@@ -146,6 +146,27 @@ def test_normalizar_nome_remove_acento_e_ignora_maiuscula():
     assert normalizar_nome("Léo Pereira") == normalizar_nome("leo pereira")
 
 
+def test_enriquece_jogador_ja_transferido_pra_outro_time(db, cenario):
+    # Regressao do bug real encontrado 2026-09-02: um goleiro jogava no
+    # Bahia na rodada 16, foi transferido pro Chapecoense depois --
+    # Jogador.time_id ja reflete o time NOVO (upsert_jogador sempre
+    # sobrescreve pelo time da partida mais recente processada). Antes,
+    # o enriquecimento buscava candidatos por Jogador.time_id == time da
+    # partida antiga, entao o jogador nunca aparecia no "elenco" do time
+    # antigo mesmo tendo uma linha de estatistica real pra essa partida.
+    # Agora busca por quem JA TEM linha nessa partida por esse time.
+    partida, pedro, stat_pedro = cenario
+    pedro.time_id = 999  # "transferido" pro Chapecoense (id fake), depois da partida
+    db.commit()
+
+    with patch("scripts.enriquecer_sofascore.buscar_lineups", return_value=LINEUPS_FAKE):
+        atualizadas = enriquecer_partida(db, partida, {"id": 12345})
+
+    assert atualizadas == 1
+    db.refresh(stat_pedro)
+    assert stat_pedro.chutes == 3
+
+
 def test_encontrar_evento_prefere_finalizado_sobre_adiado(cenario):
     # Regressao do bug real encontrado 2026-09-02: uma partida
     # adiada/remarcada aparece DUAS vezes na listagem da rodada do
