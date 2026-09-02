@@ -17,7 +17,7 @@ from app.models.time import Time
 from app.models.partida import Partida
 from app.models.jogador import Jogador
 from app.models.estatistica_jogador_partida import EstatisticaJogadorPartida
-from scripts.enriquecer_sofascore import enriquecer_partida, casar_jogador, normalizar_nome
+from scripts.enriquecer_sofascore import enriquecer_partida, casar_jogador, normalizar_nome, encontrar_evento
 
 
 @pytest.fixture
@@ -144,3 +144,21 @@ def test_casar_jogador_por_nome_normalizado():
 
 def test_normalizar_nome_remove_acento_e_ignora_maiuscula():
     assert normalizar_nome("Léo Pereira") == normalizar_nome("leo pereira")
+
+
+def test_encontrar_evento_prefere_finalizado_sobre_adiado(cenario):
+    # Regressao do bug real encontrado 2026-09-02: uma partida
+    # adiada/remarcada aparece DUAS vezes na listagem da rodada do
+    # SofaScore -- o evento adiado original (sem lineup) e o jogo de
+    # verdade jogado depois. Sem preferir o "finished", o adiado (que
+    # normalmente vem primeiro na lista) ganhava e a partida ficava sem
+    # nenhum jogador enriquecido.
+    partida, _, _ = cenario
+    mapa_fake = {partida.time_mandante_id: 1001, partida.time_visitante_id: 1002}
+    eventos_rodada = [
+        {"homeTeam": {"id": 1001}, "awayTeam": {"id": 1002}, "id": 111, "status": {"type": "postponed", "description": "Postponed"}},
+        {"homeTeam": {"id": 1001}, "awayTeam": {"id": 1002}, "id": 222, "status": {"type": "finished", "description": "Ended"}},
+    ]
+    with patch.dict("scripts.enriquecer_sofascore.TIME_ID_SOFASCORE", mapa_fake, clear=True):
+        evento = encontrar_evento(partida, eventos_rodada)
+    assert evento["id"] == 222

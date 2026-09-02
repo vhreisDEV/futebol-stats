@@ -114,14 +114,25 @@ def buscar_lineups(sofascore_event_id):
 
 
 def encontrar_evento(partida, eventos_rodada):
+    # Uma partida adiada/remarcada aparece DUAS vezes na listagem da
+    # rodada original do SofaScore: o evento adiado original (status
+    # "Postponed", sem lineup nenhuma) e o jogo de verdade jogado depois
+    # (status "Ended", mesma rodada do SofaScore mesmo se jogado numa
+    # data bem posterior) -- confirmado 2026-09-02 em 4 casos reais.
+    # Sem essa preferencia, o primeiro da lista (o adiado) ganhava e a
+    # partida ficava com 0 jogador enriquecido.
     sofa_mandante = TIME_ID_SOFASCORE.get(partida.time_mandante_id)
     sofa_visitante = TIME_ID_SOFASCORE.get(partida.time_visitante_id)
     if not sofa_mandante or not sofa_visitante:
         return None
-    for evento in eventos_rodada:
-        if evento["homeTeam"]["id"] == sofa_mandante and evento["awayTeam"]["id"] == sofa_visitante:
-            return evento
-    return None
+    candidatos = [
+        evento for evento in eventos_rodada
+        if evento["homeTeam"]["id"] == sofa_mandante and evento["awayTeam"]["id"] == sofa_visitante
+    ]
+    if not candidatos:
+        return None
+    finalizados = [e for e in candidatos if e["status"]["type"] == "finished"]
+    return finalizados[0] if finalizados else candidatos[0]
 
 
 def casar_jogador(nome_sofa, jogadores_do_time):
