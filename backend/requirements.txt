@@ -7,3 +7,4 @@ requests==2.34.2
 psycopg2-binary==2.9.12
 pytest==8.4.2
 google-genai==2.19.0
+curl_cffi==0.16.3
