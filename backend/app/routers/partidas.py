@@ -19,15 +19,22 @@ def get_db():
 
 
 @router.get("/proxima")
-def obter_proxima_partida(campeonato_id: Optional[int] = None, db: Session = Depends(get_db)):
+def obter_proxima_partida(
+    campeonato_id: Optional[int] = None, time_id: Optional[int] = None, db: Session = Depends(get_db)
+):
     """
     Acha a proxima partida agendada (a de data mais proxima), pra linkar
     direto a Analise IA dela sem precisar de uma pagina de listagem por
-    rodada. So devolve o id -- quem chama busca o resto via /partidas/{id}.
+    rodada -- ou, com `time_id`, o proximo jogo de um time especifico
+    (usado pra dar contexto de "proximo adversario" na grade de
+    estatistica por time). So devolve o id -- quem chama busca o resto
+    via /partidas/{id}.
     """
     query = db.query(Partida).filter(Partida.status == "agendada")
     if campeonato_id is not None:
         query = query.filter(Partida.campeonato_id == campeonato_id)
+    if time_id is not None:
+        query = query.filter((Partida.time_mandante_id == time_id) | (Partida.time_visitante_id == time_id))
 
     partida = query.order_by(
         Partida.data.is_(None), Partida.data, Partida.hora.is_(None), Partida.hora
