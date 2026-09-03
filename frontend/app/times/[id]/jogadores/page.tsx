@@ -290,7 +290,7 @@ export default function GradeJogadoresTime() {
               >
                 <ToggleGroupItem value="10">Top 10</ToggleGroupItem>
                 <ToggleGroupItem value="20">Top 20</ToggleGroupItem>
-                <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
+                <ToggleGroupItem value="todos">Sem limite</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
@@ -328,7 +328,7 @@ export default function GradeJogadoresTime() {
                     <span>Mais antigo</span>
                   </div>
 
-                  <div className="overflow-hidden rounded-lg ring-1 ring-border">
+                  <div className="overflow-hidden rounded-lg border border-border">
                     <div
                       className="grid gap-[2px] bg-border/70 text-xs"
                       style={{

@@ -239,7 +239,7 @@ function ModalEstatisticas({
             <span>Mais antigo</span>
           </div>
 
-          <div className="overflow-hidden rounded-lg ring-1 ring-border">
+          <div className="overflow-hidden rounded-lg border border-border">
             <div
               className="grid gap-px bg-border text-xs"
               style={{ gridTemplateColumns: `${larguraLabel}px ${larguraMedia}px repeat(${jogos.length}, ${larguraJogo}px)` }}
