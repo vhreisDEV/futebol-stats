@@ -122,6 +122,58 @@ def test_nao_sobrescreve_campo_ja_preenchido(db, cenario):
     assert stat_pedro.chutes_gol == 2  # esse sim estava None, foi preenchido
 
 
+def test_stat_ausente_vira_zero_quando_jogador_jogou(db, cenario):
+    # Regressao do bug real encontrado 2026-09-03: o SofaScore omite a
+    # chave inteira da estatistica quando o valor real e' 0 (Luan Peres
+    # jogou 90min contra o Vasco e tinha "totalTackle" ausente do
+    # payload -- 0 desarmes de verdade, nao dado faltando). Sem essa
+    # regra o campo ficava None pra sempre e a celula da grade parecia
+    # "nao jogou" quando na verdade ele jogou e so nao fez aquele stat.
+    partida, pedro, stat_pedro = cenario
+    lineups_sem_desarme = {
+        "home": {
+            "players": [
+                {
+                    "player": {"name": "Pedro Guilherme"},
+                    "statistics": {"minutesPlayed": 90, "totalShots": 1},
+                    # sem "totalTackle", "fouls", "wasFouled", "saves" -- todos zero de verdade
+                },
+            ]
+        },
+        "away": {"players": []},
+    }
+    with patch("scripts.enriquecer_sofascore.buscar_lineups", return_value=lineups_sem_desarme):
+        enriquecer_partida(db, partida, {"id": 12345})
+
+    db.refresh(stat_pedro)
+    assert stat_pedro.chutes == 1
+    assert stat_pedro.desarmes == 0
+    assert stat_pedro.faltas_cometidas == 0
+    assert stat_pedro.faltas_sofridas == 0
+    assert stat_pedro.minutos_jogados == 90
+
+
+def test_stat_ausente_continua_none_quando_jogador_nao_jogou(db, cenario):
+    # Contraste do teste acima: sem "minutesPlayed" (reserva nao
+    # utilizado), ausencia de chave nao significa nada -- continua None,
+    # tratado como "nao jogou" no frontend.
+    partida, pedro, stat_pedro = cenario
+    lineups_banco = {
+        "home": {
+            "players": [
+                {"player": {"name": "Pedro Guilherme"}, "statistics": {"totalShots": 0}},
+            ]
+        },
+        "away": {"players": []},
+    }
+    with patch("scripts.enriquecer_sofascore.buscar_lineups", return_value=lineups_banco):
+        enriquecer_partida(db, partida, {"id": 12345})
+
+    db.refresh(stat_pedro)
+    assert stat_pedro.desarmes is None
+    assert stat_pedro.minutos_jogados is None
+
+
 def test_jogador_sem_match_e_ignorado_sem_erro(db, cenario):
     partida, pedro, stat_pedro = cenario
     with patch("scripts.enriquecer_sofascore.buscar_lineups", return_value=LINEUPS_FAKE):

@@ -204,10 +204,24 @@ def enriquecer_partida(db, partida, evento_sofascore):
                 continue
 
             linha = linhas_por_jogador[jogador.id]
+            # O SofaScore omite a chave da estatistica inteira quando o valor
+            # real e' 0 (confirmado 2026-09-03: Luan Peres jogou os 90 min
+            # contra o Vasco e tinha "totalTackle" ausente do payload -- nao
+            # e' dado faltando, e' zero desarmes de verdade). So da pra
+            # assumir isso quando o jogador realmente jogou (minutesPlayed
+            # presente) -- pra quem nao jogou, ausencia de chave nao diz
+            # nada (o campo continua None, tratado como "nao jogou" no
+            # frontend).
+            jogou = stats_sofa.get("minutesPlayed") is not None
             mudou = False
             for campo_sofa, campo_nosso in MAPA_CAMPOS.items():
-                if getattr(linha, campo_nosso) is None and campo_sofa in stats_sofa:
+                if getattr(linha, campo_nosso) is not None:
+                    continue
+                if campo_sofa in stats_sofa:
                     setattr(linha, campo_nosso, stats_sofa[campo_sofa])
+                    mudou = True
+                elif jogou and campo_sofa != "minutesPlayed":
+                    setattr(linha, campo_nosso, 0)
                     mudou = True
             if mudou:
                 atualizadas += 1
