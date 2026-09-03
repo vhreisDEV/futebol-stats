@@ -126,8 +126,8 @@ export function JogadorModal({
   const linhas = perfil?.posicao === "Goleiro" ? [...linhasTabela, LINHA_DEFESAS] : linhasTabela;
   const cores = corTime(perfil?.time_nome ?? "");
   const larguraLabel = 130;
-  const larguraMedia = 60;
-  const larguraJogo = 92;
+  const larguraMedia = 56;
+  const larguraJogo = 64;
   const larguraFixa = larguraLabel + larguraMedia;
   const larguraGrade = larguraFixa + jogos.length * larguraJogo;
 
@@ -232,10 +232,10 @@ export function JogadorModal({
 
                 {linhas.map((linha) => (
                   <Fragment key={linha.chave}>
-                    <div className="bg-background px-2 py-2 text-[11px] text-muted-foreground">
+                    <div className="bg-background px-2 py-3 text-[11px] text-muted-foreground">
                       {linha.label}
                     </div>
-                    <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-mono font-semibold tabular-nums text-primary">
+                    <div className="border-l-2 border-primary bg-primary/10 px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-primary">
                       {valorOuTraco(media(jogos, linha.chave))}
                     </div>
                     {jogos.map((jogo, index) => {
@@ -243,9 +243,13 @@ export function JogadorModal({
                       return (
                         <div
                           key={`${linha.chave}-${index}`}
-                          className="bg-background px-2 py-2 text-center font-mono tabular-nums text-foreground"
+                          className={
+                            valor === null
+                              ? "bg-muted/50"
+                              : "bg-background px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-foreground"
+                          }
                         >
-                          {valor === null ? "" : valor}
+                          {valor}
                         </div>
                       );
                     })}

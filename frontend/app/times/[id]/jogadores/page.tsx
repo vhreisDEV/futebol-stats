@@ -166,9 +166,9 @@ export default function GradeJogadoresTime() {
 
   const cores = corTime(nomeTime);
   const larguraLabel = 170;
-  const larguraTotal = 60;
-  const larguraMedia = 60;
-  const larguraJogo = 84;
+  const larguraTotal = 56;
+  const larguraMedia = 56;
+  const larguraJogo = 60;
   const larguraFixa = larguraLabel + larguraTotal + larguraMedia;
   const larguraGrade = grade ? larguraFixa + grade.jogos.length * larguraJogo : larguraFixa;
 
@@ -359,22 +359,26 @@ export default function GradeJogadoresTime() {
                           onClick={() => setJogadorAbertoId(jogador.jogador_id)}
                           className="contents"
                         >
-                          <div className="bg-background px-2 py-2 text-left text-[11px] text-foreground hover:bg-muted">
+                          <div className="bg-background px-2 py-3 text-left text-[11px] text-foreground hover:bg-muted">
                             <p className="truncate font-medium">{jogador.nome}</p>
                             <p className="text-[10px] text-muted-foreground">{jogador.posicao ?? "—"}</p>
                           </div>
-                          <div className="bg-background px-2 py-2 text-center font-mono font-semibold tabular-nums text-foreground hover:bg-muted">
+                          <div className="bg-background px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-foreground hover:bg-muted">
                             {jogador.total}
                           </div>
-                          <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-mono font-semibold tabular-nums text-primary hover:bg-primary/15">
+                          <div className="border-l-2 border-primary bg-primary/10 px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-primary hover:bg-primary/15">
                             {jogador.media}
                           </div>
                           {jogador.valores.map((valor, index) => (
                             <div
                               key={index}
-                              className="bg-background px-2 py-2 text-center font-mono tabular-nums text-foreground hover:bg-muted"
+                              className={
+                                valor === null
+                                  ? "bg-muted/50"
+                                  : "bg-background px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-foreground hover:bg-muted"
+                              }
                             >
-                              {valor === null ? "" : valor}
+                              {valor}
                             </div>
                           ))}
                         </button>
