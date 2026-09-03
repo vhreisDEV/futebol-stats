@@ -193,14 +193,21 @@ export default function GradeJogadoresTime() {
           {proximoJogo && (
             <Link
               href={`/times/${proximoJogo.adversarioId}/jogadores?stat=${statSelecionado}`}
-              className="rounded-md border border-border bg-card px-3 py-1.5 text-right text-xs transition-colors hover:border-primary hover:bg-primary/10"
+              className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs transition-colors hover:border-primary hover:bg-primary/10"
             >
-              <span className="text-muted-foreground">Próximo jogo</span>{" "}
-              <span className="font-semibold text-foreground">
-                {proximoJogo.casa_ou_fora === "casa" ? "vs" : "@"} {proximoJogo.adversario}
+              <span className="text-muted-foreground">Próximo jogo</span>
+              <span
+                className={`flex size-4 shrink-0 items-center justify-center rounded-full border text-[7px] font-bold ${corTime(proximoJogo.adversario).textoEscuro ? "text-black" : "text-white"}`}
+                style={{
+                  backgroundColor: corTime(proximoJogo.adversario).fundo,
+                  borderColor: corTime(proximoJogo.adversario).borda,
+                }}
+              >
+                {iniciais(proximoJogo.adversario)}
               </span>
+              <span className="font-semibold text-foreground">{proximoJogo.adversario}</span>
               {proximoJogo.data && (
-                <span className="ml-1 text-muted-foreground">({formatarData(proximoJogo.data)})</span>
+                <span className="text-muted-foreground">({formatarData(proximoJogo.data)})</span>
               )}
             </Link>
           )}
