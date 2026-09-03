@@ -214,6 +214,9 @@ function ProjecaoPreJogoConteudo() {
   const searchParams = useSearchParams();
   const mandantePreSelecionado = searchParams.get("mandante") ?? "";
   const visitantePreSelecionado = searchParams.get("visitante") ?? "";
+  const campeonatoPreSelecionado = Number(searchParams.get("campeonato"));
+  const campeonatoValidoNaUrl =
+    Number.isInteger(campeonatoPreSelecionado) && campeonatoPreSelecionado > 0 ? campeonatoPreSelecionado : null;
 
   const [campeonatoId, setCampeonatoId] = useState<number | null>(null);
   const [times, setTimes] = useState<Time[]>([]);
@@ -229,10 +232,12 @@ function ProjecaoPreJogoConteudo() {
 
   // Se veio de um link com mandante pre-selecionado (ex.: "ver completa"
   // na pagina do time), descobre o campeonato dele primeiro -- pode ser
-  // qualquer liga, nao so o Brasileirao. Senao, comeca no Brasileirao.
+  // qualquer liga, nao so o Brasileirao. Senao, usa o "?campeonato="
+  // da URL (ex.: veio do NavChip da pagina de uma liga especifica) e,
+  // por ultimo, cai no Brasileirao.
   useEffect(() => {
     if (!mandantePreSelecionado) {
-      setCampeonatoId(CAMPEONATO_BRASILEIRAO_ID);
+      setCampeonatoId(campeonatoValidoNaUrl ?? CAMPEONATO_BRASILEIRAO_ID);
       return;
     }
     fetch(`${API_URL}/times/${mandantePreSelecionado}`)

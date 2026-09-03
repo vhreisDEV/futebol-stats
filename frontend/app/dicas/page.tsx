@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -216,7 +217,13 @@ function BlocoTime({
 }
 
 export default function Dicas() {
-  const [campeonatoId, setCampeonatoId] = useState(CAMPEONATO_BRASILEIRAO_ID);
+  const searchParams = useSearchParams();
+  const campeonatoPreSelecionado = Number(searchParams.get("campeonato"));
+  const [campeonatoId, setCampeonatoId] = useState(
+    Number.isInteger(campeonatoPreSelecionado) && campeonatoPreSelecionado > 0
+      ? campeonatoPreSelecionado
+      : CAMPEONATO_BRASILEIRAO_ID
+  );
   const [rodadaMaxima, setRodadaMaxima] = useState<number | null>(null);
   const [rodadaSelecionada, setRodadaSelecionada] = useState<number | null>(null);
   const [jogos, setJogos] = useState<JogoComDestaques[]>([]);

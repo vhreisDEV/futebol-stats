@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Crown } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -92,7 +93,13 @@ function BadgePosicao({ index }: { index: number }) {
 }
 
 export default function Jogadores() {
-  const [campeonatoId, setCampeonatoId] = useState(CAMPEONATO_BRASILEIRAO_ID);
+  const searchParams = useSearchParams();
+  const campeonatoPreSelecionado = Number(searchParams.get("campeonato"));
+  const [campeonatoId, setCampeonatoId] = useState(
+    Number.isInteger(campeonatoPreSelecionado) && campeonatoPreSelecionado > 0
+      ? campeonatoPreSelecionado
+      : CAMPEONATO_BRASILEIRAO_ID
+  );
   const [statSelecionado, setStatSelecionado] = useState("gols");
   const [mando, setMando] = useState("todos");
   const [timeSelecionado, setTimeSelecionado] = useState("");

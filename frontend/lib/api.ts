@@ -6,13 +6,13 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000
 
 export const CAMPEONATO_BRASILEIRAO_ID = 1;
 
-// Trava o SeletorCampeonato (Jogadores, Comparar, Previsao, Dicas) num
-// dropdown so-leitura ate os outros campeonatos terem dado completo
-// (hoje so Brasileirao, PL e La Liga tem historico suficiente; Bundesliga
-// ainda nem tem times sincronizados). A navegacao pela Home entre
-// campeonatos continua liberada -- isso so trava a TROCA dentro da mesma
-// tela. Reativar quando todas as ligas estiverem com backfill completo.
-export const TROCA_CAMPEONATO_HABILITADA = false;
+// Previsao de Jogos, Dicas da Rodada, Comparar Times e Jogadores usam
+// media por janela de jogos recentes (ultimos 5/10, separados por
+// mandante/visitante) -- fazem pouco sentido com menos de ~2 jogos em
+// casa e 2 fora. Cada liga libera essas 4 telas sozinha assim que sua
+// propria rodada_atual bate esse minimo (ver issue #46), em vez de uma
+// trava global unica pra todas as ligas de uma vez.
+export const RODADA_MINIMA_FUNCOES_AVANCADAS = 5;
 
 // Username do bot do Telegram (sem "@"). Configura via
 // NEXT_PUBLIC_TELEGRAM_BOT_USERNAME depois de criar o bot no @BotFather

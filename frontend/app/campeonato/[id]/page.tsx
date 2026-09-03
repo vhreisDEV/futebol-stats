@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, Users, UserRound, Flame } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
 import { VhSpinner } from "@/components/vh-spinner";
-import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
+import { NavChip } from "@/components/nav-chip";
+import { API_URL, CAMPEONATO_BRASILEIRAO_ID, RODADA_MINIMA_FUNCOES_AVANCADAS } from "@/lib/api";
 import { formatarDataHora } from "@/lib/formatar-data";
 import { flagSrc } from "@/lib/paises";
 
@@ -157,25 +158,53 @@ export default function CampeonatoPage() {
     );
   }
 
+  const funcoesAvancadasLiberadas =
+    rodadaAtual !== null && rodadaAtual >= RODADA_MINIMA_FUNCOES_AVANCADAS;
+  const rodadasParaLiberar = rodadaAtual === null ? RODADA_MINIMA_FUNCOES_AVANCADAS : RODADA_MINIMA_FUNCOES_AVANCADAS - rodadaAtual;
+
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
       <div className="mx-auto max-w-5xl">
-        <div>
-          <Link
-            href="/"
-            className="font-heading text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
-          >
-            VEAGA
-          </Link>
-          <h1 className="mt-2 flex items-center gap-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
-            {/* eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo, sem necessidade de otimizacao do Next/Image */}
-            <img src={flagSrc(campeonato.pais_codigo)} alt="" className="h-[0.75em] w-auto rounded-sm" />
-            {campeonato.nome} {campeonato.temporada_label}
-          </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Backfill histórico ainda em andamento pra essa liga — algumas seções do VEAGA (Previsão de
-            Jogos, Dicas da Rodada, Comparar Times, Jogadores) ainda são exclusivas do Brasileirão.
-          </p>
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div>
+            <Link
+              href="/"
+              className="font-heading text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+            >
+              VEAGA
+            </Link>
+            <h1 className="mt-2 flex items-center gap-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+              {/* eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo, sem necessidade de otimizacao do Next/Image */}
+              <img src={flagSrc(campeonato.pais_codigo)} alt="" className="h-[0.75em] w-auto rounded-sm" />
+              {campeonato.nome} {campeonato.temporada_label}
+            </h1>
+            {!funcoesAvancadasLiberadas && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Previsão de Jogos, Dicas da Rodada, Comparar Times e Jogadores liberam a partir da
+                rodada {RODADA_MINIMA_FUNCOES_AVANCADAS} dessa liga (faltam {rodadasParaLiberar}{" "}
+                rodada{rodadasParaLiberar === 1 ? "" : "s"}).
+              </p>
+            )}
+          </div>
+
+          {funcoesAvancadasLiberadas && (
+            <div className="flex flex-wrap gap-2">
+              <NavChip
+                href={`/previsao?campeonato=${campeonatoId}`}
+                label="Previsão de Jogos"
+                icon={TrendingUp}
+                cor="gold"
+              />
+              <NavChip href={`/dicas?campeonato=${campeonatoId}`} label="Dicas da Rodada" icon={Flame} cor="emerald" />
+              <NavChip href={`/comparar?campeonato=${campeonatoId}`} label="Comparar Times" icon={Users} cor="rose" />
+              <NavChip
+                href={`/jogadores?campeonato=${campeonatoId}`}
+                label="Jogadores"
+                icon={UserRound}
+                cor="neutral"
+              />
+            </div>
+          )}
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">

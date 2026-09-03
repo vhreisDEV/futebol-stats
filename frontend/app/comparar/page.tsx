@@ -117,6 +117,9 @@ function CompararTimesConteudo() {
   const searchParams = useSearchParams();
   const timePreSelecionado = searchParams.get("time") ?? "";
   const timeBPreSelecionado = searchParams.get("timeB") ?? "";
+  const campeonatoPreSelecionado = Number(searchParams.get("campeonato"));
+  const campeonatoValidoNaUrl =
+    Number.isInteger(campeonatoPreSelecionado) && campeonatoPreSelecionado > 0 ? campeonatoPreSelecionado : null;
 
   const [campeonatoId, setCampeonatoId] = useState<number | null>(null);
   const [times, setTimes] = useState<Time[]>([]);
@@ -137,10 +140,12 @@ function CompararTimesConteudo() {
 
   // Se veio de um link com time pre-selecionado (ex.: "ver completa" na
   // pagina do time), descobre o campeonato dele primeiro -- pode ser
-  // qualquer liga, nao so o Brasileirao. Senao, comeca no Brasileirao.
+  // qualquer liga, nao so o Brasileirao. Senao, usa o "?campeonato="
+  // da URL (ex.: veio do NavChip da pagina de uma liga especifica) e,
+  // por ultimo, cai no Brasileirao.
   useEffect(() => {
     if (!timePreSelecionado) {
-      setCampeonatoId(CAMPEONATO_BRASILEIRAO_ID);
+      setCampeonatoId(campeonatoValidoNaUrl ?? CAMPEONATO_BRASILEIRAO_ID);
       return;
     }
     fetch(`${API_URL}/times/${timePreSelecionado}`)
