@@ -91,6 +91,8 @@ export default function GradeJogadoresTime() {
   const [statSelecionado, setStatSelecionado] = useState("desarmes");
   const [quantidade, setQuantidade] = useState(10);
   const [mando, setMando] = useState("todos");
+  const [filtroPosicao, setFiltroPosicao] = useState("todos");
+  const [topN, setTopN] = useState<number | null>(null);
   const [grade, setGrade] = useState<GradeResponse | null>(null);
   const [proximoJogo, setProximoJogo] = useState<ProximoJogo | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -153,6 +155,14 @@ export default function GradeJogadoresTime() {
       })
       .catch(() => setProximoJogo(null));
   }, [timeId]);
+
+  let jogadoresExibidos = grade?.jogadores ?? [];
+  if (filtroPosicao !== "todos" && statSelecionado !== "defesas") {
+    jogadoresExibidos = jogadoresExibidos.filter((j) => j.posicao === filtroPosicao);
+  }
+  if (topN !== null) {
+    jogadoresExibidos = jogadoresExibidos.slice(0, topN);
+  }
 
   const cores = corTime(nomeTime);
   const larguraLabel = 170;
@@ -258,8 +268,34 @@ export default function GradeJogadoresTime() {
               </div>
             </div>
 
-            {!carregando && grade && grade.jogadores.length > 0 && (
-              <p className="mt-1 text-xs text-muted-foreground">Toque em um jogador para ver os detalhes.</p>
+            <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+              {statSelecionado !== "defesas" && (
+                <ToggleGroup
+                  variant="outline"
+                  size="sm"
+                  value={[filtroPosicao]}
+                  onValueChange={(v: string[]) => v[0] && setFiltroPosicao(v[0])}
+                >
+                  <ToggleGroupItem value="todos">Todas posições</ToggleGroupItem>
+                  <ToggleGroupItem value="Defensor">Defensor</ToggleGroupItem>
+                  <ToggleGroupItem value="Meia">Meia</ToggleGroupItem>
+                  <ToggleGroupItem value="Atacante">Atacante</ToggleGroupItem>
+                </ToggleGroup>
+              )}
+              <ToggleGroup
+                variant="outline"
+                size="sm"
+                value={[topN === null ? "todos" : String(topN)]}
+                onValueChange={(v: string[]) => v[0] && setTopN(v[0] === "todos" ? null : Number(v[0]))}
+              >
+                <ToggleGroupItem value="10">Top 10</ToggleGroupItem>
+                <ToggleGroupItem value="20">Top 20</ToggleGroupItem>
+                <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            {!carregando && jogadoresExibidos.length > 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">Toque em um jogador para ver os detalhes.</p>
             )}
 
             {carregando && (
@@ -274,9 +310,15 @@ export default function GradeJogadoresTime() {
               </div>
             )}
 
-            {!carregando && grade && grade.jogos.length > 0 && grade.jogadores.length > 0 && (
+            {!carregando && grade && grade.jogadores.length > 0 && jogadoresExibidos.length === 0 && (
+              <div className="mt-3 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+                Nenhum jogador dessa posição nessa categoria.
+              </div>
+            )}
+
+            {!carregando && grade && grade.jogos.length > 0 && jogadoresExibidos.length > 0 && (
               <div className="mt-3 overflow-x-auto">
-                <div style={{ minWidth: larguraGrade }}>
+                <div style={{ width: "fit-content", minWidth: larguraGrade }}>
                   <div
                     className="flex items-center gap-2 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
                     style={{ paddingLeft: larguraFixa }}
@@ -310,7 +352,7 @@ export default function GradeJogadoresTime() {
                         </div>
                       ))}
 
-                      {grade.jogadores.map((jogador) => (
+                      {jogadoresExibidos.map((jogador) => (
                         <button
                           key={jogador.jogador_id}
                           type="button"

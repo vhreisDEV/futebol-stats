@@ -229,7 +229,7 @@ function ModalEstatisticas({
           </div>
         </DialogHeader>
 
-        <div style={{ minWidth: larguraGrade }}>
+        <div style={{ width: "fit-content", minWidth: larguraGrade }}>
           <div
             className="flex items-center gap-2 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
             style={{ paddingLeft: larguraFixa }}
@@ -283,7 +283,7 @@ function ModalEstatisticas({
                         key={`${linha.chave}-${index}`}
                         className="bg-background px-2 py-2 text-center font-mono tabular-nums text-foreground"
                       >
-                        {valor === null ? "—" : valor}
+                        {valor === null ? "" : valor}
                       </div>
                     );
                   })}
