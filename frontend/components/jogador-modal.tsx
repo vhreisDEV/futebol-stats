@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { VhSpinner } from "@/components/vh-spinner";
-import { corTime, iniciais } from "@/lib/times-visual";
+import { abreviarTime, corTime, iniciais } from "@/lib/times-visual";
 import { API_URL } from "@/lib/api";
 
 interface Perfil {
@@ -126,8 +126,8 @@ export function JogadorModal({
   const linhas = perfil?.posicao === "Goleiro" ? [...linhasTabela, LINHA_DEFESAS] : linhasTabela;
   const cores = corTime(perfil?.time_nome ?? "");
   const larguraLabel = 130;
-  const larguraMedia = 56;
-  const larguraJogo = 64;
+  const larguraMedia = 48;
+  const larguraJogo = 48;
   const larguraFixa = larguraLabel + larguraMedia;
   const larguraGrade = larguraFixa + jogos.length * larguraJogo;
 
@@ -217,14 +217,14 @@ export function JogadorModal({
                 }}
               >
                 <div className="bg-card px-2 py-2" />
-                <div className="border-l-2 border-primary bg-primary/10 px-2 py-2 text-center font-semibold text-primary">
+                <div className="border-l-2 border-primary bg-primary/10 px-1 py-2 text-center font-semibold text-primary">
                   Média
                 </div>
                 {jogos.map((jogo, index) => (
-                  <div key={index} className="bg-card px-2 py-2 text-center">
-                    <p className="text-[11px] text-muted-foreground">{formatarData(jogo.data)}</p>
-                    <p className="mt-0.5 truncate font-medium text-foreground">{jogo.adversario}</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  <div key={index} className="bg-card px-1 py-2 text-center">
+                    <p className="text-[9px] text-muted-foreground">{formatarData(jogo.data)}</p>
+                    <p className="mt-0.5 text-xs font-bold text-foreground">{abreviarTime(jogo.adversario)}</p>
+                    <p className="text-[9px] text-muted-foreground">
                       {jogo.casa_ou_fora === "casa" ? "Casa" : "Fora"}
                     </p>
                   </div>
@@ -235,7 +235,7 @@ export function JogadorModal({
                     <div className="bg-background px-2 py-3 text-[11px] text-muted-foreground">
                       {linha.label}
                     </div>
-                    <div className="border-l-2 border-primary bg-primary/10 px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-primary">
+                    <div className="border-l-2 border-primary bg-primary/10 px-1 py-3 text-center font-mono text-base font-bold tabular-nums text-primary">
                       {valorOuTraco(media(jogos, linha.chave))}
                     </div>
                     {jogos.map((jogo, index) => {
@@ -245,8 +245,8 @@ export function JogadorModal({
                           key={`${linha.chave}-${index}`}
                           className={
                             valor === null
-                              ? "bg-muted/50"
-                              : "bg-background px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-foreground"
+                              ? "bg-background"
+                              : "bg-muted px-1 py-3 text-center font-mono text-base font-bold tabular-nums text-foreground"
                           }
                         >
                           {valor}

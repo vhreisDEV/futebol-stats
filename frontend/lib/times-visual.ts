@@ -32,3 +32,33 @@ export function iniciais(nome: string) {
   if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
   return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
 }
+
+// Abreviacao de 3 letras pro nome do adversario nas colunas da grade de
+// estatistica -- coluna larga o suficiente pro nome inteiro deixava o
+// numero da celula pequeno e desproporcional (ver conversa 2026-09-03).
+const ABREVIACAO_TIME: Record<string, string> = {
+  "Athletico-PR": "CAP",
+  "Atlético-MG": "CAM",
+  Bahia: "BAH",
+  Botafogo: "BOT",
+  Chapecoense: "CHA",
+  Corinthians: "COR",
+  Coritiba: "CTB",
+  Cruzeiro: "CRU",
+  Flamengo: "FLA",
+  Fluminense: "FLU",
+  Grêmio: "GRE",
+  Internacional: "INT",
+  Mirassol: "MIR",
+  Palmeiras: "PAL",
+  "Red Bull Bragantino": "RBB",
+  Remo: "REM",
+  Santos: "SAN",
+  "São Paulo": "SPO",
+  "Vasco da Gama": "VAS",
+  Vitória: "VIT",
+};
+
+export function abreviarTime(nome: string) {
+  return ABREVIACAO_TIME[nome] ?? nome.replace(/[^a-zA-ZÀ-ÿ]/g, "").slice(0, 3).toUpperCase();
+}

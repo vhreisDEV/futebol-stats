@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { JogadorModal } from "@/components/jogador-modal";
 import { VhSpinner } from "@/components/vh-spinner";
-import { corTime, iniciais } from "@/lib/times-visual";
+import { abreviarTime, corTime, iniciais } from "@/lib/times-visual";
 import { API_URL } from "@/lib/api";
 
 interface Categoria {
@@ -69,6 +69,7 @@ interface GradeResponse {
 }
 
 interface ProximoJogo {
+  adversarioId: number;
   adversario: string;
   data: string | null;
   casa_ou_fora: string;
@@ -86,9 +87,13 @@ function formatarData(dataStr: string) {
 export default function GradeJogadoresTime() {
   const params = useParams();
   const timeId = params.id;
+  const searchParams = useSearchParams();
 
   const [nomeTime, setNomeTime] = useState("");
-  const [statSelecionado, setStatSelecionado] = useState("desarmes");
+  const [statSelecionado, setStatSelecionado] = useState(() => {
+    const inicial = searchParams.get("stat");
+    return inicial && TODAS_CATEGORIAS.some((c) => c.chave === inicial) ? inicial : "desarmes";
+  });
   const [quantidade, setQuantidade] = useState(10);
   const [mando, setMando] = useState("todos");
   const [filtroPosicao, setFiltroPosicao] = useState("todos");
@@ -148,6 +153,7 @@ export default function GradeJogadoresTime() {
         if (!partida) return;
         const jogaEmCasa = partida.time_mandante_id === Number(timeId);
         setProximoJogo({
+          adversarioId: jogaEmCasa ? partida.time_visitante_id : partida.time_mandante_id,
           adversario: jogaEmCasa ? partida.time_visitante : partida.time_mandante,
           data: partida.data,
           casa_ou_fora: jogaEmCasa ? "casa" : "fora",
@@ -166,9 +172,9 @@ export default function GradeJogadoresTime() {
 
   const cores = corTime(nomeTime);
   const larguraLabel = 170;
-  const larguraTotal = 56;
-  const larguraMedia = 56;
-  const larguraJogo = 60;
+  const larguraTotal = 48;
+  const larguraMedia = 48;
+  const larguraJogo = 48;
   const larguraFixa = larguraLabel + larguraTotal + larguraMedia;
   const larguraGrade = grade ? larguraFixa + grade.jogos.length * larguraJogo : larguraFixa;
 
@@ -185,7 +191,10 @@ export default function GradeJogadoresTime() {
           </Link>
 
           {proximoJogo && (
-            <div className="rounded-md border border-border bg-card px-3 py-1.5 text-right text-xs">
+            <Link
+              href={`/times/${proximoJogo.adversarioId}/jogadores?stat=${statSelecionado}`}
+              className="rounded-md border border-border bg-card px-3 py-1.5 text-right text-xs transition-colors hover:border-primary hover:bg-primary/10"
+            >
               <span className="text-muted-foreground">Próximo jogo</span>{" "}
               <span className="font-semibold text-foreground">
                 {proximoJogo.casa_ou_fora === "casa" ? "vs" : "@"} {proximoJogo.adversario}
@@ -193,7 +202,7 @@ export default function GradeJogadoresTime() {
               {proximoJogo.data && (
                 <span className="ml-1 text-muted-foreground">({formatarData(proximoJogo.data)})</span>
               )}
-            </div>
+            </Link>
           )}
         </div>
 
@@ -285,12 +294,11 @@ export default function GradeJogadoresTime() {
               <ToggleGroup
                 variant="outline"
                 size="sm"
-                value={[topN === null ? "todos" : String(topN)]}
-                onValueChange={(v: string[]) => v[0] && setTopN(v[0] === "todos" ? null : Number(v[0]))}
+                value={topN === null ? [] : [String(topN)]}
+                onValueChange={(v: string[]) => setTopN(v[0] ? Number(v[0]) : null)}
               >
                 <ToggleGroupItem value="10">Top 10</ToggleGroupItem>
                 <ToggleGroupItem value="20">Top 20</ToggleGroupItem>
-                <ToggleGroupItem value="todos">Sem limite</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
@@ -343,10 +351,10 @@ export default function GradeJogadoresTime() {
                         Média
                       </div>
                       {grade.jogos.map((jogo) => (
-                        <div key={jogo.partida_id} className="bg-card px-2 py-2 text-center">
-                          <p className="text-[11px] text-muted-foreground">{formatarData(jogo.data)}</p>
-                          <p className="mt-0.5 truncate font-medium text-foreground">{jogo.adversario}</p>
-                          <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        <div key={jogo.partida_id} className="bg-card px-1 py-2 text-center">
+                          <p className="text-[9px] text-muted-foreground">{formatarData(jogo.data)}</p>
+                          <p className="mt-0.5 text-xs font-bold text-foreground">{abreviarTime(jogo.adversario)}</p>
+                          <p className="text-[9px] text-muted-foreground">
                             {jogo.casa_ou_fora === "casa" ? "Casa" : "Fora"}
                           </p>
                         </div>
@@ -363,10 +371,10 @@ export default function GradeJogadoresTime() {
                             <p className="truncate font-medium">{jogador.nome}</p>
                             <p className="text-[10px] text-muted-foreground">{jogador.posicao ?? "—"}</p>
                           </div>
-                          <div className="bg-background px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-foreground hover:bg-muted">
+                          <div className="bg-background px-1 py-3 text-center font-mono text-base font-bold tabular-nums text-foreground hover:bg-muted">
                             {jogador.total}
                           </div>
-                          <div className="border-l-2 border-primary bg-primary/10 px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-primary hover:bg-primary/15">
+                          <div className="border-l-2 border-primary bg-primary/10 px-1 py-3 text-center font-mono text-base font-bold tabular-nums text-primary hover:bg-primary/15">
                             {jogador.media}
                           </div>
                           {jogador.valores.map((valor, index) => (
@@ -374,8 +382,8 @@ export default function GradeJogadoresTime() {
                               key={index}
                               className={
                                 valor === null
-                                  ? "bg-muted/50"
-                                  : "bg-background px-2 py-3 text-center font-mono text-sm font-semibold tabular-nums text-foreground hover:bg-muted"
+                                  ? "bg-background"
+                                  : "bg-muted px-1 py-3 text-center font-mono text-base font-bold tabular-nums text-foreground hover:bg-muted/70"
                               }
                             >
                               {valor}
