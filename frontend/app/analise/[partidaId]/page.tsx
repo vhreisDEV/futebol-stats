@@ -13,6 +13,7 @@ import { sumulaMono } from "@/lib/fonts";
 
 interface PartidaResumo {
   id: number;
+  campeonato_id: number;
   data: string | null;
   hora: string | null;
   status: string;
@@ -160,7 +161,13 @@ export default function AnalisePartida() {
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
       <div className="mx-auto max-w-2xl">
         <Link
-          href="/"
+          href={
+            partida
+              ? partida.campeonato_id === CAMPEONATO_BRASILEIRAO_ID
+                ? "/brasileirao"
+                : `/campeonato/${partida.campeonato_id}`
+              : "/"
+          }
           className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
         >
           <ChevronLeft className="h-3.5 w-3.5" />

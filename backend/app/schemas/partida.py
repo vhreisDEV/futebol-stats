@@ -5,6 +5,7 @@ from typing import Optional
 
 class PartidaDetalheResponse(BaseModel):
     id: int
+    campeonato_id: int
     data: Optional[date]
     hora: Optional[time]
     status: str
