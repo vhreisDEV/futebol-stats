@@ -1,38 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VhSpinner } from "@/components/vh-spinner";
 import { corTime, iniciais } from "@/lib/times-visual";
 import { API_URL, CAMPEONATO_BRASILEIRAO_ID } from "@/lib/api";
+import { flagSrc } from "@/lib/paises";
 
 interface Time {
   id: number;
   nome: string;
 }
 
-export default function Times() {
+interface Campeonato {
+  id: number;
+  nome: string;
+  pais_codigo: string;
+  temporada_label: string;
+}
+
+function TimesConteudo() {
+  const searchParams = useSearchParams();
+  const campeonatoPreSelecionado = Number(searchParams.get("campeonato"));
+  const campeonatoId =
+    Number.isInteger(campeonatoPreSelecionado) && campeonatoPreSelecionado > 0
+      ? campeonatoPreSelecionado
+      : CAMPEONATO_BRASILEIRAO_ID;
+
+  const [campeonato, setCampeonato] = useState<Campeonato | null>(null);
   const [times, setTimes] = useState<Time[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/times/?campeonato_id=${CAMPEONATO_BRASILEIRAO_ID}`)
-      .then((r) => {
+    setCarregando(true);
+    setErro(null);
+
+    Promise.all([
+      fetch(`${API_URL}/campeonatos/${campeonatoId}`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`${API_URL}/times/?campeonato_id=${campeonatoId}`).then((r) => {
         if (!r.ok) throw new Error("Erro ao buscar times");
         return r.json();
-      })
-      .then((dados) => {
-        setTimes(dados);
+      }),
+    ])
+      .then(([dadosCampeonato, dadosTimes]) => {
+        setCampeonato(dadosCampeonato);
+        setTimes(dadosTimes);
         setCarregando(false);
       })
       .catch((err) => {
         setErro(err.message);
         setCarregando(false);
       });
-  }, []);
+  }, [campeonatoId]);
 
   if (erro) {
     return (
@@ -42,19 +65,26 @@ export default function Times() {
     );
   }
 
+  const hrefVoltar = campeonatoId === CAMPEONATO_BRASILEIRAO_ID ? "/brasileirao" : `/campeonato/${campeonatoId}`;
+  const nomeLiga = campeonato ? `${campeonato.nome} ${campeonato.temporada_label}` : "";
+
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <Link
-              href="/brasileirao"
+              href={hrefVoltar}
               className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
-              Brasileirão
+              {campeonato ? nomeLiga : "Voltar"}
             </Link>
-            <h1 className="mt-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+            <h1 className="mt-2 flex items-center gap-2 font-heading text-2xl font-semibold uppercase tracking-wide sm:text-3xl">
+              {campeonato && (
+                // eslint-disable-next-line @next/next/no-img-element -- SVG local, decorativo
+                <img src={flagSrc(campeonato.pais_codigo)} alt="" className="h-[0.75em] w-auto rounded-sm" />
+              )}
               Times
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -94,5 +124,19 @@ export default function Times() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function Times() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
+          <p>Carregando...</p>
+        </main>
+      }
+    >
+      <TimesConteudo />
+    </Suspense>
   );
 }

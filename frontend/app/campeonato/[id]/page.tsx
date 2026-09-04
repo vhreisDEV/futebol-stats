@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, TrendingUp, Users, UserRound, Flame } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, Users, UserRound, Flame, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Classificacao } from "@/components/classificacao";
 import { PartidaModal } from "@/components/partida-modal";
@@ -187,24 +187,27 @@ export default function CampeonatoPage() {
             )}
           </div>
 
-          {funcoesAvancadasLiberadas && (
-            <div className="flex flex-wrap gap-2">
-              <NavChip
-                href={`/previsao?campeonato=${campeonatoId}`}
-                label="Previsão de Jogos"
-                icon={TrendingUp}
-                cor="gold"
-              />
-              <NavChip href={`/dicas?campeonato=${campeonatoId}`} label="Dicas da Rodada" icon={Flame} cor="emerald" />
-              <NavChip href={`/comparar?campeonato=${campeonatoId}`} label="Comparar Times" icon={Users} cor="rose" />
-              <NavChip
-                href={`/jogadores?campeonato=${campeonatoId}`}
-                label="Jogadores"
-                icon={UserRound}
-                cor="neutral"
-              />
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2">
+            <NavChip href={`/times?campeonato=${campeonatoId}`} label="Times" icon={Shield} cor="orange" />
+            {funcoesAvancadasLiberadas && (
+              <>
+                <NavChip
+                  href={`/previsao?campeonato=${campeonatoId}`}
+                  label="Previsão de Jogos"
+                  icon={TrendingUp}
+                  cor="gold"
+                />
+                <NavChip href={`/dicas?campeonato=${campeonatoId}`} label="Dicas da Rodada" icon={Flame} cor="emerald" />
+                <NavChip href={`/comparar?campeonato=${campeonatoId}`} label="Comparar Times" icon={Users} cor="rose" />
+                <NavChip
+                  href={`/jogadores?campeonato=${campeonatoId}`}
+                  label="Jogadores"
+                  icon={UserRound}
+                  cor="neutral"
+                />
+              </>
+            )}
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">

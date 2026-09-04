@@ -312,6 +312,7 @@ export default function DetalheTime() {
   const [quantidade, setQuantidade] = useState(10);
   const [mando, setMando] = useState<string>("todos");
   const [times, setTimes] = useState<Time[]>([]);
+  const [campeonatoId, setCampeonatoId] = useState<number | null>(null);
 
   const [comparacaoTimeId, setComparacaoTimeId] = useState("");
   const [estatisticasComparacao, setEstatisticasComparacao] = useState<Estatisticas | null>(null);
@@ -359,8 +360,9 @@ export default function DetalheTime() {
         // Lista de times pro "Comparar com"/"Projeção contra" tem que ser
         // do mesmo campeonato do time atual -- nao faz sentido comparar
         // um time da Premier League com um do Brasileirao.
-        const campeonatoId = dadosTime.campeonato_id ?? CAMPEONATO_BRASILEIRAO_ID;
-        return fetch(`${API_URL}/times/?campeonato_id=${campeonatoId}`).then((r) => r.json());
+        const campeonatoIdDoTime = dadosTime.campeonato_id ?? CAMPEONATO_BRASILEIRAO_ID;
+        setCampeonatoId(campeonatoIdDoTime);
+        return fetch(`${API_URL}/times/?campeonato_id=${campeonatoIdDoTime}`).then((r) => r.json());
       })
       .then((dadosTimes) => {
         setTimes(dadosTimes);
@@ -440,7 +442,11 @@ export default function DetalheTime() {
       <div className="mx-auto max-w-2xl">
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <Link
-            href="/times"
+            href={
+              campeonatoId && campeonatoId !== CAMPEONATO_BRASILEIRAO_ID
+                ? `/times?campeonato=${campeonatoId}`
+                : "/times"
+            }
             className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
