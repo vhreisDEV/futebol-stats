@@ -180,7 +180,7 @@ export default function CampeonatoPage() {
             </h1>
             {!funcoesAvancadasLiberadas && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Previsão de Jogos, Dicas da Rodada, Comparar Times e Jogadores liberam a partir da
+                Previsão de Jogos, Dicas da Rodada e Comparar Times liberam a partir da
                 rodada {RODADA_MINIMA_FUNCOES_AVANCADAS} dessa liga (faltam {rodadasParaLiberar}{" "}
                 rodada{rodadasParaLiberar === 1 ? "" : "s"}).
               </p>
@@ -189,6 +189,12 @@ export default function CampeonatoPage() {
 
           <div className="flex flex-wrap gap-2">
             <NavChip href={`/times?campeonato=${campeonatoId}`} label="Times" icon={Shield} cor="orange" />
+            <NavChip
+              href={`/jogadores?campeonato=${campeonatoId}`}
+              label="Jogadores"
+              icon={UserRound}
+              cor="neutral"
+            />
             {funcoesAvancadasLiberadas && (
               <>
                 <NavChip
@@ -199,12 +205,6 @@ export default function CampeonatoPage() {
                 />
                 <NavChip href={`/dicas?campeonato=${campeonatoId}`} label="Dicas da Rodada" icon={Flame} cor="emerald" />
                 <NavChip href={`/comparar?campeonato=${campeonatoId}`} label="Comparar Times" icon={Users} cor="rose" />
-                <NavChip
-                  href={`/jogadores?campeonato=${campeonatoId}`}
-                  label="Jogadores"
-                  icon={UserRound}
-                  cor="neutral"
-                />
               </>
             )}
           </div>

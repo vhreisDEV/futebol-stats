@@ -6,12 +6,14 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000
 
 export const CAMPEONATO_BRASILEIRAO_ID = 1;
 
-// Previsao de Jogos, Dicas da Rodada, Comparar Times e Jogadores usam
-// media por janela de jogos recentes (ultimos 5/10, separados por
-// mandante/visitante) -- fazem pouco sentido com menos de ~2 jogos em
-// casa e 2 fora. Cada liga libera essas 4 telas sozinha assim que sua
-// propria rodada_atual bate esse minimo (ver issue #46), em vez de uma
-// trava global unica pra todas as ligas de uma vez.
+// Previsao de Jogos, Dicas da Rodada e Comparar Times usam media por
+// janela de jogos recentes (ultimos 5/10, separados por mandante/
+// visitante) -- fazem pouco sentido com menos de ~2 jogos em casa e 2
+// fora. Cada liga libera essas 3 telas sozinha assim que sua propria
+// rodada_atual bate esse minimo (ver issue #46), em vez de uma trava
+// global unica pra todas as ligas de uma vez. Times e Jogadores (o
+// ranking da liga, sem janela nenhuma -- so soma da temporada) nunca
+// dependeram disso, ficam sempre liberados.
 export const RODADA_MINIMA_FUNCOES_AVANCADAS = 5;
 
 // Username do bot do Telegram (sem "@"). Configura via
