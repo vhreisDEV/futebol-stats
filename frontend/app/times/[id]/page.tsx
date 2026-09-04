@@ -229,7 +229,7 @@ function ModalEstatisticas({
           </div>
         </DialogHeader>
 
-        <div style={{ width: "fit-content", minWidth: larguraGrade }}>
+        <div className="justify-self-center" style={{ width: "fit-content", minWidth: larguraGrade }}>
           <div
             className="flex items-center gap-2 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
             style={{ paddingLeft: larguraFixa }}
