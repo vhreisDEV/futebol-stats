@@ -18,10 +18,15 @@ requests puro leva 403 mesmo com headers de navegador completos --
 parece checagem de fingerprint TLS/JA3. curl_cffi com
 impersonate="chrome124" contorna sem precisar de headless browser.
 
-Mapeamento de ID (por nome, confirmado 2026-09-02, ver issue #47):
-- Time: TIME_ID_SOFASCORE abaixo, fixo pros 20 times do Brasileirao
-  2026 (interseccao de tokens do nome normalizado bateu 20/20 sem
-  excecao manual -- ver script de teste na issue #47).
+Mapeamento de ID (por nome, confirmado 2026-09-02 pro Brasileirao e
+2026-09-05 pra Premier League, ver issue #47):
+- Liga: CONFIG_LIGA abaixo, uma entrada por campeonato_id nossa com o
+  tournament_id/season_id do SofaScore e o mapa de time -- cada liga
+  nova precisa entrar aqui (achar o id do torneio/temporada e rodar a
+  intersecao de tokens do nome normalizado pra conferir 20/20 sem
+  ambiguidade antes de confiar no mapa).
+- Time: dentro de CONFIG_LIGA[campeonato_id]["times"], por interseccao
+  de tokens do nome normalizado.
 - Jogador: dentro do elenco do time ja resolvido (nunca compara contra
   os dois times ao mesmo tempo -- da falso positivo), match por maior
   interseccao de tokens do nome normalizado (sem acento, minusculo).
@@ -31,7 +36,7 @@ Mapeamento de ID (por nome, confirmado 2026-09-02, ver issue #47):
 
 Uso (de dentro de backend/; local usa SQLite, ver
 enriquecer_sofascore_producao.py pra producao):
-    py scripts/enriquecer_sofascore.py <numero_da_rodada>
+    py scripts/enriquecer_sofascore.py <campeonato_id> <numero_da_rodada>
 """
 import sys
 import unicodedata
@@ -49,34 +54,64 @@ from app.models.estatistica_jogador_partida import EstatisticaJogadorPartida
 BASE_URL = "https://api.sofascore.com/api/v1"
 IMPERSONATE = "chrome124"
 
-SOFASCORE_TOURNAMENT_ID = 325  # Brasileirao Serie A
-SOFASCORE_SEASON_ID = 87678  # temporada 2026
-
-# nosso Time.id -> id do time no SofaScore -- confirmado 20/20 por
-# intersecao de tokens do nome normalizado, 2026-09-02 (ver issue #47).
-TIME_ID_SOFASCORE = {
-    1: 5981,     # Flamengo
-    2: 1963,     # Palmeiras
-    3: 1958,     # Botafogo
-    4: 1961,     # Fluminense
-    5: 1967,     # Athletico-PR
-    6: 1954,     # Cruzeiro
-    7: 1955,     # Bahia
-    8: 1957,     # Corinthians
-    9: 1999,     # Red Bull Bragantino
-    10: 1982,    # Coritiba
-    11: 1977,    # Atlético-MG
-    12: 1981,    # São Paulo
-    13: 1962,    # Vitória
-    14: 5926,    # Grêmio
-    15: 21982,   # Mirassol
-    16: 1966,    # Internacional
-    17: 1968,    # Santos
-    18: 1974,    # Vasco da Gama
-    19: 2012,    # Remo
-    20: 21845,   # Chapecoense
+# Uma entrada por campeonato_id nossa (ver app.models.campeonato). Time
+# = nosso Time.id -> id do time no SofaScore, confirmado 20/20 por
+# intersecao de tokens do nome normalizado (sem excecao manual) antes
+# de cada liga entrar aqui.
+CONFIG_LIGA = {
+    1: {  # Brasileirao Serie A -- confirmado 2026-09-02, ver issue #47
+        "tournament_id": 325,
+        "season_id": 87678,  # temporada 2026
+        "times": {
+            1: 5981,     # Flamengo
+            2: 1963,     # Palmeiras
+            3: 1958,     # Botafogo
+            4: 1961,     # Fluminense
+            5: 1967,     # Athletico-PR
+            6: 1954,     # Cruzeiro
+            7: 1955,     # Bahia
+            8: 1957,     # Corinthians
+            9: 1999,     # Red Bull Bragantino
+            10: 1982,    # Coritiba
+            11: 1977,    # Atlético-MG
+            12: 1981,    # São Paulo
+            13: 1962,    # Vitória
+            14: 5926,    # Grêmio
+            15: 21982,   # Mirassol
+            16: 1966,    # Internacional
+            17: 1968,    # Santos
+            18: 1974,    # Vasco da Gama
+            19: 2012,    # Remo
+            20: 21845,   # Chapecoense
+        },
+    },
+    2: {  # Premier League -- confirmado 2026-09-05
+        "tournament_id": 17,
+        "season_id": 96668,  # temporada 26/27
+        "times": {
+            21: 30,   # Brighton & Hove Albion
+            22: 42,   # Arsenal
+            23: 50,   # Brentford
+            24: 48,   # Everton
+            25: 96,   # Hull City
+            26: 32,   # Ipswich Town
+            27: 17,   # Manchester City
+            28: 34,   # Leeds United
+            29: 44,   # Liverpool
+            30: 39,   # Newcastle United
+            31: 38,   # Chelsea
+            32: 43,   # Fulham
+            33: 60,   # Bournemouth
+            34: 41,   # Sunderland
+            35: 14,   # Nottingham Forest
+            36: 7,    # Crystal Palace
+            37: 35,   # Manchester United
+            38: 11,   # Coventry City
+            39: 33,   # Tottenham Hotspur
+            40: 40,   # Aston Villa
+        },
+    },
 }
-SOFASCORE_ID_PARA_TIME_ID = {v: k for k, v in TIME_ID_SOFASCORE.items()}
 
 # nome do campo no payload da lineup do SofaScore -> nome do campo em
 # EstatisticaJogadorPartida.
@@ -104,8 +139,8 @@ def _get(url, params=None):
     return resp.json()
 
 
-def buscar_eventos_rodada(rodada):
-    dados = _get(f"{BASE_URL}/unique-tournament/{SOFASCORE_TOURNAMENT_ID}/season/{SOFASCORE_SEASON_ID}/events/round/{rodada}")
+def buscar_eventos_rodada(tournament_id, season_id, rodada):
+    dados = _get(f"{BASE_URL}/unique-tournament/{tournament_id}/season/{season_id}/events/round/{rodada}")
     return dados.get("events", []) if dados else []
 
 
@@ -113,7 +148,7 @@ def buscar_lineups(sofascore_event_id):
     return _get(f"{BASE_URL}/event/{sofascore_event_id}/lineups")
 
 
-def encontrar_evento(partida, eventos_rodada):
+def encontrar_evento(partida, eventos_rodada, time_id_sofascore):
     # Uma partida adiada/remarcada aparece DUAS vezes na listagem da
     # rodada original do SofaScore: o evento adiado original (status
     # "Postponed", sem lineup nenhuma) e o jogo de verdade jogado depois
@@ -121,8 +156,8 @@ def encontrar_evento(partida, eventos_rodada):
     # data bem posterior) -- confirmado 2026-09-02 em 4 casos reais.
     # Sem essa preferencia, o primeiro da lista (o adiado) ganhava e a
     # partida ficava com 0 jogador enriquecido.
-    sofa_mandante = TIME_ID_SOFASCORE.get(partida.time_mandante_id)
-    sofa_visitante = TIME_ID_SOFASCORE.get(partida.time_visitante_id)
+    sofa_mandante = time_id_sofascore.get(partida.time_mandante_id)
+    sofa_visitante = time_id_sofascore.get(partida.time_visitante_id)
     if not sofa_mandante or not sofa_visitante:
         return None
     candidatos = [
@@ -230,23 +265,28 @@ def enriquecer_partida(db, partida, evento_sofascore):
     return atualizadas
 
 
-def enriquecer_rodada(rodada):
+def enriquecer_rodada(campeonato_id, rodada):
+    config = CONFIG_LIGA.get(campeonato_id)
+    if not config:
+        print(f"Campeonato {campeonato_id} nao tem CONFIG_LIGA (mapeamento de time/torneio SofaScore) ainda.")
+        return
+
     db = SessionLocal()
     try:
         partidas = (
             db.query(Partida)
-            .filter(Partida.campeonato_id == 1, Partida.rodada == rodada, Partida.status == "finalizada")
+            .filter(Partida.campeonato_id == campeonato_id, Partida.rodada == rodada, Partida.status == "finalizada")
             .all()
         )
         if not partidas:
             print(f"Nenhuma partida finalizada encontrada pra rodada {rodada}.")
             return
 
-        eventos_rodada = buscar_eventos_rodada(rodada)
+        eventos_rodada = buscar_eventos_rodada(config["tournament_id"], config["season_id"], rodada)
         print(f"{len(eventos_rodada)} eventos do SofaScore encontrados pra rodada {rodada}.")
 
         for partida in partidas:
-            evento = encontrar_evento(partida, eventos_rodada)
+            evento = encontrar_evento(partida, eventos_rodada, config["times"])
             if not evento:
                 print(f"  Partida {partida.id} ({partida.time_mandante.nome} x {partida.time_visitante.nome}): "
                       f"evento nao encontrado no SofaScore, pulando.")
@@ -259,7 +299,7 @@ def enriquecer_rodada(rodada):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Uso: py scripts/enriquecer_sofascore.py <numero_da_rodada>")
+    if len(sys.argv) != 3:
+        print("Uso: py scripts/enriquecer_sofascore.py <campeonato_id> <numero_da_rodada>")
         sys.exit(1)
-    enriquecer_rodada(int(sys.argv[1]))
+    enriquecer_rodada(int(sys.argv[1]), int(sys.argv[2]))

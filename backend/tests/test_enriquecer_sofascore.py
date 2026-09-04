@@ -17,7 +17,7 @@ from app.models.time import Time
 from app.models.partida import Partida
 from app.models.jogador import Jogador
 from app.models.estatistica_jogador_partida import EstatisticaJogadorPartida
-from scripts.enriquecer_sofascore import enriquecer_partida, casar_jogador, normalizar_nome, encontrar_evento
+from scripts.enriquecer_sofascore import enriquecer_partida, casar_jogador, normalizar_nome, encontrar_evento, CONFIG_LIGA
 
 
 @pytest.fixture
@@ -242,6 +242,18 @@ def test_enriquece_jogador_ja_transferido_pra_outro_time(db, cenario):
     assert stat_pedro.chutes == 3
 
 
+def test_config_liga_nao_tem_id_sofascore_duplicado_dentro_da_liga():
+    # Sanity check pra evitar erro de copia-e-cola ao adicionar uma liga
+    # nova em CONFIG_LIGA: dois times da MESMA liga apontando pro mesmo
+    # id do SofaScore faria o encontrar_evento/casar_jogador confundir
+    # os dois silenciosamente.
+    for campeonato_id, config in CONFIG_LIGA.items():
+        ids_sofascore = list(config["times"].values())
+        assert len(ids_sofascore) == len(set(ids_sofascore)), (
+            f"campeonato_id={campeonato_id} tem id de time do SofaScore duplicado"
+        )
+
+
 def test_encontrar_evento_prefere_finalizado_sobre_adiado(cenario):
     # Regressao do bug real encontrado 2026-09-02: uma partida
     # adiada/remarcada aparece DUAS vezes na listagem da rodada do
@@ -255,6 +267,5 @@ def test_encontrar_evento_prefere_finalizado_sobre_adiado(cenario):
         {"homeTeam": {"id": 1001}, "awayTeam": {"id": 1002}, "id": 111, "status": {"type": "postponed", "description": "Postponed"}},
         {"homeTeam": {"id": 1001}, "awayTeam": {"id": 1002}, "id": 222, "status": {"type": "finished", "description": "Ended"}},
     ]
-    with patch.dict("scripts.enriquecer_sofascore.TIME_ID_SOFASCORE", mapa_fake, clear=True):
-        evento = encontrar_evento(partida, eventos_rodada)
+    evento = encontrar_evento(partida, eventos_rodada, mapa_fake)
     assert evento["id"] == 222
