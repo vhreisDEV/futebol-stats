@@ -333,7 +333,7 @@ export default function GradeJogadoresTime() {
 
             {!carregando && grade && grade.jogos.length > 0 && jogadoresExibidos.length > 0 && (
               <div className="mt-3 overflow-x-auto">
-                <div style={{ width: "fit-content", minWidth: larguraGrade }}>
+                <div className="mx-auto" style={{ width: "fit-content", minWidth: larguraGrade }}>
                   <div
                     className="flex items-center gap-2 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
                     style={{ paddingLeft: larguraFixa }}

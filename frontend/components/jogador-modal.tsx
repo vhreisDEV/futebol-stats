@@ -199,7 +199,7 @@ export function JogadorModal({
         )}
 
         {!carregando && jogos.length > 0 && (
-          <div style={{ width: "fit-content", minWidth: larguraGrade }}>
+          <div className="mx-auto" style={{ width: "fit-content", minWidth: larguraGrade }}>
             <div
               className="flex items-center gap-2 pb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
               style={{ paddingLeft: larguraFixa }}
