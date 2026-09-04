@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Crown } from "lucide-react";
@@ -92,7 +92,7 @@ function BadgePosicao({ index }: { index: number }) {
   );
 }
 
-export default function Jogadores() {
+function JogadoresConteudo() {
   const searchParams = useSearchParams();
   const campeonatoPreSelecionado = Number(searchParams.get("campeonato"));
   const [campeonatoId, setCampeonatoId] = useState(
@@ -297,5 +297,19 @@ export default function Jogadores() {
 
       <JogadorModal jogadorId={jogadorAbertoId} onClose={() => setJogadorAbertoId(null)} />
     </main>
+  );
+}
+
+export default function Jogadores() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
+          <p>Carregando...</p>
+        </main>
+      }
+    >
+      <JogadoresConteudo />
+    </Suspense>
   );
 }
