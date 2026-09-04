@@ -57,8 +57,8 @@ const LINHA_DEFESAS: LinhaTabela = { label: "Defesas", chave: "defesas" };
 function formatarData(dataStr: string) {
   const partes = dataStr.split("-");
   if (partes.length === 3) {
-    const [ano, mes, dia] = partes;
-    return `${dia}/${mes}/${ano}`;
+    const [, mes, dia] = partes;
+    return `${dia}/${mes}`;
   }
   return dataStr;
 }

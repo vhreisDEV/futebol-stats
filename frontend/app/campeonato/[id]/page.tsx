@@ -188,13 +188,6 @@ export default function CampeonatoPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <NavChip href={`/times?campeonato=${campeonatoId}`} label="Times" icon={Shield} cor="orange" />
-            <NavChip
-              href={`/jogadores?campeonato=${campeonatoId}`}
-              label="Jogadores"
-              icon={UserRound}
-              cor="neutral"
-            />
             {funcoesAvancadasLiberadas && (
               <>
                 <NavChip
@@ -207,6 +200,13 @@ export default function CampeonatoPage() {
                 <NavChip href={`/comparar?campeonato=${campeonatoId}`} label="Comparar Times" icon={Users} cor="rose" />
               </>
             )}
+            <NavChip href={`/times?campeonato=${campeonatoId}`} label="Times" icon={Shield} cor="orange" />
+            <NavChip
+              href={`/jogadores?campeonato=${campeonatoId}`}
+              label="Jogadores"
+              icon={UserRound}
+              cor="neutral"
+            />
           </div>
         </div>
 
