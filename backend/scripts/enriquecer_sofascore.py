@@ -111,6 +111,106 @@ CONFIG_LIGA = {
             40: 40,   # Aston Villa
         },
     },
+    3: {  # La Liga -- confirmado 2026-09-05
+        "tournament_id": 8,
+        "season_id": 97268,  # temporada 26/27
+        "times": {
+            41: 2833,  # Sevilla FC -- intersecao de token empatava com "FC Barcelona" (os dois batem so' o token generico "fc"), corrigido a mao
+            42: 2885,  # Alavés
+            43: 2836,  # Atlético Madrid
+            44: 2817,  # Barcelona
+            45: 2814,  # Espanyol
+            46: 2829,  # Real Madrid
+            47: 2816,  # Real Betis
+            48: 2859,  # Getafe
+            49: 2819,  # Villarreal
+            50: 2832,  # Deportivo La Coruña
+            51: 2821,  # Celta de Vigo
+            52: 2828,  # Valencia
+            53: 2835,  # Racing Santander
+            54: 2818,  # Rayo Vallecano
+            55: 2846,  # Elche
+            56: 2820,  # Osasuna
+            57: 2824,  # Real Sociedad
+            58: 2825,  # Athletic Club
+            59: 2830,  # Malaga
+            60: 2849,  # Levante
+        },
+    },
+    4: {  # Bundesliga -- confirmado 2026-09-05
+        "tournament_id": 35,
+        "season_id": 97464,  # temporada 26/27
+        "times": {
+            61: 2600,   # FC Augsburg
+            62: 2681,   # Bayer Leverkusen
+            63: 2672,   # Bayern Munich
+            64: 2673,   # Borussia Dortmund
+            65: 2527,   # Borussia Mönchengladbach -- intersecao empatava com Dortmund (os dois batem so' "borussia"), corrigido a mao
+            66: 2674,   # Eintracht Frankfurt
+            67: 2598,   # SV Elversberg
+            68: 2671,   # FC Koln
+            69: 2538,   # SC Freiburg
+            70: 2676,   # Hamburger SV
+            71: 2569,   # 1899 Hoffenheim
+            72: 2556,   # FSV Mainz 05
+            73: 2561,   # SC Paderborn 07
+            74: 36360,  # RB Leipzig
+            75: 2530,   # FC Schalke 04
+            76: 2677,   # VfB Stuttgart
+            77: 2547,   # Union Berlin
+            78: 2534,   # Werder Bremen
+        },
+    },
+    5: {  # Serie A -- confirmado 2026-09-05
+        "tournament_id": 23,
+        "season_id": 95836,  # temporada 26/27
+        "times": {
+            79: 2702,  # AS Roma
+            80: 2697,  # Inter
+            81: 2689,  # Lecce
+            82: 2714,  # Napoli
+            83: 2692,  # AC Milan
+            84: 2686,  # Atalanta
+            85: 2719,  # Cagliari
+            86: 2687,  # Juventus
+            87: 2699,  # Lazio
+            88: 2704,  # Como
+            89: 2695,  # Udinese
+            90: 2793,  # Sassuolo
+            91: 2696,  # Torino
+            92: 2685,  # Bologna
+            93: 2801,  # Frosinone
+            94: 2690,  # Parma
+            95: 2713,  # Genoa
+            96: 2688,  # Venezia
+            97: 2729,  # Monza
+            98: 2693,  # Fiorentina
+        },
+    },
+    6: {  # Ligue 1 -- confirmado 2026-09-05
+        "tournament_id": 34,
+        "season_id": 96127,  # temporada 26/27
+        "times": {
+            99: 1641,   # Marseille
+            100: 1648,  # Lens
+            101: 1643,  # Lille
+            102: 1649,  # Lyon -- SofaScore chama de "Olympique Lyonnais", token "lyon" nao bate direto
+            103: 1653,  # Monaco
+            104: 1715,  # Stade Brestois 29
+            105: 1672,  # Le Mans
+            106: 1644,  # Paris Saint Germain -- intersecao empatava com "Paris FC" (os dois batem so' "paris"), corrigido a mao
+            107: 1658,  # Rennes FC -- SofaScore chama de "Stade Rennais", nao tinha token em comum nenhum
+            108: 1656,  # Lorient
+            109: 1661,  # Nice
+            110: 6070,  # Paris FC
+            111: 1652,  # Estac Troyes
+            112: 1662,  # LE Havre AC
+            113: 1681,  # Toulouse
+            114: 1684,  # Angers
+            115: 1646,  # Auxerre
+            116: 1659,  # Strasbourg
+        },
+    },
 }
 
 # nome do campo no payload da lineup do SofaScore -> nome do campo em
