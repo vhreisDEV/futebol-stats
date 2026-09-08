@@ -20,6 +20,7 @@ interface Campeonato {
   pais_codigo: string;
   temporada_label: string;
   total_times: number;
+  jogos_minimo_time: number | null;
 }
 
 interface PartidaRodada {
@@ -158,9 +159,14 @@ export default function CampeonatoPage() {
     );
   }
 
-  const funcoesAvancadasLiberadas =
-    rodadaAtual !== null && rodadaAtual >= RODADA_MINIMA_FUNCOES_AVANCADAS;
-  const rodadasParaLiberar = rodadaAtual === null ? RODADA_MINIMA_FUNCOES_AVANCADAS : RODADA_MINIMA_FUNCOES_AVANCADAS - rodadaAtual;
+  // Usa jogos_minimo_time (menor numero de jogos entre TODOS os times da
+  // liga), nao rodada_atual -- uma unica partida remarcada pra uma rodada
+  // futura ja faz rodada_atual (MAX das rodadas) parecer mais adiantada
+  // do que o time mais atrasado realmente esta (caso real: La Liga com
+  // rodada_atual=6 mas 18 dos 20 times com so 4 jogos, ver 2026-09-08).
+  const jogosMinimo = campeonato.jogos_minimo_time;
+  const funcoesAvancadasLiberadas = jogosMinimo != null && jogosMinimo >= RODADA_MINIMA_FUNCOES_AVANCADAS;
+  const jogosParaLiberar = jogosMinimo == null ? RODADA_MINIMA_FUNCOES_AVANCADAS : RODADA_MINIMA_FUNCOES_AVANCADAS - jogosMinimo;
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-10">
@@ -180,9 +186,9 @@ export default function CampeonatoPage() {
             </h1>
             {!funcoesAvancadasLiberadas && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Previsão de Jogos, Dicas da Rodada e Comparar Times liberam a partir da
-                rodada {RODADA_MINIMA_FUNCOES_AVANCADAS} dessa liga (faltam {rodadasParaLiberar}{" "}
-                rodada{rodadasParaLiberar === 1 ? "" : "s"}).
+                Previsão de Jogos, Dicas da Rodada e Comparar Times liberam quando todo time
+                dessa liga tiver pelo menos {RODADA_MINIMA_FUNCOES_AVANCADAS} jogos (falta
+                {jogosParaLiberar === 1 ? "" : "m"} {jogosParaLiberar}).
               </p>
             )}
           </div>

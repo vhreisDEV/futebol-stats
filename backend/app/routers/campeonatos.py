@@ -19,6 +19,32 @@ def get_db():
         db.close()
 
 
+def _jogos_minimo_por_time(db, campeonato_id):
+    # MAX(rodada) sozinho engana quando uma partida e' remarcada pra uma
+    # rodada futura (ex.: La Liga rodada 6 com so' 1 jogo, o resto dos
+    # times ainda na rodada 4) -- isso faria a liga inteira parecer mais
+    # adiantada do que realmente esta. Conta jogo a jogo por time e pega
+    # o time que jogou MENOS vezes, que e' o dado que realmente importa
+    # pra saber se da pra confiar numa media de "ultimos N jogos".
+    times_ids = [time_id for (time_id,) in db.query(Time.id).filter(Time.campeonato_id == campeonato_id).all()]
+    if not times_ids:
+        return None
+
+    contagem = {time_id: 0 for time_id in times_ids}
+    finalizadas = (
+        db.query(Partida.time_mandante_id, Partida.time_visitante_id)
+        .filter(Partida.campeonato_id == campeonato_id, Partida.status == "finalizada")
+        .all()
+    )
+    for mandante_id, visitante_id in finalizadas:
+        if mandante_id in contagem:
+            contagem[mandante_id] += 1
+        if visitante_id in contagem:
+            contagem[visitante_id] += 1
+
+    return min(contagem.values())
+
+
 def _montar_response(db, c):
     rodada_atual = (
         db.query(func.max(Partida.rodada))
@@ -26,6 +52,7 @@ def _montar_response(db, c):
         .scalar()
     )
     total_times = db.query(Time).filter(Time.campeonato_id == c.id).count()
+    jogos_minimo_time = _jogos_minimo_por_time(db, c.id)
 
     return CampeonatoResponse(
         id=c.id,
@@ -38,6 +65,7 @@ def _montar_response(db, c):
         ativo=c.ativo,
         rodada_atual=rodada_atual,
         total_times=total_times,
+        jogos_minimo_time=jogos_minimo_time,
     )
 
 

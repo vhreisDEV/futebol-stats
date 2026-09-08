@@ -9,7 +9,7 @@ interface Campeonato {
   nome: string;
   pais_codigo: string;
   temporada_label: string;
-  rodada_atual: number | null;
+  jogos_minimo_time: number | null;
 }
 
 /**
@@ -19,10 +19,13 @@ interface Campeonato {
  * verdade ainda, so um seletor simples que troca o campeonato_id usado
  * nas chamadas da propria tela.
  *
- * So lista ligas que ja passaram da RODADA_MINIMA_FUNCOES_AVANCADAS --
+ * So lista ligas onde TODO time ja tem pelo menos
+ * RODADA_MINIMA_FUNCOES_AVANCADAS jogos (jogos_minimo_time, nao
+ * rodada_atual -- uma unica partida remarcada pra rodada futura nao
+ * conta como o resto dos times tendo jogado tanto, ver 2026-09-08) --
  * o campeonato selecionado no momento sempre aparece, mesmo que ainda
- * nao tenha cruzado a rodada minima (evita a liga escolhida sumir da
- * lista debaixo do usuario).
+ * nao tenha cruzado o minimo (evita a liga escolhida sumir da lista
+ * debaixo do usuario).
  */
 export function SeletorCampeonato({
   value,
@@ -42,7 +45,7 @@ export function SeletorCampeonato({
 
   const atual = campeonatos.find((c) => c.id === value);
   const opcoes = campeonatos.filter(
-    (c) => c.id === value || (c.rodada_atual ?? 0) >= RODADA_MINIMA_FUNCOES_AVANCADAS
+    (c) => c.id === value || (c.jogos_minimo_time ?? 0) >= RODADA_MINIMA_FUNCOES_AVANCADAS
   );
 
   if (opcoes.length <= 1) {
