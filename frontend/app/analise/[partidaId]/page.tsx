@@ -196,7 +196,13 @@ export default function AnalisePartida() {
 
         {carregando && (
           <div className="mt-10 flex min-h-64 items-center justify-center">
-            <VhSpinner mensagens={["Montando os bilhetes...", "Estudando o confronto..."]} />
+            <VhSpinner
+              mensagens={[
+                "Montando os bilhetes...",
+                "Estudando o confronto...",
+                "O servidor pode estar acordando (1ª visita pode levar até 1 min)...",
+              ]}
+            />
           </div>
         )}
 
