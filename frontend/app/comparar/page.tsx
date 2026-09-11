@@ -229,7 +229,13 @@ function CompararTimesConteudo() {
   if (carregando) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
-        <VhSpinner />
+        <VhSpinner
+          mensagens={[
+            "Aquecendo o campo...",
+            "Cobrando escanteio...",
+            "O servidor pode estar acordando (1ª visita pode levar até 1 min)...",
+          ]}
+        />
       </main>
     );
   }
