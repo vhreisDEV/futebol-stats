@@ -160,19 +160,20 @@ def buscar_partida_existente(db, id_externo, rodada, time_mandante_id, time_visi
 def importar(league_id=LEAGUE_ID_BRASILEIRAO, season=SEASON, max_importacoes=MAX_IMPORTACOES_POR_EXECUCAO):
     if not API_KEY:
         print("ERRO: HIGHLIGHTLY_API_KEY não encontrada no .env")
-        return
+        return None
 
     db = SessionLocal()
     campeonato = db.query(Campeonato).filter(Campeonato.id_externo_liga == league_id).first()
     if not campeonato:
         print(f"ERRO: Campeonato com id_externo_liga={league_id} nao encontrado (crie a linha antes de importar).")
-        return
+        return None
 
     importadas = 0
     enriquecidas = 0
     placeholders = 0
     ja_existiam = 0
     ignoradas_sem_time = 0
+    cota_excedida = False
 
     try:
         partidas_temporada = buscar_temporada_completa(league_id, season)
@@ -266,6 +267,7 @@ def importar(league_id=LEAGUE_ID_BRASILEIRAO, season=SEASON, max_importacoes=MAX
             except CotaExcedidaError:
                 print(f"\nCota da API excedida. Progresso salvo (cada partida ja foi commitada "
                       f"individualmente ate aqui). Rode de novo amanha pra continuar.")
+                cota_excedida = True
                 break
             if not stats:
                 print(f"  Pulando partida {id_externo}: sem estatísticas disponíveis")
@@ -349,6 +351,15 @@ def importar(league_id=LEAGUE_ID_BRASILEIRAO, season=SEASON, max_importacoes=MAX
 
     finally:
         db.close()
+
+    return {
+        "importadas": importadas,
+        "enriquecidas": enriquecidas,
+        "placeholders": placeholders,
+        "ja_existiam": ja_existiam,
+        "ignoradas_sem_time": ignoradas_sem_time,
+        "cota_excedida": cota_excedida,
+    }
 
 
 if __name__ == "__main__":
