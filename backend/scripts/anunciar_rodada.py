@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Monta e manda o aviso de rodada nova pro bot do Telegram, puxando um
-destaque de verdade (o bilhete de maior confianca entre os jogos da
+destaque de verdade (o destaque de maior confianca entre os jogos da
 rodada) em vez de um texto generico -- reaproveita o cache ja calculado
 em AnaliseIAPartida.destaques_json (ver app/routers/analise_ia.py), sem
 recalcular nada nem gastar cota da Highlightly.
@@ -94,9 +94,9 @@ def montar_mensagem_rodada(db, campeonato_id, numero_rodada):
             confronto += f" — {quando}"
 
         blocos.append(
-            "🔥 <b>Melhor palpite da rodada</b>\n\n"
+            "🔥 <b>Destaque da rodada</b>\n\n"
             f"📅 {confronto}\n"
-            f"🎯 {_frase_perna(perna)} (acertou em {acertos} de {total} jogos)"
+            f"🎯 {_frase_perna(perna)} (aconteceu em {acertos} de {total} jogos)"
         )
         link_id = partida_destaque.id
         restantes = len(partidas) - 1

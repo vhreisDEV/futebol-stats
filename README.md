@@ -1,6 +1,6 @@
 # ⚽ VEAGA — Football Data & Analytics
 
-Plataforma de análise estatística do Brasileirão Série A 2026, com dados reais, projeções estatísticas e tendências pensadas pra quem acompanha o campeonato de perto — de torcedor a apostador.
+Plataforma de análise estatística do Brasileirão Série A 2026, com dados reais, projeções estatísticas e tendências pensadas pra quem acompanha o campeonato de perto, do torcedor ao analista de dados.
 
 **🔗 No ar:** [veaga-psi.vercel.app](https://veaga-psi.vercel.app)
 
@@ -52,7 +52,7 @@ O projeto também segue sendo usado como forma de estudo e evolução profission
 
 * Pra cada confronto da próxima rodada, sequências recentes de cada time que chamam atenção — ex.: *"Cruzeiro costuma passar de 4.5 escanteios em casa — bateu em 7/10 jogos (70%)"*
 * Cobre escanteios, chutes, chutes ao gol, cartões amarelos, gols marcados, ambas equipes marcam e "não perde"
-* Testa contra linhas fixas realistas (as mesmas que uma casa de aposta ofereceria), não contra a própria média do time — evita inflar artificialmente a taxa de acerto
+* Testa contra linhas fixas e realistas (valores redondos como 2.5 ou 4.5), não contra a própria média do time — evita inflar artificialmente a taxa de acerto
 * Mesma lógica estendida pra estatística individual de jogador (gols, assistências, cartões) — os destaques com maior taxa de acerto do elenco de cada time aparecem junto com os do time
 
 ### Jogadores

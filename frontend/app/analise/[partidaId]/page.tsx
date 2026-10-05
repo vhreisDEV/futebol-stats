@@ -181,9 +181,12 @@ export default function AnalisePartida() {
           </h1>
         </div>
         <p className="mt-1 text-center text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">Bilhete simples</span> = melhor palpite isolado ·{" "}
-          <span className="font-semibold text-foreground">Múltipla</span> = combinação de palpites ·{" "}
+          <span className="font-semibold text-foreground">Destaque principal</span> = tendência mais forte do jogo ·{" "}
+          <span className="font-semibold text-foreground">Combinação</span> = vários destaques juntos ·{" "}
           <span className="font-semibold text-foreground">Dicas da IA</span> = tendências do jogo todo
+        </p>
+        <p className="mt-1 text-center text-[10px] text-muted-foreground/70">
+          Análise estatística do histórico dos times. Não somos casa de apostas e não incentivamos apostas.
         </p>
 
         <div className="mt-3 flex items-center gap-2 rounded-md border border-violet-500/30 bg-violet-500/10 px-3 py-2">
@@ -198,7 +201,7 @@ export default function AnalisePartida() {
           <div className="mt-10 flex min-h-64 items-center justify-center">
             <VhSpinner
               mensagens={[
-                "Montando os bilhetes...",
+                "Montando os destaques...",
                 "Estudando o confronto...",
                 "O servidor pode estar acordando (1ª visita pode levar até 1 min)...",
               ]}
@@ -268,7 +271,7 @@ export default function AnalisePartida() {
                   ? "A análise da IA é gerada apenas para partidas que ainda vão acontecer."
                   : analise?.dentro_da_janela === false
                     ? "Essa análise ainda não foi liberada — fica disponível a partir da rodada atual."
-                    : "Ainda não há mercados suficientes se destacando pra essa partida."}
+                    : "Ainda não há tendências suficientes se destacando pra essa partida."}
               </div>
             )}
 
@@ -322,7 +325,7 @@ export default function AnalisePartida() {
                   className="flex w-full items-center justify-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
                 >
                   <ChevronDown className={`size-3.5 transition-transform ${mercadosAbertos ? "rotate-180" : ""}`} />
-                  {mercadosAbertos ? "Ocultar todos os mercados" : "Ver todos os mercados"}
+                  {mercadosAbertos ? "Ocultar todas as tendências" : "Ver todas as tendências"}
                 </button>
 
                 {mercadosAbertos && (

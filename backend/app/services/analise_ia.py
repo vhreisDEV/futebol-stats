@@ -29,19 +29,19 @@ def _descrever_perna(perna):
 def _montar_prompt(bilhete_simples, bilhete_multipla):
     linhas = []
     if bilhete_simples:
-        linhas.append(f"Bilhete simples sugerido: {_descrever_perna(bilhete_simples['perna'])}")
+        linhas.append(f"Destaque principal: {_descrever_perna(bilhete_simples['perna'])}")
     if bilhete_multipla:
         for p in bilhete_multipla["pernas"]:
-            linhas.append(f"Perna da múltipla: {_descrever_perna(p)}")
+            linhas.append(f"Destaque da combinação: {_descrever_perna(p)}")
 
     dados = "\n".join(linhas)
 
     return (
         "Você é um analista esportivo especializado em dados e tendências estatísticas. Com base SOMENTE nos dados abaixo, escreva UMA "
         "frase curta (no máximo 25 palavras, português do Brasil, direta e didática) validando por "
-        "que esse bilhete faz sentido. Não repita os números (eles já aparecem na tela) — só o "
-        "raciocínio central. Não invente dados que não estão aqui. Nunca use a palavra 'aposta' "
-        "ou 'apostar' -- se precisar se referir ao palpite, use 'bilhete' ou 'análise'.\n\n"
+        "que esses destaques fazem sentido. Não repita os números (eles já aparecem na tela) — só o "
+        "raciocínio central. Não invente dados que não estão aqui. Nunca use as palavras 'aposta', "
+        "'apostar', 'palpite', 'bilhete' ou 'múltipla' -- use 'destaque', 'tendência' ou 'análise'.\n\n"
         f"Dados:\n{dados}"
     )
 
@@ -86,7 +86,7 @@ def _montar_prompt_dicas(pernas_totais):
         "olho no total de chutes: costuma passar de X quando [time] joga em casa/fora'. Deixe claro "
         "em cada dica que o número é a soma dos dois times, não só de um lado. Uma dica por linha, "
         "direto, sem repetir os números crus. Não invente dados que não estão aqui. Nunca use a "
-        "palavra 'aposta' ou 'apostar' -- se precisar se referir ao palpite, use 'bilhete' ou 'análise'.\n\n"
+        "palavras 'aposta', 'apostar', 'palpite', 'bilhete' ou 'múltipla' -- use 'destaque', 'tendência' ou 'análise'.\n\n"
         f"Dados:\n{dados}"
     )
 

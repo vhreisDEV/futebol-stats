@@ -15,6 +15,8 @@ def montar_mensagem_boas_vindas(nome):
         f"{saudacao} Bem-vindo ao <b>VEAGA</b> ⚽\n\n"
         "A partir de agora você recebe aqui, em primeira mão, o aviso sempre que "
         "uma rodada nova estiver com <b>Análise IA</b> e <b>Dicas da Rodada</b> no ar.\n\n"
+        "O conteúdo é análise estatística do histórico dos times. Não somos casa de apostas "
+        "e não incentivamos apostas.\n\n"
         "Pra parar de receber, é só mandar /parar quando quiser."
     )
 

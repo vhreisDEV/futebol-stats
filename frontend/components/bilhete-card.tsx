@@ -129,7 +129,7 @@ export function BilheteSimplesCard({ perna }: { perna: Perna }) {
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Trophy className="size-4 text-primary" />
-          <span className="text-[11px] font-bold uppercase tracking-wide text-primary">Bilhete Simples</span>
+          <span className="text-[11px] font-bold uppercase tracking-wide text-primary">Destaque Principal</span>
         </div>
         <span className={`${sumulaMono.className} rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold tabular-nums text-primary`}>
           {porcentagem}%
@@ -147,7 +147,7 @@ export function BilheteMultiplaCard({ pernas }: { pernas: Perna[] }) {
       <div className="flex items-center gap-1.5">
         <Layers className="size-3.5 text-amber-400" />
         <span className="text-[10px] font-bold uppercase tracking-wide text-amber-400">
-          Bilhete múltipla · {pernas.length} seleções
+          Combinação de destaques · {pernas.length} destaques
         </span>
       </div>
       <ol className="mt-1.5 grid gap-1">
